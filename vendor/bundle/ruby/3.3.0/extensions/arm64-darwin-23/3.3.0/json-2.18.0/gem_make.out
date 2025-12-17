@@ -1,0 +1,25 @@
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/json-2.18.0/ext/json/ext/parser
+/Users/romanciobanu/.rvm/rubies/ruby-3.3.7/bin/ruby extconf.rb
+checking for rb_enc_interned_str() in ruby/encoding.h... yes
+checking for rb_str_to_interned_str() in ruby.h... yes
+checking for rb_hash_new_capa() in ruby.h... yes
+checking for rb_hash_bulk_insert() in ruby.h... yes
+checking for whether -std=c99 is accepted as CFLAGS... yes
+checking for arm_neon.h... yes
+checking for cpuid.h... no
+creating Makefile
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/json-2.18.0/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20251217-62439-e8zoca sitelibdir\=./.gem.20251217-62439-e8zoca clean
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/json-2.18.0/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20251217-62439-e8zoca sitelibdir\=./.gem.20251217-62439-e8zoca
+compiling parser.c
+linking shared-object json/ext/parser.bundle
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/json-2.18.0/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20251217-62439-e8zoca sitelibdir\=./.gem.20251217-62439-e8zoca install
+/Users/romanciobanu/homebrew/opt/coreutils/bin/ginstall -c -m 0755 parser.bundle ./.gem.20251217-62439-e8zoca/json/ext
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/json-2.18.0/ext/json/ext/parser
+make DESTDIR\= sitearchdir\=./.gem.20251217-62439-e8zoca sitelibdir\=./.gem.20251217-62439-e8zoca clean

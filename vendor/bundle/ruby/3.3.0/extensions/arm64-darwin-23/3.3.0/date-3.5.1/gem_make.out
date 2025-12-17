@@ -1,0 +1,24 @@
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/date-3.5.1/ext/date
+/Users/romanciobanu/.rvm/rubies/ruby-3.3.7/bin/ruby extconf.rb
+checking for rb_category_warn()... yes
+checking for timezone in time.h with  -Werror... yes
+checking for altzone in time.h with  -Werror... no
+creating Makefile
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/date-3.5.1/ext/date
+make DESTDIR\= sitearchdir\=./.gem.20251217-62439-xdx959 sitelibdir\=./.gem.20251217-62439-xdx959 clean
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/date-3.5.1/ext/date
+make DESTDIR\= sitearchdir\=./.gem.20251217-62439-xdx959 sitelibdir\=./.gem.20251217-62439-xdx959
+compiling date_core.c
+compiling date_parse.c
+compiling date_strftime.c
+compiling date_strptime.c
+linking shared-object date_core.bundle
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/date-3.5.1/ext/date
+make DESTDIR\= sitearchdir\=./.gem.20251217-62439-xdx959 sitelibdir\=./.gem.20251217-62439-xdx959 install
+/Users/romanciobanu/homebrew/opt/coreutils/bin/ginstall -c -m 0755 date_core.bundle ./.gem.20251217-62439-xdx959
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/date-3.5.1/ext/date
+make DESTDIR\= sitearchdir\=./.gem.20251217-62439-xdx959 sitelibdir\=./.gem.20251217-62439-xdx959 clean
