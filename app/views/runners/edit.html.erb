@@ -1,0 +1,12 @@
+<% content_for :title, "Editing runner" %>
+
+<h1>Editing runner</h1>
+
+<%= render "form", runner: @runner %>
+
+<br>
+
+<div>
+  <%= link_to "Show this runner", @runner %> |
+  <%= link_to "Back to runners", runners_path %>
+</div>
