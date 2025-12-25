@@ -1,0 +1,62 @@
+<%= form_with(model: result) do |form| %>
+  <% if result.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(result.errors.count, "error") %> prohibited this result from being saved:</h2>
+
+      <ul>
+        <% result.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :place, style: "display: block" %>
+    <%= form.number_field :place %>
+  </div>
+
+  <div>
+    <%= form.label :time, style: "display: block" %>
+    <%= form.number_field :time %>
+  </div>
+
+  <div>
+    <%= form.label :wre_points, style: "display: block" %>
+    <%= form.number_field :wre_points %>
+  </div>
+
+  <div>
+    <%= form.label :date, style: "display: block" %>
+    <%= form.date_field :date %>
+  </div>
+
+  <div>
+    <%= form.label :ecn_points, style: "display: block" %>
+    <%= form.number_field :ecn_points %>
+  </div>
+
+  <div>
+    <%= form.label :status, style: "display: block" %>
+    <%= form.text_field :status %>
+  </div>
+
+  <div>
+    <%= form.label :runner_id, style: "display: block" %>
+    <%= form.text_field :runner_id %>
+  </div>
+
+  <div>
+    <%= form.label :category_id, style: "display: block" %>
+    <%= form.text_field :category_id %>
+  </div>
+
+  <div>
+    <%= form.label :group_id, style: "display: block" %>
+    <%= form.text_field :group_id %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
