@@ -3,18 +3,21 @@ categories = [
     "id": 1,
     "category_name": 'MISRM',
     "full_name": 'Maestru Internaţional al Sportului',
+    "validaty_period": 4,
     "points": 300.0
   },
   {
     "id": 2,
     "category_name": 'MSRM',
     "full_name": 'Maestru al Sportului',
+    "validaty_period": 3,
     "points": 100.0
   },
   {
     "id": 3,
     "category_name": 'CMSRM',
     "full_name": 'Candidat în Maeștri ai Sportului',
+    "validaty_period": 3,
     "points": 30.0
   },
   {
@@ -33,7 +36,7 @@ categories = [
     "id": 6,
     "category_name": 'III',
     "full_name": 'Categoria III',
-    "points": 2.0
+  "points": 2.0
   },
   {
     "id": 7,
@@ -65,10 +68,8 @@ categories.each do |category|
   Category.create(category)
 end
 
-Club.create("club_name": 'Individual')
-
 Competition.create("competition_name": 'Fara Competitie', "date": '2021-08-01')
 Competition.create("competition_name": 'Diminuare Categorie', "date": '2021-08-01')
-
 Group.create("group_name": 'No Group', "competition_id": 1)
 Group.create("group_name": 'Diminuare Categorie', "competition_id": 2)
+Club.create("club_name": 'Individual')

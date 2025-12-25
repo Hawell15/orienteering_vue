@@ -2,18 +2,20 @@
 
 class CategoriesController < ApplicationController
   before_action :set_category, only: %i[show edit update destroy]
-  # has_scope :search
+  has_scope :sorting, using: %i[sort_by direction], type: :hash
+  has_scope :search
+  has_scope :age
+  has_scope :points, using: %i[from to], type: :hash
+  has_scope :validaty_period, using: %i[from to], type: :hash
+  has_scope :runners_count, using: %i[from to], type: :hash
+
 
   # GET /categories or /categories.json
   def index
-    @categories = Category.all
-    # order = params[:sort_by] || "id"
-    # direction = params[:direction] || "asc"
-    # @categories = apply_scopes(Category)
-    #   .left_joins(:runners)
-    #   .select('categories.*, COUNT(runners.id) AS runners_count')
-    #   .group('categories.id')
-    #   .order(order => direction)
+    @categories = apply_scopes(Category)
+      .left_joins(:runners)
+      .select("categories.*, COUNT(runners.id) AS runners_count")
+      .group("categories.id")
   end
 
   # GET /categories/1 or /categories/1.json
@@ -35,7 +37,7 @@ class CategoriesController < ApplicationController
 
     respond_to do |format|
       if @category.save
-        format.html { redirect_to @category, notice: 'Category was successfully created.' }
+        format.html { redirect_to @category, notice: "Category was successfully created." }
         format.json { render :show, status: :created, location: @category }
       else
         format.html { render :new, status: :unprocessable_entity }
@@ -52,7 +54,7 @@ class CategoriesController < ApplicationController
         format.json { render json: @category, status: :ok }
 
         # Optionally, for HTML requests, redirect (though this is for normal browser requests)
-        format.html { redirect_to @category, notice: 'Category was successfully updated.' }
+        format.html { redirect_to @category, notice: "Category was successfully updated." }
       else
         # Handle errors and respond in both formats
         format.json { render json: @category.errors, status: :unprocessable_entity }
@@ -66,7 +68,7 @@ class CategoriesController < ApplicationController
     @category.destroy!
 
     respond_to do |format|
-      format.html { redirect_to categories_path, status: :see_other, notice: 'Category was successfully destroyed.' }
+      format.html { redirect_to categories_path, status: :see_other, notice: "Category was successfully destroyed." }
       format.json { head :no_content }
     end
   end
