@@ -1,0 +1,42 @@
+<%= form_with(model: group) do |form| %>
+  <% if group.errors.any? %>
+    <div style="color: red">
+      <h2><%= pluralize(group.errors.count, "error") %> prohibited this group from being saved:</h2>
+
+      <ul>
+        <% group.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div>
+    <%= form.label :group_name, style: "display: block" %>
+    <%= form.text_field :group_name %>
+  </div>
+
+  <div>
+    <%= form.label :rang, style: "display: block" %>
+    <%= form.number_field :rang %>
+  </div>
+
+  <div>
+    <%= form.label :clasa, style: "display: block" %>
+    <%= form.text_field :clasa %>
+  </div>
+
+  <div>
+    <%= form.label :ecn_coeficient, style: "display: block" %>
+    <%= form.text_field :ecn_coeficient %>
+  </div>
+
+  <div>
+    <%= form.label :competition_id, style: "display: block" %>
+    <%= form.text_field :competition_id %>
+  </div>
+
+  <div>
+    <%= form.submit %>
+  </div>
+<% end %>
