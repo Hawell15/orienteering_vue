@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_25_160239) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_25_161332) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -31,6 +31,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_25_160239) do
     t.string "phone"
     t.string "alternative_club_name"
     t.string "formatted_name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "competitions", force: :cascade do |t|
+    t.string "competition_name"
+    t.date "date"
+    t.string "location"
+    t.string "country", default: "Moldova"
+    t.string "distance_type"
+    t.integer "wre_id"
+    t.string "checksum"
+    t.boolean "ecn", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
