@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_25_155533) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_25_160239) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -34,4 +34,30 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_25_155533) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  create_table "runners", force: :cascade do |t|
+    t.string "runner_name"
+    t.string "surname"
+    t.integer "yob", default: 2025
+    t.string "gender"
+    t.integer "wre_id"
+    t.date "category_valid", default: "2100-01-01"
+    t.integer "sprint_wre_rang"
+    t.integer "forest_wre_rang"
+    t.integer "sprint_wre_place"
+    t.integer "forest_wre_place"
+    t.string "checksum"
+    t.boolean "license", default: false
+    t.bigint "club_id", default: 1, null: false
+    t.bigint "category_id", default: 10, null: false
+    t.bigint "best_category_id", default: 10
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index [ "best_category_id" ], name: "index_runners_on_best_category_id"
+    t.index [ "category_id" ], name: "index_runners_on_category_id"
+    t.index [ "club_id" ], name: "index_runners_on_club_id"
+  end
+
+  add_foreign_key "runners", "categories"
+  add_foreign_key "runners", "clubs"
 end

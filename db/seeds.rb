@@ -64,3 +64,5 @@ categories = [
 categories.each do |category|
   Category.create(category)
 end
+
+Club.create("club_name": 'Individual')
