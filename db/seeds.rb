@@ -66,3 +66,6 @@ categories.each do |category|
 end
 
 Club.create("club_name": 'Individual')
+
+Competition.create("competition_name": 'Fara Competitie', "date": '2021-08-01')
+Competition.create("competition_name": 'Diminuare Categorie', "date": '2021-08-01')

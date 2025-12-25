@@ -1,0 +1,19 @@
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/debug-1.11.1/ext/debug
+/Users/romanciobanu/.rvm/rubies/ruby-3.3.7/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20251225-12326-84houb sitelibdir\=./.gem.20251225-12326-84houb clean
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20251225-12326-84houb sitelibdir\=./.gem.20251225-12326-84houb
+compiling debug.c
+compiling iseq_collector.c
+linking shared-object debug/debug.bundle
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20251225-12326-84houb sitelibdir\=./.gem.20251225-12326-84houb install
+/Users/romanciobanu/homebrew/opt/coreutils/bin/ginstall -c -m 0755 debug.bundle ./.gem.20251225-12326-84houb/debug
+
+current directory: /Users/romanciobanu/Documents/rails/new_orient_vue/vendor/bundle/ruby/3.3.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20251225-12326-84houb sitelibdir\=./.gem.20251225-12326-84houb clean
