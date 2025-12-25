@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_17_180516) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_25_155533) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -19,6 +19,18 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_17_180516) do
     t.string "full_name"
     t.float "points"
     t.integer "validaty_period", default: 2
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "clubs", force: :cascade do |t|
+    t.string "club_name"
+    t.string "territory"
+    t.string "representative"
+    t.string "email"
+    t.string "phone"
+    t.string "alternative_club_name"
+    t.string "formatted_name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
