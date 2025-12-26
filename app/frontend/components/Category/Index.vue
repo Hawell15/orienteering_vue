@@ -86,9 +86,7 @@ const searchData = ref("")
 
 const filters = ref({
     "sorting[sort_by]": "id",
-    "sorting[direction]": "asc",
-    "points[from]": 0,
-    "points[to]": 300
+    "sorting[direction]": "asc"
 })
 
 async function getData() {
@@ -133,8 +131,7 @@ function sortingDirection(sortKey) {
     }
 }
 
-function search() {
-    console.log(searchData.value);
+function onSearch() {
     filters.value["search"] = searchData.value
     getData()
 }

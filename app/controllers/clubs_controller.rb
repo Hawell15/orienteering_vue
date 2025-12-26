@@ -1,9 +1,16 @@
 class ClubsController < ApplicationController
   before_action :set_club, only: %i[ show edit update destroy ]
 
+  has_scope :sorting, using: %i[sort_by direction], type: :hash
+  has_scope :search
+  has_scope :runners_count, using: %i[from to], type: :hash
+
   # GET /clubs or /clubs.json
   def index
-    @clubs = Club.all
+    @clubs = apply_scopes(Club)
+      .left_joins(:runners)
+      .select("clubs.*, COUNT(runners.id) AS runners_count")
+      .group("clubs.id")
   end
 
   # GET /clubs/1 or /clubs/1.json
