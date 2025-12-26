@@ -7,7 +7,7 @@ class Club < ApplicationRecord
 
   scope :runners_count, ->(from, to) do
     scope = left_joins(:runners)
-            .group("club.id")
+            .group("clubs.id")
 
     if from.present? && to.present?
       scope.having("COUNT(runners.id) BETWEEN ? AND ?", from, to)
