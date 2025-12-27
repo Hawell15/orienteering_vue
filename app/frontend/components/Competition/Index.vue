@@ -3,26 +3,26 @@
     <input type="text" v-model="searchData" placeholder="Cautare" @input="onSearch" class="form-control" />
     <hr>
     <div class="filter-item">
-        <label :for="country" class="label-filter">Țara</label>
+        <label for="country" class="label-filter">Țara</label>
         <select class="custom-select" @change="filter('country', $event.target.value)">
             <option value="all">Toate</option>
             <option value="international">Internaționale</option>
-            <option v-for="country in filter_data.countries" :key="country" :value="country">
+            <option v-for="country in filterData.countries" key="country" value="country">
                 {{ country }}
             </option>
         </select>
     </div>
     <div class="filter-item">
-        <label :for="distance_type" class="label-filter">Tipul Distanței</label>
+        <label for="distance_type" class="label-filter">Tipul Distanței</label>
         <select class="custom-select" @change="filter('distance_type', $event.target.value)">
             <option value="all">Toate</option>
-            <option v-for="distance_type in filter_data.distance_types" :key="distance_type" :value="distance_type">
+            <option v-for="distance_type in filterData.distance_types" :key="distance_type" :value="distance_type">
                 {{ distance_type }}
             </option>
         </select>
     </div>
     <div class="filter-item">
-        <label :for="distance_type" class="label-filter">WRE</label>
+        <label for="distance_type" class="label-filter">WRE</label>
         <input type="checkbox" name="wre" id="wre" class="custom-select" @change="filter('wre', $event.target.checked)">
     </div>
     <div class="filter-item">
@@ -81,7 +81,7 @@ import { ref, onMounted, computed } from 'vue'
 
 import axios from 'axios'
 const data = ref([])
-const filter_data = ref([])
+const filterData = ref({})
 const searchData = ref("")
 
 const filters = ref({
@@ -95,7 +95,6 @@ const countries = ref([])
 const distanceTypes = ref([])
 
 onMounted(async () => {
-
     getFiltersData();
 
     const params = new URLSearchParams(window.location.search);
@@ -109,7 +108,7 @@ onMounted(async () => {
 
 async function getFiltersData() {
     const res = await axios.get('/competitions/filters.json')
-    filter_data.value = res.data
+    filterData.value = res.data
 }
 
 async function getData() {
@@ -138,17 +137,17 @@ function sortingDirection(sortKey) {
 
 function onSearch() {
     filters.value["search"] = searchData.value
-    getData()
+    getData();
 }
 
 function filter(key, value) {
     filters.value[key] = value
-    getData()
+    getData();
 }
 
 function resetFilters() {
     filters.value = []
-    getData()
+    getData();
 }
 </script>
 <style scoped>

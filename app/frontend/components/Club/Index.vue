@@ -1,8 +1,8 @@
 <template>
-   <h1 style="text-align:center; color:green">Cluburi</h1>
-       <input type="text" v-model="searchData" placeholder="Cautare" @input="onSearch" class="form-control" />
-        <hr>
-         <div class="filter-item">
+    <h1 style="text-align:center; color:green">Cluburi</h1>
+    <input type="text" v-model="searchData" placeholder="Cautare" @input="onSearch" class="form-control" />
+    <hr>
+    <div class="filter-item">
         <label class="label-filter">Numar Sportivi</label>
         <div class="range-wrapper">
             <input type="number" min="0" class="custom-input" placeholder="De la" @input="filter('runners_count[from]', $event.target.value)" />
@@ -10,7 +10,7 @@
             <input type="number" min="0" class="custom-input" placeholder="Până la" @input="filter('runners_count[to]', $event.target.value)" />
         </div>
     </div>
-   <table class="table table-striped table-bordered table-hover">
+    <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
                 <th @click="orderTable('id')">ID</th>
@@ -110,7 +110,6 @@ function filter(key, value) {
     filters.value[key] = value
     getData()
 }
-
 </script>
 <style scoped>
 .label-filter {

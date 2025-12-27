@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_25_163019) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_27_142523) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -59,21 +59,31 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_25_163019) do
     t.index [ "competition_id" ], name: "index_groups_on_competition_id"
   end
 
+  create_table "memberships", force: :cascade do |t|
+    t.bigint "club_id", null: false
+    t.datetime "created_at", null: false
+    t.boolean "main"
+    t.bigint "runner_id", null: false
+    t.datetime "updated_at", null: false
+    t.index [ "club_id" ], name: "index_memberships_on_club_id"
+    t.index [ "runner_id" ], name: "index_memberships_on_runner_id"
+  end
+
   create_table "results", force: :cascade do |t|
     t.bigint "category_id", default: 10, null: false
     t.datetime "created_at", null: false
     t.date "date"
     t.integer "ecn_points"
     t.bigint "group_id", default: 1, null: false
+    t.bigint "membership_id", null: false
     t.integer "place"
-    t.bigint "runner_id", null: false
     t.string "status"
     t.integer "time"
     t.datetime "updated_at", null: false
     t.integer "wre_points"
     t.index [ "category_id" ], name: "index_results_on_category_id"
     t.index [ "group_id" ], name: "index_results_on_group_id"
-    t.index [ "runner_id" ], name: "index_results_on_runner_id"
+    t.index [ "membership_id" ], name: "index_results_on_membership_id"
   end
 
   create_table "runners", force: :cascade do |t|
@@ -100,9 +110,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_25_163019) do
   end
 
   add_foreign_key "groups", "competitions"
+  add_foreign_key "memberships", "clubs"
+  add_foreign_key "memberships", "runners"
   add_foreign_key "results", "categories"
   add_foreign_key "results", "groups"
-  add_foreign_key "results", "runners"
+  add_foreign_key "results", "memberships"
   add_foreign_key "runners", "categories"
   add_foreign_key "runners", "clubs"
 end
