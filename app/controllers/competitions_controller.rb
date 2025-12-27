@@ -1,9 +1,15 @@
 class CompetitionsController < ApplicationController
   before_action :set_competition, only: %i[ show edit update destroy ]
+  has_scope :search
+  has_scope :sorting, using: %i[sort_by direction], type: :hash
+  has_scope :country
+  has_scope :distance_type
+  has_scope :wre, type: :boolean
+  has_scope :date, using: %i[from to], type: :hash
 
   # GET /competitions or /competitions.json
   def index
-    @competitions = Competition.all
+    @competitions = apply_scopes(Competition).all
   end
 
   # GET /competitions/1 or /competitions/1.json
@@ -55,6 +61,16 @@ class CompetitionsController < ApplicationController
       format.html { redirect_to competitions_path, notice: "Competition was successfully destroyed.", status: :see_other }
       format.json { head :no_content }
     end
+  end
+
+  def filters
+    unique_values = Competition.select(:country, :distance_type).distinct
+
+    render json:
+      {
+        countries:      unique_values.map(&:country).compact.sort.uniq,
+        distance_types: unique_values.map(&:distance_type).compact.sort.uniq
+      }
   end
 
   private
