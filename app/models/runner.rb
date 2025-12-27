@@ -3,4 +3,5 @@ class Runner < ApplicationRecord
   belongs_to :category
   belongs_to :best_category, class_name: "Category"
   has_many :results, dependent: :destroy
+  has_many :memberships, dependent: :destroy
 end

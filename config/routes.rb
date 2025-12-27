@@ -1,5 +1,8 @@
 Rails.application.routes.draw do
   get "competitions/filters"
+  get "memberships/filters"
+
+  resources :memberships
   resources :results
   resources :groups
   resources :competitions

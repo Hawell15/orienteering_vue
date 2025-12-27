@@ -8,13 +8,13 @@ class Competition < ApplicationRecord
     case val.to_s
     when "international" then where.not(country: "Moldova")
     when "all"           then all
-    else where(country: val.to_s)
+    else where(country: val)
     end
   }
   scope :distance_type, lambda { |val|
     case val.to_s
     when "all"           then all
-    else where(distance_type: val.to_s)
+    else where(distance_type: val)
     end
   }
 

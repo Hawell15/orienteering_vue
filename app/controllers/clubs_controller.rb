@@ -8,8 +8,8 @@ class ClubsController < ApplicationController
   # GET /clubs or /clubs.json
   def index
     @clubs = apply_scopes(Club)
-      .left_joins(:runners)
-      .select("clubs.*, COUNT(runners.id) AS runners_count")
+      .left_joins(:memberships)
+      .select("clubs.*, COUNT(memberships.id) AS runners_count")
       .group("clubs.id")
   end
 
