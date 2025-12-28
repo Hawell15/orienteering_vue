@@ -21,10 +21,7 @@ class MembershipsController < ApplicationController
       .group(
         'memberships.id,
          clubs.id,
-         runners.id,
-         clubs.club_name,
-         runners.runner_name,
-         runners.surname'
+         runners.id'
       )
   end
 
@@ -82,8 +79,8 @@ class MembershipsController < ApplicationController
   def filters
     render json:
       {
-        clubs:   Club.select(:id, :club_name).as_json,
-        runners: Runner.select(:id, "CONCAT(runner_name, \' \', surname) AS full_name").as_json
+        clubs:   Club.select(:id, :club_name).order(:club_name).as_json,
+        runners: Runner.select(:id, "CONCAT(runner_name, \' \', surname) AS full_name").order(:runner_name, :surname).as_json
       }
   end
 
