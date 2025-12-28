@@ -1,9 +1,28 @@
 class GroupsController < ApplicationController
   before_action :set_group, only: %i[ show edit update destroy ]
+  has_scope :sorting, using: %i[sort_by direction], type: :hash
+  has_scope :search
+  has_scope :competition_id
+  has_scope :results_count
+  has_scope :date, using: %i[from to], type: :hash
 
   # GET /groups or /groups.json
   def index
-    @groups = Group.all
+    @groups = apply_scopes(Group).left_joins(:competition, :results)
+    .joins("LEFT JOIN categories ON categories.id = CAST(groups.clasa AS integer)")
+    .select(
+      'groups.*,
+      competitions.competition_name AS competition_name,
+      competitions.id AS competition_id,
+      categories.category_name AS clasa_name,
+      competitions.date AS date,
+      COUNT(results.id) AS results_count'
+    )
+    .group(
+      'groups.id,
+      categories.id,
+      competitions.id'
+    )
   end
 
   # GET /groups/1 or /groups/1.json
@@ -55,6 +74,13 @@ class GroupsController < ApplicationController
       format.html { redirect_to groups_path, notice: "Group was successfully destroyed.", status: :see_other }
       format.json { head :no_content }
     end
+  end
+
+   def filters
+    render json:
+      {
+        competitions: Competition.select(:id, "CONCAT(competition_name, \'(\', TO_CHAR(date, 'DD-MM-YYYY'), \')\') AS competition_display").order(date: :desc, competition_name: :asc).as_json
+      }
   end
 
   private
