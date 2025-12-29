@@ -7,10 +7,12 @@ class ClubsController < ApplicationController
 
   # GET /clubs or /clubs.json
   def index
-    @clubs = apply_scopes(Club)
+    base_query = Club
       .left_joins(:memberships)
       .select("clubs.*, COUNT(memberships.id) AS runners_count")
       .group("clubs.id")
+
+      @clubs = apply_scopes(base_query)
   end
 
   # GET /clubs/1 or /clubs/1.json
