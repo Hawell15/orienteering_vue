@@ -115,7 +115,6 @@ async function getData() {
     const cleanParams = {};
 
     const rangePairs = [
-        { from: "sorting[sort_by]", to: "sorting[direction]" },
         { from: "points[from]", to: "points[to]" },
         { from: "validaty_period[from]", to: "validaty_period[to]" },
         { from: "runners_count[from]", to: "runners_count[to]" }
@@ -150,8 +149,6 @@ async function getData() {
             value = DEFAULT_FILTERS[key];
         }
 
-        if (key.includes('sorting') && value === DEFAULT_FILTERS[key]) return;
-
         cleanParams[key] = value;
     });
 
@@ -178,7 +175,6 @@ onMounted(() => {
             filters[key] = isNumber ? Number(value) : value;
         }
     });
-
     getData();
 })
 

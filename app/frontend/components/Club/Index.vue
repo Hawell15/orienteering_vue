@@ -1,13 +1,13 @@
 <template>
     <h1 style="text-align:center; color:green">Cluburi</h1>
-    <input type="text" v-model="searchData" placeholder="Cautare" @input="onSearch" class="form-control" />
+    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
     <hr>
     <div class="filter-item">
         <label class="label-filter">Numar Sportivi</label>
         <div class="range-wrapper">
-            <input type="number" min="0" class="custom-input" placeholder="De la" @input="filter('runners_count[from]', $event.target.value)" />
+            <input type="number" v-model="filters['runners_count[from]']" min="0" class="custom-input" placeholder="De la" />
             <span class="range-separator">—</span>
-            <input type="number" min="0" class="custom-input" placeholder="Până la" @input="filter('runners_count[to]', $event.target.value)" />
+            <input type="number" v-model="filters['runners_count[to]']" min="0" class="custom-input" placeholder="Până la" />
         </div>
     </div>
     <table class="table table-striped table-bordered table-hover">
@@ -56,86 +56,108 @@
     </table>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 
 const data = ref([])
 const searchData = ref("")
 
-const filters = ref({
+const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",
-    "sorting[direction]": "asc"
-})
+    "sorting[direction]": "asc",
+    "search": "",
+    "runners_count[from]": 0,
+    "runners_count[to]": 9999
+
+}
+
+const filters = reactive({ ...DEFAULT_FILTERS });
+
+let debounceTimeout = null;
+
+watch(
+    filters,
+    (newVal) => {
+        clearTimeout(debounceTimeout);
+
+        debounceTimeout = setTimeout(() => {
+            getData();
+        }, 400);
+    }, { deep: true }
+);
 
 async function getData() {
-    const params = new URLSearchParams(filters.value).toString();
+    const cleanParams = {};
 
-    const res = await axios.get(`/clubs.json?${params}`)
-    data.value = res.data
-    const newUrl = `${window.location.pathname}?${params}`
-    window.history.replaceState({}, '', newUrl)
-}
+    const rangePairs = [
+        { from: "runners_count[from]", to: "runners_count[to]" }
+    ];
 
-onMounted(async () => {
-    const params = new URLSearchParams(window.location.search);
+    const keysToSkip = new Set();
 
-    for (const key of params.keys()) {
-        filters.value[key] = params.get(key);
+    if (filters.search === "") {
+        keysToSkip.add("search")
     }
 
-    getData()
+    rangePairs.forEach(pair => {
+        const currentFrom = filters[pair.from];
+        const currentTo = filters[pair.to];
+        const defaultFrom = DEFAULT_FILTERS[pair.from];
+        const defaultTo = DEFAULT_FILTERS[pair.to];
+
+        if (currentFrom === defaultFrom && currentTo === defaultTo) {
+            keysToSkip.add(pair.from);
+            keysToSkip.add(pair.to);
+        }
+    });
+
+    Object.keys(filters).forEach(key => {
+        let value = filters[key];
+
+        if (keysToSkip.has(key)) return;
+
+        if (value === "all") return;
+
+        if (key !== 'search' && (value === "" || value === null)) {
+            value = DEFAULT_FILTERS[key];
+        }
+
+        cleanParams[key] = value;
+    });
+
+    try {
+        const res = await axios.get('/clubs.json', { params: cleanParams });
+        data.value = res.data;
+
+        const queryString = new URLSearchParams(cleanParams).toString();
+        const urlPrefix = window.location.pathname;
+        const newUrl = queryString ? `${urlPrefix}?${queryString}` : urlPrefix;
+
+        window.history.replaceState({}, '', newUrl);
+    } catch (error) {
+        console.error("API Error:", error);
+    }
+}
+
+onMounted(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    urlParams.forEach((value, key) => {
+        if (key in filters) {
+            const isNumber = typeof DEFAULT_FILTERS[key] === 'number';
+            filters[key] = isNumber ? Number(value) : value;
+        }
+    });
+
+    getData();
+
 })
 
-
 function orderTable(sortKey) {
-    filters.value["sorting[direction]"] = sortingDirection(sortKey)
-    filters.value["sorting[sort_by]"] = sortKey
-    getData()
-}
+    const isCurrentSort = filters["sorting[sort_by]"] === sortKey;
+    const currentDir = filters["sorting[direction]"];
 
-function sortingDirection(sortKey) {
-    if (filters.value["sorting[sort_by]"] != sortKey || filters.value["sorting[direction]"] == "desc") {
-        return "asc"
-    } else {
-        return "desc"
-    }
-}
-
-function onSearch() {
-    filters.value["search"] = searchData.value
-    getData()
-}
-
-function filter(key, value) {
-    filters.value[key] = value
-    getData()
+    filters["sorting[direction]"] = (isCurrentSort && currentDir === "asc") ? "desc" : "asc";
+    filters["sorting[sort_by]"] = sortKey;
 }
 </script>
-<style scoped>
-.label-filter {
-    width: 150px;
-    display: inline-block;
-    text-align: left;
-    margin-bottom: 5px;
-}
-
-.custom-select,
-.custom-input {
-    word-wrap: normal;
-    width: 140px;
-    border-radius: 0.375rem;
-    text-align: center;
-    background-color: lightblue;
-    border: 1px solid #ced4da;
-}
-
-.range-wrapper {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.range-separator {
-    font-weight: 600;
-}
-</style>

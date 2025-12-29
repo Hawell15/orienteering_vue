@@ -2,12 +2,13 @@
 
 class CategoriesController < ApplicationController
   before_action :set_category, only: %i[show edit update destroy]
+
+  has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :age
   has_scope :points, using: %i[from to], type: :hash
   has_scope :validaty_period, using: %i[from to], type: :hash
   has_scope :runners_count, using: %i[from to], type: :hash
-
 
   # GET /categories or /categories.json
   def index
