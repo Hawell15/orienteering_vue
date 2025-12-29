@@ -11,10 +11,11 @@ class CategoriesController < ApplicationController
 
   # GET /categories or /categories.json
   def index
-    @categories = apply_scopes(Category)
-      .left_joins(:runners)
-      .select("categories.*, COUNT(runners.id) AS runners_count")
-      .group("categories.id")
+    base_query = Category.left_joins(:runners)
+                         .select("categories.*, COUNT(runners.id) AS runners_count")
+                         .group("categories.id")
+
+    @categories = apply_scopes(base_query)
   end
 
   # GET /categories/1 or /categories/1.json
