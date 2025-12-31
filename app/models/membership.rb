@@ -10,18 +10,21 @@ class Membership < ApplicationRecord
   }
 
   scope :sorting, ->(sort_by, direction) {
-    dir = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
-    order("#{sort_by} #{dir}")
+    allowed_columns = %w[id club_name full_name results_count]
+    column          = allowed_columns.include?(sort_by) ? sort_by : "id"
+    direction       = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
+
+    order("#{column} #{direction}")
   }
 
-  scope :club_id, ->(val) {
+  scope :club, ->(val) {
     case val.to_s
     when "all" then all
     else where(club_id: val)
     end
   }
 
-  scope :runner_id, ->(val) {
+  scope :runner, ->(val) {
     case val.to_s
     when "all" then all
     else where(runner_id: val)
@@ -29,17 +32,6 @@ class Membership < ApplicationRecord
   }
 
   scope :results_count, ->(from, to) do
-    scope = left_joins(:results)
-            .group("memberships.id")
-
-    if from.present? && to.present?
-      scope.having("COUNT(results.id) BETWEEN ? AND ?", from, to)
-    elsif from.present?
-      scope.having("COUNT(results.id) >= ?". from)
-    elsif to.present?
-      scope.having("COUNT(results.id) <= ?", to)
-    else
-      scope
-    end
+    having("COUNT(results.id) BETWEEN ? AND ?", from.to_i, to.to_i)
   end
 end

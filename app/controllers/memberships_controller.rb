@@ -2,13 +2,13 @@ class MembershipsController < ApplicationController
   before_action :set_membership, only: %i[ show edit update destroy ]
   has_scope :search
   has_scope :sorting, using: %i[sort_by direction], type: :hash
-  has_scope :club_id
-  has_scope :runner_id
+  has_scope :club
+  has_scope :runner
   has_scope :results_count, using: %i[from to], type: :hash
 
   # GET /memberships or /memberships.json
   def index
-    @memberships = apply_scopes(Membership)
+    base_query = Membership
       .left_joins(:club, :runner, :results)
       .select(
         'memberships.*,
@@ -23,6 +23,7 @@ class MembershipsController < ApplicationController
          clubs.id,
          runners.id'
       )
+    @memberships = apply_scopes(base_query)
   end
 
   # GET /memberships/1 or /memberships/1.json
