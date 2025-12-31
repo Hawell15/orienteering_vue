@@ -22,21 +22,18 @@
         </select>
     </div>
     <div class="filter-item">
-        <label for="wre" class="label-filter">WRE</label>
-        <input type="checkbox" name="wre" id="wre" class="custom-select" v-model="filters.wre">
-    </div>
-    <div class="filter-item">
-        <label for="ecn" class="label-filter">ECN</label>
-        <input type="checkbox" name="ecn" id="ecn" class="custom-select" v-model="filters.ecn">
+        <label for="distance_type" class="label-filter">WRE</label>
+        <input type="checkbox" name="wre" id="wre" class="custom-select" v-model="wre">
     </div>
     <div class="filter-item">
         <label class="label-filter">Data</label>
         <div class="range-wrapper">
-            <input type="date" v-model="filters['date[from]']" min="0" class="custom-input" />
+            <input type="date" v-model="filters['date[from]']" min="0" class="custom-input"/>
             <span class="range-separator">—</span>
             <input type="date" v-model="filters['date[to]']" min="0" class="custom-input" placeholder="Până la" />
         </div>
     </div>
+
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
     <hr>
     <table class="table table-striped table-bordered table-hover">
@@ -49,7 +46,6 @@
                 <th @click="orderTable('country')">Țara</th>
                 <th @click="orderTable('distance_type')">Tipul Distanței</th>
                 <th @click="orderTable('wre_id')">WRE ID</th>
-                <th @click="orderTable('ecn')">ECN</th>
                 <th colspan="3">Actiuni</th>
             </tr>
         </thead>
@@ -62,9 +58,6 @@
                 <td>{{ element.country }}</td>
                 <td>{{ element.distance_type }}</td>
                 <td>{{ element.wre_id }}</td>
-                <td :class="element.ecn ? 'bg-true' : 'bg-false'">
-                    {{ element.ecn ? "Da" : "Nu" }}
-                </td>
                 <td>
                     <a class="btn btn-sm btn-warning" :href="`competitions/${element.id}`">
                         Arată
@@ -89,7 +82,8 @@ import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 
 const data = ref([])
-const filterData = ref({})
+const distanceTypes = ref([])
+const countries = ref([])
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "date",
@@ -98,12 +92,8 @@ const DEFAULT_FILTERS = {
     "date[to]": "2100-01-01",
     "search": "",
     "country": "all",
-    "distance_type": "all",
-    "wre": "false",
-    "ecn": "false"
+    "distance_type": "all"
 }
-
-const filters = reactive({ ...DEFAULT_FILTERS });
 
 let debounceTimeout = null;
 
@@ -149,7 +139,6 @@ async function getData() {
         if (keysToSkip.has(key)) return;
 
         if (value === "all") return;
-        if (value === "false") return;
 
         if (key !== 'search' && (value === "" || value === null)) {
             value = DEFAULT_FILTERS[key];
@@ -159,7 +148,7 @@ async function getData() {
     });
 
     try {
-        const res = await axios.get('/competitions.json', { params: cleanParams });
+        const res = await axios.get('/categories.json', { params: cleanParams });
         data.value = res.data;
 
         const queryString = new URLSearchParams(cleanParams).toString();
@@ -173,7 +162,6 @@ async function getData() {
 }
 
 onMounted(() => {
-    getFiltersData()
     const urlParams = new URLSearchParams(window.location.search);
 
     urlParams.forEach((value, key) => {
@@ -204,12 +192,4 @@ function resetFilters() {
     getData();
 }
 </script>
-<style scoped>
-    .bg-true {
-      background-color: #d4edda;
-    }
 
-    .bg-false {
-      background-color: #f8d7da;
-    }
-</style>

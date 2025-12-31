@@ -5,6 +5,7 @@ class CompetitionsController < ApplicationController
   has_scope :country
   has_scope :distance_type
   has_scope :wre, type: :boolean
+  has_scope :ecn, type: :boolean
   has_scope :date, using: %i[from to], type: :hash
 
   # GET /competitions or /competitions.json
