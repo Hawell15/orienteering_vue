@@ -1,17 +1,17 @@
 <template>
     <h1 style="text-align:center; color:green">Afilieri(Club/Sportiv)</h1>
-    <input type="text" v-model="searchData" placeholder="Cautare" @input="onSearch" class="form-control" />
+    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
     <hr>
     <div class="filter-item">
         <label for="club" class="label-filter">Club</label>
-        <select class="custom-select" @change="filter('club_id', $event.target.value)">
+        <select id="club" v-model="filters.club" class="custom-select">
             <option value="all">Toate</option>
             <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name}} </option>
         </select>
     </div>
     <div class="filter-item">
         <label for="runner" class="label-filter">Sportiv</label>
-        <select class="custom-select" @change="filter('runner_id', $event.target.value)">
+        <select id="runner" v-model="filters.runner" class="custom-select">
             <option value="all">Toți</option>
             <option v-for="runner in filterData.runners" :key="runner.id" :value="runner.id">{{ runner.full_name}} </option>
         </select>
@@ -19,11 +19,13 @@
     <div class="filter-item">
         <label class="label-filter">Numar Rezultate</label>
         <div class="range-wrapper">
-            <input type="runner" min="0" class="custom-input" placeholder="De la" @input="filter('results_count[from]', $event.target.value)" />
-            <span class="range-separator">-</span>
-            <input type="runner" min="0" class="custom-input" placeholder="Până la" @input="filter('results_count[to]', $event.target.value)" />
+            <input type="number" v-model="filters['results_count[from]']" min="0" class="custom-input" placeholder="De la" />
+            <span class="range-separator">—</span>
+            <input type="number" v-model="filters['results_count[to]']" min="0" class="custom-input" placeholder="Până la" />
         </div>
     </div>
+    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -48,66 +50,119 @@
     </table>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 
 const data = ref([])
-const searchData = ref("")
 const filterData = ref({})
 
-const filters = ref({
+const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",
     "sorting[direction]": "asc",
     "results_count[from]": 0,
-    "results_count[to]": 9999
-})
+    "results_count[to]": 9999,
+    "club": "all",
+    "runner": "all"
+}
 
-onMounted(async () => {
-    getFiltersData();
+const filters = reactive({ ...DEFAULT_FILTERS });
 
-    const params = new URLSearchParams(window.location.search);
-    for (const key of params.keys()) {
-        filters.value[key] = params.get(key)
+let debounceTimeout = null;
+
+watch(
+    filters,
+    (newVal) => {
+        clearTimeout(debounceTimeout);
+
+        debounceTimeout = setTimeout(() => {
+            getData();
+        }, 400);
+    }, { deep: true }
+);
+
+
+async function getData() {
+    const cleanParams = {};
+
+    const rangePairs = [
+        { from: "results_count[from]", to: "results_count[to]" },
+    ];
+
+    const keysToSkip = new Set();
+
+    if (filters.search === "") {
+        keysToSkip.add("search")
     }
 
-    getData()
+    rangePairs.forEach(pair => {
+        const currentFrom = filters[pair.from];
+        const currentTo = filters[pair.to];
+        const defaultFrom = DEFAULT_FILTERS[pair.from];
+        const defaultTo = DEFAULT_FILTERS[pair.to];
+
+        if (currentFrom === defaultFrom && currentTo === defaultTo) {
+            keysToSkip.add(pair.from);
+            keysToSkip.add(pair.to);
+        }
+    });
+
+    Object.keys(filters).forEach(key => {
+        let value = filters[key];
+
+        if (keysToSkip.has(key)) return;
+
+        if (value === "all") return;
+        if (value === "false") return;
+
+        if (key !== 'search' && (value === "" || value === null)) {
+            value = DEFAULT_FILTERS[key];
+        }
+
+        cleanParams[key] = value;
+    });
+
+    try {
+        const res = await axios.get('/memberships.json', { params: cleanParams });
+        data.value = res.data;
+
+        const queryString = new URLSearchParams(cleanParams).toString();
+        const urlPrefix = window.location.pathname;
+        const newUrl = queryString ? `${urlPrefix}?${queryString}` : urlPrefix;
+
+        window.history.replaceState({}, '', newUrl);
+    } catch (error) {
+        console.error("API Error:", error);
+    }
+}
+
+onMounted(() => {
+    getFiltersData()
+    const urlParams = new URLSearchParams(window.location.search);
+
+    urlParams.forEach((value, key) => {
+        if (key in filters) {
+            const isNumber = typeof DEFAULT_FILTERS[key] === 'number';
+            filters[key] = isNumber ? Number(value) : value;
+        }
+    });
+    getData();
 })
 
+function orderTable(sortKey) {
+    const isCurrentSort = filters["sorting[sort_by]"] === sortKey;
+    const currentDir = filters["sorting[direction]"];
+
+    filters["sorting[direction]"] = (isCurrentSort && currentDir === "asc") ? "desc" : "asc";
+    filters["sorting[sort_by]"] = sortKey;
+}
+
 async function getFiltersData() {
-    const res = await axios.get('memberships/filters.json')
+    const res = await axios.get('/memberships/filters.json')
     filterData.value = res.data
 }
 
-async function getData() {
-    const params = new URLSearchParams(filters.value).toString();
-
-    const res = await axios.get(`/memberships.json?${params}`)
-    data.value = res.data
-    const newUrl = `${window.location.pathname}?${params}`
-    window.history.replaceState({}, '', newUrl)
-}
-
-function onSearch() {
-    filters.value["search"] = searchData.value
-    getData()
-}
-
-function orderTable(sortKey) {
-    filters.value["sorting[direction]"] = sortingDirection(sortKey)
-    filters.value["sorting[sort_by]"] = sortKey
-    getData()
-}
-
-function sortingDirection(sortKey) {
-    if (filters.value["sorting[sort_by]"] != sortKey || filters.value["sorting[direction]"] == "desc") {
-        return "asc"
-    } else {
-        return "desc"
-    }
-}
-
-function filter(key, value) {
-    filters.value[key] = value
+function resetFilters() {
+    Object.assign(filters, DEFAULT_FILTERS)
     getData();
 }
 </script>

@@ -200,7 +200,7 @@ async function getFiltersData() {
 
 
 function resetFilters() {
-    filters.value = []
+    Object.assign(filters, DEFAULT_FILTERS)
     getData();
 }
 </script>
