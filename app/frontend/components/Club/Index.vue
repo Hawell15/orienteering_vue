@@ -60,7 +60,6 @@ import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 
 const data = ref([])
-const searchData = ref("")
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",

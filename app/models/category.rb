@@ -1,15 +1,17 @@
 class Category < ApplicationRecord
   has_many :runners
 
-  scope :sorting, ->(sort_by, direction) do
+  scope :sorting, ->(sort_by, direction) {
     allowed_columns = %w[id category_name points validaty_period]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"
     direction       = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
 
     order("#{column} #{direction}")
-  end
+  }
 
-  scope :search, ->(search) { where("LOWER(category_name) LIKE :search OR LOWER(full_name) LIKE :search", search: "%#{search.downcase}%") }
+  scope :search, ->(val) {
+    where("LOWER(category_name) LIKE :search OR LOWER(full_name) LIKE :search", search: "%#{search.downcase}%")
+  }
 
    scope :age, ->(val) {
     case val.to_s.downcase
