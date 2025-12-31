@@ -110,10 +110,7 @@ async function getData() {
         let value = filters[key];
 
         if (keysToSkip.has(key)) return;
-
         if (value === "all") return;
-        if (value === "false") return;
-
         if (key !== 'search' && (value === "" || value === null)) {
             value = DEFAULT_FILTERS[key];
         }

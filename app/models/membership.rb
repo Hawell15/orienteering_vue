@@ -3,7 +3,6 @@ class Membership < ApplicationRecord
   belongs_to :club
   has_many :results
 
-
   scope :search, ->(search) {
     left_joins(:runner, :club)
     .where("LOWER(CONCAT(runners.runner_name, \' \', runners.surname)) LIKE :search OR LOWER(CONCAT(runners.surname, \' \', runners.runner_name)) LIKE :search OR LOWER(clubs.club_name) LIKE :search", search: "%#{search.downcase}%")
