@@ -12,11 +12,10 @@ class CategoriesController < ApplicationController
 
   # GET /categories or /categories.json
   def index
-    base_query = Category.left_joins(:runners)
-                         .select("categories.*, COUNT(runners.id) AS runners_count")
-                         .group("categories.id")
-
-    @categories = apply_scopes(base_query)
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json: apply_scopes(index_base_query) }
+    end
   end
 
   # GET /categories/1 or /categories/1.json
@@ -84,5 +83,11 @@ class CategoriesController < ApplicationController
   # Only allow a list of trusted parameters through.
   def category_params
     params.require(:category).permit(:category_name, :full_name, :points, :validaty_period)
+  end
+
+  def index_base_query
+    Category.left_joins(:runners)
+      .select("categories.*, COUNT(runners.id) AS runners_count")
+      .group("categories.id")
   end
 end

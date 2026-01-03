@@ -34,6 +34,8 @@
             <input type="number" v-model="filters['runners_count[to]']" min="0" class="custom-input" placeholder="Până la" />
         </div>
     </div>
+    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -184,5 +186,10 @@ function orderTable(sortKey) {
 
     filters["sorting[direction]"] = (isCurrentSort && currentDir === "asc") ? "desc" : "asc";
     filters["sorting[sort_by]"] = sortKey;
+}
+
+function resetFilters() {
+    Object.assign(filters, DEFAULT_FILTERS)
+    getData();
 }
 </script>
