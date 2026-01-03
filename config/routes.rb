@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   get "groups/filters"
   get "results/filters"
   get "results/group_filters"
+  get "runners/filters"
 
   resources :memberships
   resources :results
