@@ -32,7 +32,7 @@
     </div>
     <div class="filter-item">
         <label for="category" class="label-filter">Categoria Indeplinita</label>
-        <select id="competition" v-model="filters.category" class="custom-select">
+        <select id="category" v-model="filters.category" class="custom-select">
             <option value="all">Toate</option>
             <option v-for="category in filterData.categories" :key="category.id" :value="category.id">{{ category.category_name}} </option>
         </select>

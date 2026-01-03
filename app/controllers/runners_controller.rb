@@ -1,9 +1,20 @@
 class RunnersController < ApplicationController
   before_action :set_runner, only: %i[ show edit update destroy ]
+  has_scope :sorting, using: %i[sort_by direction], type: :hash
+  has_scope :club
+  has_scope :membership
+  has_scope :category
+  has_scope :best_category
+  has_scope :gender
+  has_scope :wre, type: :boolean
+  has_scope :yob, using: %i[from to], type: :hash
 
   # GET /runners or /runners.json
   def index
-    @runners = Runner.all
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json: apply_scopes(index_base_query) }
+    end
   end
 
   # GET /runners/1 or /runners/1.json
@@ -57,14 +68,33 @@ class RunnersController < ApplicationController
     end
   end
 
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_runner
-      @runner = Runner.find(params.expect(:id))
-    end
+  def filters
+    render json:
+      {
+        clubs:      Club.select(:id, :club_name).order(:club_name).as_json,
+        categories: Category.select(:id, :category_name).order(:id).as_json,
+        genders:    Runner.select(:gender).distinct.map(&:gender)
+      }
+  end
 
-    # Only allow a list of trusted parameters through.
-    def runner_params
-      params.expect(runner: [ :runner_name, :surname, :yob, :gender, :wre_id, :category_valid, :sprint_wre_rang, :forest_wre_rang, :sprint_wre_place, :forest_wre_place, :checksum, :license, :club_id, :category_id, :best_category_id ])
-    end
+  private
+  # Use callbacks to share common setup or constraints between actions.
+  def set_runner
+    @runner = Runner.find(params.expect(:id))
+  end
+
+  # Only allow a list of trusted parameters through.
+  def runner_params
+    params.expect(runner: [ :runner_name, :surname, :yob, :gender, :wre_id, :category_valid, :sprint_wre_rang, :forest_wre_rang, :sprint_wre_place, :forest_wre_place, :checksum, :license, :club_id, :category_id, :best_category_id ])
+  end
+
+  def index_base_query
+    Runner.joins(:category, :best_category, :club).select(
+      'runners.*,
+      CONCAT(runners.runner_name, \' \', runners.surname) AS full_name,
+      clubs.club_name AS club_name,
+      categories.category_name AS category_name,
+      best_categories_runners.category_name AS best_category_name'
+    )
+  end
 end
