@@ -2,8 +2,8 @@ class Club < ApplicationRecord
   has_many :runners
   has_many :memberships
 
-  scope :search, ->(search) {
-    where("LOWER(club_name) LIKE :search OR LOWER(territory) LIKE :search OR LOWER(representative) LIKE :search OR LOWER(email) LIKE :search OR LOWER(phone) LIKE :search", search: "%#{search.downcase}%")
+  scope :search, ->(val) {
+    where("LOWER(club_name) LIKE :search OR LOWER(territory) LIKE :search OR LOWER(representative) LIKE :search OR LOWER(email) LIKE :search OR LOWER(phone) LIKE :search", search: "%#{val.downcase}%")
   }
 
   scope :sorting, ->(sort_by, direction) {
