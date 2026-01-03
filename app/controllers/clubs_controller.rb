@@ -7,12 +7,10 @@ class ClubsController < ApplicationController
 
   # GET /clubs or /clubs.json
   def index
-    base_query = Club
-      .left_joins(:memberships)
-      .select("clubs.*, COUNT(memberships.id) AS runners_count")
-      .group("clubs.id")
-
-      @clubs = apply_scopes(base_query)
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json: apply_scopes(index_base_query) }
+    end
   end
 
   # GET /clubs/1 or /clubs/1.json
@@ -67,13 +65,19 @@ class ClubsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_club
-      @club = Club.find(params.expect(:id))
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_club
+    @club = Club.find(params.expect(:id))
+  end
 
-    # Only allow a list of trusted parameters through.
-    def club_params
-      params.expect(club: [ :club_name, :territory, :representative, :email, :phone, :alternative_club_name, :formatted_name ])
-    end
+  # Only allow a list of trusted parameters through.
+  def club_params
+    params.expect(club: [ :club_name, :territory, :representative, :email, :phone, :alternative_club_name, :formatted_name ])
+  end
+
+  def index_base_query
+    Club.left_joins(:memberships)
+      .select("clubs.*, COUNT(memberships.id) AS runners_count")
+      .group("clubs.id")
+  end
 end

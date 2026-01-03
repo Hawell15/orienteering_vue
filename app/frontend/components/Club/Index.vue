@@ -10,6 +10,8 @@
             <input type="number" v-model="filters['runners_count[to]']" min="0" class="custom-input" placeholder="Până la" />
         </div>
     </div>
+    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -67,7 +69,6 @@ const DEFAULT_FILTERS = {
     "search": "",
     "runners_count[from]": 0,
     "runners_count[to]": 9999
-
 }
 
 const filters = reactive({ ...DEFAULT_FILTERS });
@@ -114,9 +115,6 @@ async function getData() {
         let value = filters[key];
 
         if (keysToSkip.has(key)) return;
-
-        if (value === "all") return;
-
         if (key !== 'search' && (value === "" || value === null)) {
             value = DEFAULT_FILTERS[key];
         }
@@ -158,5 +156,10 @@ function orderTable(sortKey) {
 
     filters["sorting[direction]"] = (isCurrentSort && currentDir === "asc") ? "desc" : "asc";
     filters["sorting[sort_by]"] = sortKey;
+}
+
+function resetFilters() {
+    Object.assign(filters, DEFAULT_FILTERS)
+    getData();
 }
 </script>
