@@ -5,7 +5,6 @@ class Competition < ApplicationRecord
    where("LOWER(competition_name) LIKE :search OR LOWER(country) LIKE :search OR LOWER(location) LIKE :search", search: "%#{val.downcase}%")
  }
 
-
   scope :sorting, ->(sort_by, direction) {
     allowed_columns = %w[id competition_name date location country distance_type wre_id ecn]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"
