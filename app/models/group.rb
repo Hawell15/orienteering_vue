@@ -2,9 +2,9 @@ class Group < ApplicationRecord
   belongs_to :competition
   has_many :results, dependent: :destroy
 
-  scope :search, ->(search) {
+  scope :search, ->(val) {
     left_joins(:competition)
-    .where("LOWER(groups.group_name) LIKE :search OR LOWER(competitions.competition_name) LIKE :search", search: "%#{search.downcase}%")
+    .where("LOWER(groups.group_name) LIKE :search OR LOWER(competitions.competition_name) LIKE :search", search: "%#{val.downcase}%")
   }
 
   scope :sorting, ->(sort_by, direction) {
@@ -15,7 +15,6 @@ class Group < ApplicationRecord
     order("#{column} #{direction}")
   }
 
-
   scope :competition, ->(val) {
     case val.to_s
     when "all" then all
@@ -23,9 +22,9 @@ class Group < ApplicationRecord
     end
   }
 
-  scope :results_count, ->(from, to) do
+  scope :results_count, ->(from, to) {
     having("COUNT(results.id) BETWEEN ? AND ?", from.to_i, to.to_i)
-  end
+  }
 
   scope :date, ->(from, to) {
     left_joins(:competition).where("competitions.date" => from..to)

@@ -8,22 +8,10 @@ class GroupsController < ApplicationController
 
   # GET /groups or /groups.json
   def index
-    base_query = Group.left_joins(:competition, :results)
-    .joins("LEFT JOIN categories ON categories.id = CAST(groups.clasa AS integer)")
-    .select(
-      'groups.*,
-      competitions.competition_name AS competition_name,
-      competitions.id AS competition_id,
-      categories.category_name AS clasa_name,
-      competitions.date AS date,
-      COUNT(results.id) AS results_count'
-    )
-    .group(
-      'groups.id,
-      categories.id,
-      competitions.id'
-    )
-    @groups = apply_scopes(base_query)
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json: apply_scopes(index_base_query) }
+    end
   end
 
   # GET /groups/1 or /groups/1.json
@@ -85,13 +73,31 @@ class GroupsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_group
-      @group = Group.find(params.expect(:id))
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_group
+    @group = Group.find(params.expect(:id))
+  end
 
-    # Only allow a list of trusted parameters through.
-    def group_params
-      params.expect(group: [ :group_name, :rang, :clasa, :ecn_coeficient, :competition_id ])
-    end
+  # Only allow a list of trusted parameters through.
+  def group_params
+    params.expect(group: [ :group_name, :rang, :clasa, :ecn_coeficient, :competition_id ])
+  end
+
+  def index_base_query
+    Group.left_joins(:competition, :results)
+    .joins("LEFT JOIN categories ON categories.id = CAST(groups.clasa AS integer)")
+    .select(
+      'groups.*,
+      competitions.competition_name AS competition_name,
+      competitions.id AS competition_id,
+      categories.category_name AS clasa_name,
+      competitions.date AS date,
+      COUNT(results.id) AS results_count'
+    )
+    .group(
+      'groups.id,
+      categories.id,
+      competitions.id'
+    )
+  end
 end

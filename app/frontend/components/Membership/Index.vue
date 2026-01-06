@@ -80,7 +80,6 @@ watch(
     }, { deep: true }
 );
 
-
 async function getData() {
     const cleanParams = {};
 
