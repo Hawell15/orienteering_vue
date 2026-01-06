@@ -62,6 +62,7 @@
             <input type="date" v-model="filters['date[to]']" min="0" class="custom-input" placeholder="Până la" />
         </div>
     </div>
+    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>

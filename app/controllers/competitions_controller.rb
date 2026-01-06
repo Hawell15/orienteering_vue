@@ -10,7 +10,10 @@ class CompetitionsController < ApplicationController
 
   # GET /competitions or /competitions.json
   def index
-    @competitions = apply_scopes(Competition).all
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json: apply_scopes(Competition) }
+    end
   end
 
   # GET /competitions/1 or /competitions/1.json

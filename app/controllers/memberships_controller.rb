@@ -8,22 +8,10 @@ class MembershipsController < ApplicationController
 
   # GET /memberships or /memberships.json
   def index
-    base_query = Membership
-      .left_joins(:club, :runner, :results)
-      .select(
-        'memberships.*,
-         clubs.id AS club_id,
-         runners.id AS runners_id,
-         clubs.club_name AS club_name,
-         CONCAT(runners.runner_name, \' \', runners.surname) AS full_name,
-         COUNT(results.id) AS results_count'
-      )
-      .group(
-        'memberships.id,
-         clubs.id,
-         runners.id'
-      )
-    @memberships = apply_scopes(base_query)
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json: apply_scopes(index_base_query) }
+    end
   end
 
   # GET /memberships/1 or /memberships/1.json
@@ -86,13 +74,31 @@ class MembershipsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_membership
-      @membership = Membership.find(params.expect(:id))
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_membership
+    @membership = Membership.find(params.expect(:id))
+  end
 
-    # Only allow a list of trusted parameters through.
-    def membership_params
-      params.expect(membership: [ :runner_id, :club_id, :main ])
-    end
+  # Only allow a list of trusted parameters through.
+  def membership_params
+    params.expect(membership: [ :runner_id, :club_id, :main ])
+  end
+
+  def index_base_query
+    Membership
+      .left_joins(:club, :runner, :results)
+      .select(
+        'memberships.*,
+         clubs.id AS club_id,
+         runners.id AS runners_id,
+         clubs.club_name AS club_name,
+         CONCAT(runners.runner_name, \' \', runners.surname) AS full_name,
+         COUNT(results.id) AS results_count'
+      )
+      .group(
+        'memberships.id,
+         clubs.id,
+         runners.id'
+      )
+  end
 end

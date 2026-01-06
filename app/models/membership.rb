@@ -3,9 +3,9 @@ class Membership < ApplicationRecord
   belongs_to :club
   has_many :results
 
-  scope :search, ->(search) {
+  scope :search, ->(val) {
     left_joins(:runner, :club)
-    .where("LOWER(CONCAT(runners.runner_name, \' \', runners.surname)) LIKE :search OR LOWER(CONCAT(runners.surname, \' \', runners.runner_name)) LIKE :search OR LOWER(clubs.club_name) LIKE :search", search: "%#{search.downcase}%")
+    .where("LOWER(CONCAT(runners.runner_name, \' \', runners.surname)) LIKE :search OR LOWER(CONCAT(runners.surname, \' \', runners.runner_name)) LIKE :search OR LOWER(clubs.club_name) LIKE :search", search: "%#{val.downcase}%")
   }
 
   scope :sorting, ->(sort_by, direction) {
@@ -30,7 +30,7 @@ class Membership < ApplicationRecord
     end
   }
 
-  scope :results_count, ->(from, to) do
+  scope :results_count, ->(from, to) {
     having("COUNT(results.id) BETWEEN ? AND ?", from.to_i, to.to_i)
-  end
+  }
 end

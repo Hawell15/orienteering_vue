@@ -28,8 +28,7 @@ class Competition < ApplicationRecord
     end
   }
 
-  scope :wre, -> { where.not(wre_id: nil) }
-  scope :ecn, -> { where(ecn: true) }
-
+  scope :wre,  -> { where.not(wre_id: nil) }
+  scope :ecn,  -> { where(ecn: true) }
   scope :date, ->(from, to) { where date: from..to }
 end
