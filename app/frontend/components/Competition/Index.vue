@@ -198,7 +198,6 @@ async function getFiltersData() {
     filterData.value = res.data
 }
 
-
 function resetFilters() {
     Object.assign(filters, DEFAULT_FILTERS)
     getData();
