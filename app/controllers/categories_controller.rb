@@ -20,7 +20,10 @@ class CategoriesController < ApplicationController
 
   # GET /categories/1 or /categories/1.json
   def show
-    @category
+    respond_to do |format|
+      format.html
+      format.json { render json: @category.as_json(include: :runners) }
+    end
   end
 
   # GET /categories/new
