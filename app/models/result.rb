@@ -43,6 +43,13 @@ class Result < ApplicationRecord
     end
   }
 
+  scope :membership, ->(val) {
+    case val.to_s
+    when "all" then all
+    else where(membership_id: val)
+    end
+  }
+
   scope :wre, -> { where.not(wre_points: nil) }
   scope :ecn, -> { where.not(ecn_points: nil) }
   scope :date, ->(from, to) { where date: from..to }

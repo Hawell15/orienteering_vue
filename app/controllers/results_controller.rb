@@ -12,6 +12,7 @@ class ResultsController < ApplicationController
   has_scope :ecn, type: :boolean
   has_scope :date, using: %i[from to], type: :hash
   has_scope :status, type: :array
+  has_scope :membership
 
   # GET /results or /results.json
   def index

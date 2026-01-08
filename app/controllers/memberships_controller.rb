@@ -16,6 +16,13 @@ class MembershipsController < ApplicationController
 
   # GET /memberships/1 or /memberships/1.json
   def show
+    respond_to do |format|
+      format.html
+      format.json { render json:
+        @membership.as_json(
+          include: [ runner: {}, club: {} ]
+      ) }
+    end
   end
 
   # GET /memberships/new
