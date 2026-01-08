@@ -22,7 +22,7 @@ class CategoriesController < ApplicationController
   def show
     respond_to do |format|
       format.html
-      format.json { render json: @category.as_json(include: :runners) }
+      format.json { render json: @category }
     end
   end
 
