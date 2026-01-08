@@ -34,4 +34,7 @@ const count = ref(0)
 .range-separator {
     font-weight: 600;
 }
+.half-width-table {
+    width: 30%;
+}
 </style>

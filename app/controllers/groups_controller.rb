@@ -16,6 +16,12 @@ class GroupsController < ApplicationController
 
   # GET /groups/1 or /groups/1.json
   def show
+    category_name = Category.find_by(id: @group.clasa)&.category_name
+
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json: @group.as_json(include: :competition).merge("category_name" => category_name) }
+    end
   end
 
   # GET /groups/new

@@ -121,6 +121,7 @@ class ResultsController < ApplicationController
           results.*,
           CONCAT(runners.runner_name, ' ', runners.surname) AS full_name,
           runners.id AS runner_id,
+          runners.yob AS yob,
           clubs.club_name AS club_name,
           clubs.id AS club_id,
           categories.category_name AS result_category_name,
