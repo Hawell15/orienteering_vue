@@ -15,6 +15,10 @@ class ClubsController < ApplicationController
 
   # GET /clubs/1 or /clubs/1.json
   def show
+    respond_to do |format|
+      format.html
+      format.json { render json: @club }
+    end
   end
 
   # GET /clubs/new
