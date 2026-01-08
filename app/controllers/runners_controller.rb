@@ -19,6 +19,13 @@ class RunnersController < ApplicationController
 
   # GET /runners/1 or /runners/1.json
   def show
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json:
+        @runner.as_json(
+          include: [ category: {}, club: {}, best_category: {} ]
+        ) }
+    end
   end
 
   # GET /runners/new
