@@ -6,6 +6,7 @@
         <p><strong>Puncte: </strong>{{category.points}}</p>
         <p><strong>Validitate: </strong>{{category.validaty_period}} ani</p>
         <p><strong>Numarul de sportivi: </strong><a :href="`/runners?category=${category.id}`">{{runners.length}}</a></p>
+        <p><strong>Numarul de rezultate: </strong><a :href="`/results?category=${category.id}`">{{results.length}}</a></p>
     </div>
     <p class="d-inline-flex gap-1">
         <a class="btn btn-primary" data-bs-toggle="collapse" href="#runnersTable" role="button" aria-expanded="false" aria-controls="runnersTable">
