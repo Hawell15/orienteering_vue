@@ -132,7 +132,6 @@
         <button class="btn btn-sm btn-success" @click="editCategory(category)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Sterge</button>
     </p>
-    <CategoryModal ref="modal" :category="modalCategory" :isNew="false" @save="saveCategory" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'

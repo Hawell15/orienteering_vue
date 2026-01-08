@@ -23,6 +23,22 @@ class ResultsController < ApplicationController
 
   # GET /results/1 or /results/1.json
   def show
+    respond_to do |format|
+      format.html
+      format.json { render json:
+        @result.as_json(
+          include: {
+            category: {},
+            membership: {
+              include: [ runner: {}, club: {} ]
+            },
+            group: {
+              include: [ :competition ]
+            }
+          }
+        )
+      }
+    end
   end
 
   # GET /results/new
