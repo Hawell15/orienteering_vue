@@ -12,6 +12,8 @@
     </div>
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
     <hr>
+    <button class="btn btn-info mb-2" @click="createNew">Adauga Club</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -44,24 +46,32 @@
                     </a>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-success" @click="editElement(element)">
+                    <button class="btn btn-sm btn-success" @click="editClub(element)">
                         Editează
                     </button>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">
+                    <button class="btn btn-sm btn-danger" @click="deleteClub(element.id)">
                         Șterge
                     </button>
                 </td>
             </tr>
         </tbody>
     </table>
+    <ClubModal ref="modal" :club="modalClub" :isNew="isNew" @save="saveClub" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import ClubModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+
 
 const data = ref([])
+const modalClub = ref({})
+const modal = ref(null)
+const isNew = ref(false)
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",
@@ -161,5 +171,62 @@ function orderTable(sortKey) {
 function resetFilters() {
     Object.assign(filters, DEFAULT_FILTERS)
     getData();
+}
+
+function editClub(club) {
+    isNew.value = false
+    modalClub.value = { ...club }
+    modal.value.show()
+}
+
+function saveClub(clubData, done) {
+    isNew.value ? createClub(clubData, done) : updateClub(clubData, done)
+}
+
+function updateClub(clubData, done) {
+    axios.patch(`/clubs/${clubData.id}.json`, { club: clubData }).then(res => {
+        const index = data.value.findIndex(c => c.id === res.data.id)
+        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
+
+        done()
+    })
+}
+
+function createClub(clubData, done) {
+    axios.post('/clubs.json', { club: clubData }).then(res => {
+        const newClub =  { ...res.data, ...clubData }
+        data.value.unshift(newClub)
+    })
+    done()
+}
+
+function createNew() {
+    isNew.value = true
+    resetNewClub()
+    modal.value.show()
+}
+
+function cancelCreate() {
+    resetNewClub();
+}
+
+function resetNewClub() {
+    modalClub.value = {
+        club_name: '',
+        territory: '',
+        representative: '',
+        email: '',
+        phone: '',
+        alternative_club_name: '',
+        runners_count: 0
+    }
+}
+
+function deleteClub(id) {
+    if (confirm('Esti sigur ca vrei sa stergi aceast club?')) {
+        axios.delete(`/clubs/${id}`).then(() => {
+            data.value = data.value.filter(club => club.id !== id)
+        })
+    }
 }
 </script>
