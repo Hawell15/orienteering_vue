@@ -6,7 +6,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import Navbar from '../components/Navbar/Navbar.vue'
+import Navbar from '../components/Index/Navbar.vue'
 
 const count = ref(0)
 </script>

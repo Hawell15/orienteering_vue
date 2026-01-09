@@ -12,7 +12,7 @@ class CompetitionsController < ApplicationController
   def index
     respond_to do |format|
       format.html # renders index.html.erb
-      format.json { render json: apply_scopes(Competition) }
+      format.json { render json: apply_scopes(Competition).limit(params[:limit]) }
     end
   end
 
