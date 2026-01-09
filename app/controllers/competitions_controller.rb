@@ -18,6 +18,10 @@ class CompetitionsController < ApplicationController
 
   # GET /competitions/1 or /competitions/1.json
   def show
+    respond_to do |format|
+      format.html
+      format.json { render json: @competition }
+    end
   end
 
   # GET /competitions/new
