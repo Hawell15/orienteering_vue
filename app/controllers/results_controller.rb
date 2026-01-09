@@ -131,7 +131,9 @@ class ResultsController < ApplicationController
           competitions.competition_name AS competition_name,
           competitions.id AS competition_id,
           groups.group_name AS group_name,
-          groups.id AS group_id
+          groups.id AS group_id,
+          groups.rang AS group_rang,
+          groups.clasa AS group_clasa
         SQL
     end
 end
