@@ -1,10 +1,13 @@
 <template>
   <div class="vue-app">
+    <Navbar></Navbar>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import Navbar from '../components/Navbar/Navbar.vue'
+
 const count = ref(0)
 </script>
 <style>
