@@ -26,7 +26,7 @@
         </div>
     </div>
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-    <hr>
+<hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
