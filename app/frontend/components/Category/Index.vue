@@ -36,6 +36,8 @@
     </div>
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
     <hr>
+    <button class="btn btn-info mb-2" @click="createNew">Adauga Categorie</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -66,24 +68,31 @@
                     </a>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-success" @click="editElement(element)">
+                    <button class="btn btn-sm btn-success" @click="editCategory(element)">
                         Editează
                     </button>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">
+                    <button class="btn btn-sm btn-danger" @click="deleteCategory(element.id)">
                         Șterge
                     </button>
                 </td>
             </tr>
         </tbody>
     </table>
+    <CategoryModal ref="modal" :category="modalCategory" :isNew="isNew" @save="saveCategory" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import CategoryModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const data = ref([])
+const modalCategory = ref({})
+const modal = ref(null)
+const isNew = ref(false)
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",
@@ -191,5 +200,60 @@ function orderTable(sortKey) {
 function resetFilters() {
     Object.assign(filters, DEFAULT_FILTERS)
     getData();
+}
+
+function editCategory(category) {
+    isNew.value = false
+    modalCategory.value = { ...category }
+    modal.value.show()
+}
+
+function saveCategory(categoryData, done) {
+    isNew.value ? createCategory(categoryData, done) : updateCategory(categoryData, done)
+}
+
+function updateCategory(categoryData, done) {
+    axios.patch(`/categories/${categoryData.id}.json`, { category: categoryData }).then(res => {
+        const index = data.value.findIndex(c => c.id === res.data.id)
+        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
+        done()
+    })
+}
+
+function createCategory(categoryData, done) {
+    axios.post('/categories.json', { category: categoryData }).then(res => {
+        const newCategory = { ...res.data, ...categoryData }
+        data.value.unshift(newCategory)
+    })
+    done()
+}
+
+function createNew() {
+    isNew.value = true
+    resetNewCategory()
+    modal.value.show()
+}
+
+function cancelCreate() {
+    resetNewCategory();
+}
+
+function resetNewCategory() {
+    modalCategory.value = {
+        category_name: '',
+        full_name: '',
+        points: 0,
+        validaty_period: 2,
+        runners_count: 0,
+        results_count: 0
+    }
+}
+
+function deleteCategory(id) {
+    if (confirm('Esti sigur ca vrei sa stergi această categorue?')) {
+        axios.delete(`/categories/${id}`).then(() => {
+            data.value = data.value.filter(category => category.id !== id)
+        })
+    }
 }
 </script>

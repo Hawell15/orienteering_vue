@@ -132,13 +132,22 @@
     <p class="lead">
         <button class="btn btn-sm btn-success" @click="editCategory(category)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Sterge</button>
+        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
+
     </p>
+     <CategoryModal ref="modal" :category="modalCategory" :isNew="false" @save="saveCategory" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import CategoryModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[  name="csrf-token"]').getAttribute('content')
+
 
 const category = ref({})
+const modalCategory = ref({})
+const modal = ref(null)
 const runners = ref([])
 const results = ref([])
 const categoryId = ref("")
@@ -204,5 +213,37 @@ function orderTable(sortKey, filters) {
 
     filters.value["sorting[direction]"] = (isCurrentSort && currentDir === "asc") ? "desc" : "asc";
     filters.value["sorting[sort_by]"] = sortKey;
+}
+
+function editCategory(category) {
+    modalCategory.value = { ...category }
+    modal.value.show()
+}
+
+function saveCategory(caetgoryData, done) {
+    axios.patch(`/categories/${caetgoryData.id}.json`, { category: caetgoryData }).then(res => {
+        category.value = res.data
+        done()
+    })
+}
+
+function deleteCategory(id) {
+    if (confirm('Esti sigur ca vrei sa stergi această categorie?')) {
+        axios.delete(`/categories/${id}`).then(() => {
+            if (document.referrer) {
+                window.location = document.referrer;
+            } else {
+                window.location = "/categories";
+            }
+        })
+    }
+}
+
+function goBack() {
+    if (document.referrer) {
+        window.location = document.referrer;
+    } else {
+        window.location = "/categories";
+    }
 }
 </script>

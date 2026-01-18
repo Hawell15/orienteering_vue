@@ -46,11 +46,8 @@ class ClubsController < ApplicationController
   def update
     respond_to do |format|
       if @club.update(club_params)
-
-        format.html { redirect_to @club, notice: "Club was successfully updated.", status: :see_other }
         format.json { render json: @club, status: :ok }
       else
-        format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @club.errors, status: :unprocessable_entity }
       end
     end
