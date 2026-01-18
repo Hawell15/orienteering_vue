@@ -1,6 +1,8 @@
 class Competition < ApplicationRecord
   has_many :groups, dependent: :destroy
 
+  DISTANCE_TYPES = [ "Sprint", "Medie", "Lungă", "Alegere", "Knock-out Sprint", "Alta" ].freeze
+
   scope :search, ->(val) {
    where("LOWER(competition_name) LIKE :search OR LOWER(country) LIKE :search OR LOWER(location) LIKE :search", search: "%#{val.downcase}%")
  }

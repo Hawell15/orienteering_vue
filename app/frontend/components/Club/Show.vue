@@ -122,7 +122,7 @@
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-danger" @click="deleteClub(element.id)">
+                            <button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">
                                 Șterge
                             </button>
                         </td>

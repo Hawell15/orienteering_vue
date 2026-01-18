@@ -39,6 +39,8 @@
     </div>
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
     <hr>
+    <button class="btn btn-info mb-2" @click="createNew">Adauga Competiție</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -71,25 +73,32 @@
                     </a>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-success" @click="editElement(element)">
+                    <button class="btn btn-sm btn-success" @click="editCompetition(element)">
                         Editează
                     </button>
                 </td>
                 <td>
-                    <button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">
+                    <button class="btn btn-sm btn-danger" @click="deleteCompetition(element.id)">
                         Șterge
                     </button>
                 </td>
             </tr>
         </tbody>
     </table>
+    <CompetitionModal ref="modal" :competition="modalCompetition" :isNew="isNew" @save="saveCompetition" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import CompetitionModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const data = ref([])
 const filterData = ref({})
+const modalCompetition = ref({})
+const modal = ref(null)
+const isNew = ref(false)
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "date",
@@ -202,13 +211,69 @@ function resetFilters() {
     Object.assign(filters, DEFAULT_FILTERS)
     getData();
 }
+
+function editCompetition(competition) {
+    isNew.value = false
+    modalCompetition.value = { ...competition }
+    modal.value.show()
+}
+
+function saveCompetition(competitionData, done) {
+    isNew.value ? createCompetition(competitionData, done) : updateCompetition(competitionData, done)
+}
+
+function updateCompetition(competitionData, done) {
+    axios.patch(`/competitions/${competitionData.id}.json`, { competition: competitionData }).then(res => {
+        const index = data.value.findIndex(c => c.id === res.data.id)
+        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
+        done()
+    })
+}
+
+function createCompetition(competitionData, done) {
+    axios.post('/competitions.json', { competition: competitionData }).then(res => {
+        const newCompetition = { ...res.data, ...competitionData }
+        data.value.unshift(newCompetition)
+    })
+    done()
+}
+
+function createNew() {
+    isNew.value = true
+    resetNewCompetition()
+    modal.value.show()
+}
+
+function cancelCreate() {
+    resetNewCompetition();
+}
+
+function resetNewCompetition() {
+    modalCompetition.value = {
+        competition_name: '',
+        date: '',
+        location: '',
+        country: '',
+        distance_type: '',
+        wre_id: null,
+        ecn: false
+    }
+}
+
+function deleteCompetition(id) {
+    if (confirm('Esti sigur ca vrei sa stergi această competiție?')) {
+        axios.delete(`/competitions/${id}`).then(() => {
+            data.value = data.value.filter(competition => competition.id !== id)
+        })
+    }
+}
 </script>
 <style scoped>
-    .bg-true {
-      background-color: #d4edda;
-    }
+.bg-true {
+    background-color: #d4edda;
+}
 
-    .bg-false {
-      background-color: #f8d7da;
-    }
+.bg-false {
+    background-color: #f8d7da;
+}
 </style>

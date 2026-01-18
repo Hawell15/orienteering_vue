@@ -89,13 +89,24 @@
         <div>Rang: {{activeGroup?.group_rang }} </div>
         <div>Clasa: {{formatGroupClasa(activeGroup?.group_clasa)}} </div>
     </div>
+    <p class="lead">
+        <button class="btn btn-sm btn-success" @click="editCompetition(competition)">Editeaza</button>
+        <button class="btn btn-danger btn-sm" @click="deleteCompetition(competition.id)">Sterge</button>
+        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
+    </p>
+    <CompetitionModal ref="modal" :competition="modalCompetition" :isNew="false" @save="saveCompetition" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import CompetitionModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
 
 const competition = ref({})
 const competitionId = ref("")
+const modalCompetition = ref({})
+const modal = ref(null)
 
 const groups = ref([])
 const activeGroup = ref(null)
@@ -185,6 +196,38 @@ function formatGroupClasa(clasa) {
         "10": "f/c"
     }
     return map[clasa]
+}
+
+function editCompetition(competition) {
+    modalCompetition.value = { ...competition }
+    modal.value.show()
+}
+
+function saveCompetition(competitionData, done) {
+    axios.patch(`/competitions/${competitionData.id}.json`, { competition: competitionData }).then(res => {
+        competition.value = res.data
+        done()
+    })
+}
+
+function deleteCompetition(id) {
+    if (confirm('Esti sigur ca vrei sa stergi această competiție?')) {
+        axios.delete(`/competitions/${id}`).then(() => {
+            if (document.referrer) {
+                window.location = document.referrer;
+            } else {
+                window.location = "/competitions";
+            }
+        })
+    }
+}
+
+function goBack() {
+    if (document.referrer) {
+        window.location = document.referrer;
+    } else {
+        window.location = "/competitions";
+    }
 }
 </script>
 <style scoped>

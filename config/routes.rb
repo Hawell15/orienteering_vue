@@ -1,16 +1,24 @@
 Rails.application.routes.draw do
-  get "competitions/filters"
-  get "memberships/filters"
-  get "groups/filters"
-  get "results/filters"
-  get "results/group_filters"
-  get "runners/filters"
+  resources :memberships do
+    get :filters, on: :collection
+  end
 
-  resources :memberships
-  resources :results
-  resources :groups
-  resources :competitions
-  resources :runners
+  resources :results do
+    get :filters, on: :collection
+    get :group_filters, on: :collection
+  end
+
+  resources :groups do
+    get :filters, on: :collection
+  end
+  resources :competitions do
+    get :distance_types, on: :collection
+    get :filters, on: :collection
+  end
+  resources :runners do
+     get :filters, on: :collection
+  end
+
   resources :clubs
   resources :categories
 
