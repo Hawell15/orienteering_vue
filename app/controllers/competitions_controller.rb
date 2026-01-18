@@ -39,10 +39,8 @@ class CompetitionsController < ApplicationController
 
     respond_to do |format|
       if @competition.save
-        format.html { redirect_to @competition, notice: "Competition was successfully created." }
-        format.json { render :show, status: :created, location: @competition }
+        format.json { render json: @competition, status: :ok }
       else
-        format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @competition.errors, status: :unprocessable_entity }
       end
     end
@@ -52,10 +50,8 @@ class CompetitionsController < ApplicationController
   def update
     respond_to do |format|
       if @competition.update(competition_params)
-        format.html { redirect_to @competition, notice: "Competition was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @competition }
+        format.json { render json: @competition, status: :ok }
       else
-        format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @competition.errors, status: :unprocessable_entity }
       end
     end
@@ -79,6 +75,10 @@ class CompetitionsController < ApplicationController
         countries:      unique_values.map(&:country).compact.sort.uniq,
         distance_types: unique_values.map(&:distance_type).compact.sort.uniq
       }
+  end
+
+  def distance_types
+   render json:  Competition::DISTANCE_TYPES
   end
 
   private
