@@ -122,7 +122,7 @@
                             </button>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">
+                            <button class="btn btn-sm btn-danger" @click="deleteClub(element.id)">
                                 Șterge
                             </button>
                         </td>
@@ -132,15 +132,22 @@
         </div>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editCategory(category)">Editeaza</button>
-        <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Sterge</button>
+        <button class="btn btn-sm btn-success" @click="editClub(club)">Editeaza</button>
+        <button class="btn btn-danger btn-sm" @click="deleteClub(club.id)">Sterge</button>
+        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
+    <ClubModal ref="modal" :club="modalClub" :isNew="false" @save="saveClub" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import ClubModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[  name="csrf-token"]').getAttribute('content')
 
 const club = ref({})
+const modalClub = ref({})
+const modal = ref(null)
 const runners = ref([])
 const results = ref([])
 const clubId = ref("")
@@ -206,5 +213,37 @@ function orderTable(sortKey, filters) {
 
     filters.value["sorting[direction]"] = (isCurrentSort && currentDir === "asc") ? "desc" : "asc";
     filters.value["sorting[sort_by]"] = sortKey;
+}
+
+function editClub(club) {
+    modalClub.value = { ...club }
+    modal.value.show()
+}
+
+function saveClub(clubData, done) {
+    axios.patch(`/clubs/${clubData.id}.json`, { club: clubData }).then(res => {
+        club.value = res.data
+        done()
+    })
+}
+
+function deleteClub(id) {
+    if (confirm('Esti sigur ca vrei sa stergi aceast club?')) {
+        axios.delete(`/clubs/${id}`).then(() => {
+            if (document.referrer) {
+                window.location = document.referrer;
+            } else {
+                window.location = "/clubs";
+            }
+        })
+    }
+}
+
+function goBack() {
+    if (document.referrer) {
+        window.location = document.referrer;
+    } else {
+        window.location = "/clubs";
+    }
 }
 </script>
