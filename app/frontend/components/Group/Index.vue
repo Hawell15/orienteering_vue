@@ -3,10 +3,17 @@
     <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
     <hr>
     <div class="filter-item">
-        <label for="club" class="label-filter">Competitia</label>
+        <label for="competition" class="label-filter">Competitia</label>
         <select id="competition" v-model="filters.competition" class="custom-select">
             <option value="all">Toate</option>
             <option v-for="competition in filterData.competitions" :key="competition.id" :value="competition.id">{{ competition.competition_display}} </option>
+        </select>
+    </div>
+    <div class="filter-item">
+        <label for="clasa" class="label-filter">Clasa</label>
+        <select id="clasa" v-model="filters.clasa" class="custom-select">
+            <option value="all">Toate</option>
+            <option v-for="clasa in filterData.clase" :key="clasa.id" :value="clasa.id">{{ clasa.category_name}} </option>
         </select>
     </div>
     <div class="filter-item">
@@ -26,7 +33,9 @@
         </div>
     </div>
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-<hr>
+    <hr>
+    <button class="btn btn-info mb-2" @click="createNew">Adauga Grupă</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -52,18 +61,25 @@
                 <td>{{element.ecn_coeficient}}</td>
                 <td><a :href="`results?group_id=${element.id}`">{{element.results_count}}</a></td>
                 <td><a class="btn btn-sm btn-warning" :href="`groups/${element.id}`"> Arată </a></td>
-                <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
-                <td><button class="btn btn-sm btn-danger" @click="deleteElement(element)">Șterge</button></td>
+                <td><button class="btn btn-sm btn-success" @click="editGroup(element)">Editează</button></td>
+                <td><button class="btn btn-sm btn-danger" @click="deleteGroup(element.id)">Șterge</button></td>
             </tr>
         </tbody>
     </table>
+    <GroupModal ref="modal" :group="modalGroup" :isNew="isNew" @save="saveGroup" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import GroupModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const data = ref([])
 const filterData = ref({})
+const modalGroup = ref({})
+const modal = ref(null)
+const isNew = ref(false)
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",
@@ -72,7 +88,8 @@ const DEFAULT_FILTERS = {
     "results_count[to]": 9999,
     "date[from]": "2000-01-01",
     "date[to]": "2100-01-01",
-    "competition": "all"
+    "competition": "all",
+    "clasa": "all"
 }
 
 const filters = reactive({ ...DEFAULT_FILTERS });
@@ -173,5 +190,54 @@ function orderTable(sortKey) {
 function resetFilters() {
     Object.assign(filters, DEFAULT_FILTERS)
     getData();
+}
+
+function editGroup(group) {
+    isNew.value = false
+    modalGroup.value = { ...group }
+    modal.value.show()
+}
+
+function saveGroup(groupData, done) {
+    isNew.value ? createGroup(groupData, done) : updateGroup(groupData, done)
+}
+
+function updateGroup(groupData, done) {
+    axios.patch(`/groups/${groupData.id}.json`, { group: groupData }).then(res => {
+        const index = data.value.findIndex(c => c.id === res.data.id)
+        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
+        done()
+    })
+}
+
+function createGroup(groupData, done) {
+    axios.post('/groups.json', { group: groupData }).then(res => {
+        console.log(groupData);
+        const newGroup = { ...res.data }
+        data.value.unshift(newGroup)
+    })
+    done()
+}
+
+function createNew() {
+    isNew.value = true
+    resetNewGroup()
+    modal.value.show()
+}
+
+function cancelCreate() {
+    resetNewGroup();
+}
+
+function resetNewGroup() {
+    modalGroup.value = {}
+}
+
+function deleteGroup(id) {
+    if (confirm('Esti sigur ca vrei sa stergi această grupă?')) {
+        axios.delete(`/groups/${id}`).then(() => {
+            data.value = data.value.filter(group => group.id !== id)
+        })
+    }
 }
 </script>

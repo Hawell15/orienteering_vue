@@ -1,17 +1,15 @@
 import { createApp } from 'vue'
 import GroupsIndex from '../components/Group/Index.vue'
 import GroupsShow from '../components/Group/Show.vue'
+import GroupsNew from '../components/Group/New.vue'
+
+function mountIfExists(id, component) {
+  const el = document.getElementById(id)
+  if (el) createApp(component).mount(el)
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  const el_index = document.getElementById('groups_index')
-  if (el_index) {
-    createApp(GroupsIndex).mount(el_index)
-  }
-})
-
-document.addEventListener('DOMContentLoaded', () => {
-  const el_show = document.getElementById('groups_show')
-  if (el_show) {
-    createApp(GroupsShow).mount(el_show)
-  }
+  mountIfExists('groups_index', GroupsIndex)
+  mountIfExists('groups_show', GroupsShow)
+  mountIfExists('groups_new', GroupsNew)
 })

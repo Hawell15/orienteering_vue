@@ -61,7 +61,7 @@ function show() {
 }
 
 function hide() {
-    modalInstance?.hide()
+    modalInstance.hide()
 }
 
 function handleSave() {
