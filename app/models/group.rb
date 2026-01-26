@@ -22,6 +22,13 @@ class Group < ApplicationRecord
     end
   }
 
+  scope :clasa, ->(val) {
+    case val.to_s
+    when "all" then all
+    else where(clasa: val)
+    end
+  }
+
   scope :results_count, ->(from, to) {
     having("COUNT(results.id) BETWEEN ? AND ?", from.to_i, to.to_i)
   }

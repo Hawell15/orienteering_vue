@@ -9,7 +9,13 @@ import CompetitionModal from './Modal.vue'
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const modalCompetition = ref({
-    competition_name: ''
+    competition_name: '',
+    date: '',
+    location: '',
+    country: '',
+    distance_type: '',
+    wre_id: null,
+    ecn: false
 })
 const modal = ref(null)
 

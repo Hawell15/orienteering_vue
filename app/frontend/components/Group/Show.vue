@@ -5,6 +5,7 @@
         <p><strong>Competiția: </strong>{{group.competition?.competition_name}}</p>
         <hr class="my-4">
         <p><strong>Tipul Distanței: </strong>{{group.competition?.distance_type}}</p>
+        <p v-if="group.competition?.ecn"><strong>Coeficient ECN: </strong>{{group.ecn_coeficient}}</p>
         <hr class="my-4">
         <table class="table table-striped table-bordered table-hover">
             <thead class="table-primary">
@@ -53,36 +54,45 @@
             </tbody>
         </table>
         <div class="half-width-table">
-                <table class="table table-striped table-bordered table-hover">
-                    <thead class="table-warning">
-                        <tr>
-                            <th scope="col"> Categoria
-                            </th>
-                            <th> Procente
-                            </th>
-                            <th> Timpul
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                            </td>
-                            <td>
-                            </td>
-                            <td>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div>Rang: {{group.rang }} </div>
-            <div>Clasa: {{group.category_name}} </div>
+            <table class="table table-striped table-bordered table-hover">
+                <thead class="table-warning">
+                    <tr>
+                        <th scope="col"> Categoria
+                        </th>
+                        <th> Procente
+                        </th>
+                        <th> Timpul
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div>Rang: {{group.rang }} </div>
+        <div>Clasa: {{group.category_name}} </div>
     </div>
+    <p class="lead">
+        <button class="btn btn-sm btn-success" @click="editGroup(group)">Editeaza</button>
+        <button class="btn btn-danger btn-sm" @click="deleteGroup(group.id)">Sterge</button>
+        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
+    </p>
+    <GroupModal ref="modal" :group="modalGroup" :isNew="false" @save="saveGroup" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import GroupModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
 
 const group = ref({})
 const groupId = ref("")
@@ -91,6 +101,9 @@ const resultSorting = ref({
     "sorting[sort_by]": "place",
     "sorting[direction]": "asc"
 })
+
+const modalGroup = ref({})
+const modal = ref(null)
 
 onMounted(() => {
     groupId.value = window.location.pathname.split('/').pop();
@@ -137,6 +150,38 @@ function orderTable(sortKey, filters) {
 function formatStatus(status) {
     const map = { confirmed: "Îndeplinit", pending: "În așteptare", unconfirmed: "Neconfirmat" }
     return map[status]
+}
+
+function editGroup(group) {
+    modalGroup.value = { ...group }
+    modal.value.show()
+}
+
+function saveGroup(groupData, done) {
+    axios.patch(`/groups/${groupData.id}.json`, { group: groupData }).then(res => {
+        getData();
+        done()
+    })
+}
+
+function deleteGroup(id) {
+    if (confirm('Esti sigur ca vrei sa stergi această grupă?')) {
+        axios.delete(`/groups/${id}`).then(() => {
+            if (document.referrer) {
+                window.location = document.referrer;
+            } else {
+                window.location = "/groups";
+            }
+        })
+    }
+}
+
+function goBack() {
+    if (document.referrer) {
+        window.location = document.referrer;
+    } else {
+        window.location = "/groups";
+    }
 }
 </script>
 <style scoped>

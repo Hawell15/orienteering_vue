@@ -3,6 +3,7 @@ class GroupsController < ApplicationController
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :competition
+  has_scope :clasa
   has_scope :results_count, using: %i[from to], type: :hash
   has_scope :date, using: %i[from to], type: :hash
 
@@ -39,10 +40,8 @@ class GroupsController < ApplicationController
 
     respond_to do |format|
       if @group.save
-        format.html { redirect_to @group, notice: "Group was successfully created." }
-        format.json { render :show, status: :created, location: @group }
+        format.json { render json: index_base_query.find(@group.id), status: :ok }
       else
-        format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @group.errors, status: :unprocessable_entity }
       end
     end
@@ -52,10 +51,8 @@ class GroupsController < ApplicationController
   def update
     respond_to do |format|
       if @group.update(group_params)
-        format.html { redirect_to @group, notice: "Group was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @group }
+        format.json { render json: index_base_query.find(@group.id), status: :ok }
       else
-        format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @group.errors, status: :unprocessable_entity }
       end
     end
@@ -74,7 +71,8 @@ class GroupsController < ApplicationController
    def filters
     render json:
       {
-        competitions: Competition.select(:id, "CONCAT(competition_name, \'(\', TO_CHAR(date, 'DD-MM-YYYY'), \')\') AS competition_display").order(date: :desc, competition_name: :asc).as_json
+        competitions: Competition.select(:id, :ecn, "CONCAT(competition_name, \'(\', TO_CHAR(date, 'DD-MM-YYYY'), \')\') AS competition_display").order(date: :desc, competition_name: :asc).as_json,
+        clase: Category.where(id: [ 2, 3, 4, 5, 7, 10 ]).select(:id, :category_name).as_json
       }
   end
 
