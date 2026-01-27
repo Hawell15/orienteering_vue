@@ -1,22 +1,16 @@
 import { createApp } from 'vue'
-import ClubsIndex from '../components/Club/Index.vue'
-import ClubsShow from '../components/Club/Show.vue'
-import ClubsNew from '../components/Club/New.vue'
+import Index from '../components/Club/Index.vue'
+import Show from '../components/Club/Show.vue'
+import New from '../components/Club/New.vue'
 
+
+function mountIfExists(id, component) {
+  const el = document.getElementById("clubs_" + id)
+  if (el) createApp(component).mount(el)
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    const el_index = document.getElementById('clubs_index')
-    if (el_index) {
-        createApp(ClubsIndex).mount(el_index)
-    }
-
-    const el_show = document.getElementById('clubs_show')
-    if (el_show) {
-        createApp(ClubsShow).mount(el_show)
-    }
-
-    const el_new = document.getElementById('clubs_new')
-    if (el_new) {
-        createApp(ClubsNew).mount(el_new)
-    }
+  mountIfExists('index', Index)
+  mountIfExists('show', Show)
+  mountIfExists('new', New)
 })

@@ -99,7 +99,7 @@ const isSelectedCompetitionEcn = computed(() => {
     const comp = filterData.value.competitions.find(
         (c) => c.id === localGroup.value.competition_id
     )
-    return comp ? .ecn === true
+    return comp?.ecn === true
 })
 
 defineExpose({ show, hide })
