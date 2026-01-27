@@ -1,17 +1,16 @@
 import { createApp } from 'vue'
-import MembershipsIndex from '../components/Membership/Index.vue'
-import MembershipsShow from '../components/Membership/Show.vue'
+import Index from '../components/Membership/Index.vue'
+import Show from '../components/Membership/Show.vue'
+// import New from '../components/Membership/New.vue'
+
+function mountIfExists(id, component) {
+  const el = document.getElementById("memberships_" + id)
+  if (el) createApp(component).mount(el)
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  const el_index = document.getElementById('memberships_index')
-  if (el_index) {
-    createApp(MembershipsIndex).mount(el_index)
-  }
+  mountIfExists('index', Index)
+  mountIfExists('show', Show)
+  mountIfExists('new', New)
 })
 
-document.addEventListener('DOMContentLoaded', () => {
-  const el_show = document.getElementById('memberships_show')
-  if (el_show) {
-    createApp(MembershipsShow).mount(el_show)
-  }
-})

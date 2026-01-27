@@ -1,18 +1,15 @@
 import { createApp } from 'vue'
-import ResultsIndex from '../components/Result/Index.vue'
-import ResultsShow from '../components/Result/Show.vue'
+import Index from '../components/Result/Index.vue'
+import Show from '../components/Result/Show.vue'
+// import New from '../components/Result/New.vue'
+
+function mountIfExists(id, component) {
+  const el = document.getElementById("results_" + id)
+  if (el) createApp(component).mount(el)
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  const el_index = document.getElementById('results_index')
-  if (el_index) {
-    createApp(ResultsIndex).mount(el_index)
-  }
+  mountIfExists('index', Index)
+  mountIfExists('show', Show)
+  mountIfExists('new', New)
 })
-
-document.addEventListener('DOMContentLoaded', () => {
-  const el_show = document.getElementById('results_show')
-  if (el_show) {
-    createApp(ResultsShow).mount(el_show)
-  }
-})
-

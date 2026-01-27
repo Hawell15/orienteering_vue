@@ -1,22 +1,15 @@
 import { createApp } from 'vue'
-import CategoriesIndex from '../components/Category/Index.vue'
-import CategoriesShow from '../components/Category/Show.vue'
-import CategoriesNew from '../components/Category/New.vue'
+import Index from '../components/Category/Index.vue'
+import Show from '../components/Category/Show.vue'
+import New from '../components/Category/New.vue'
+
+function mountIfExists(id, component) {
+  const el = document.getElementById("categories_" + id)
+  if (el) createApp(component).mount(el)
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-  const el_index = document.getElementById('categories_index')
-  if (el_index) {
-    createApp(CategoriesIndex).mount(el_index)
-  }
-
-  const el_show = document.getElementById('categories_show')
-  if (el_show) {
-    createApp(CategoriesShow).mount(el_show)
-  }
-
-  const el_new = document.getElementById('categories_new')
-  if (el_new) {
-    createApp(CategoriesNew).mount(el_new)
-  }
+  mountIfExists('index', Index)
+  mountIfExists('show', Show)
+  mountIfExists('new', New)
 })
-
