@@ -11,5 +11,5 @@ function mountIfExists(id, component) {
 document.addEventListener('DOMContentLoaded', () => {
   mountIfExists('index', Index)
   mountIfExists('show', Show)
-  mountIfExists('new', New)
+  // mountIfExists('new', New)
 })
