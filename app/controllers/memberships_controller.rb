@@ -40,10 +40,8 @@ class MembershipsController < ApplicationController
 
     respond_to do |format|
       if @membership.save
-        format.html { redirect_to @membership, notice: "Membership was successfully created." }
-        format.json { render :show, status: :created, location: @membership }
+        format.json { render json: index_base_query.find(@membership.id), status: :ok }
       else
-        format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @membership.errors, status: :unprocessable_entity }
       end
     end
@@ -53,10 +51,8 @@ class MembershipsController < ApplicationController
   def update
     respond_to do |format|
       if @membership.update(membership_params)
-        format.html { redirect_to @membership, notice: "Membership was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @membership }
+        format.json { render json: index_base_query.find(@membership.id), status: :ok }
       else
-        format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @membership.errors, status: :unprocessable_entity }
       end
     end
