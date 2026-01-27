@@ -13,7 +13,7 @@
                             <input type="text" class="form-control" id="group_name" v-model="localGroup.group_name" />
                         </div>
                         <div class="mb-3">
-                            <label for="competition" class="form-label">Competition</label>
+                            <label for="competition" class="form-label">Competiția</label>
                             <select id="competition_id" v-model="localGroup.competition_id" class="form-control">
                                 <option v-for="competition in filterData.competitions" :key="competition.id" :value="competition.id">
                                     {{ competition.competition_display }}
