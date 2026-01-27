@@ -212,7 +212,6 @@ function updateGroup(groupData, done) {
 
 function createGroup(groupData, done) {
     axios.post('/groups.json', { group: groupData }).then(res => {
-        console.log(groupData);
         const newGroup = { ...res.data }
         data.value.unshift(newGroup)
     })

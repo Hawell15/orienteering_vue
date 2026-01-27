@@ -26,6 +26,8 @@
     </div>
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
     <hr>
+    <button class="btn btn-info mb-2" @click="createNew">Adauga Afilierea</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -43,18 +45,25 @@
                 <td><a :href="`runners/${element.runner_id}`">{{element.full_name}}</a></td>
                 <td><a :href="`results?membership_id=${element.id}`">{{element.results_count}}</a></td>
                 <td><a class="btn btn-sm btn-warning" :href="`memberships/${element.id}`"> Arată </a></td>
-                <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
-                <td><button class="btn btn-sm btn-danger" @click="deleteElement(element)">Șterge</button></td>
+                <td><button class="btn btn-sm btn-success" @click="editMembership(element)">Editează</button></td>
+                <td><button class="btn btn-sm btn-danger" @click="deleteMembership(element.id)">Șterge</button></td>
             </tr>
         </tbody>
     </table>
+    <MembershipModal ref="modal" :membership="modalMembership" :isNew="isNew" @save="saveMembership" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import MembershipModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const data = ref([])
 const filterData = ref({})
+const modalMembership = ref({})
+const modal = ref(null)
+const isNew = ref(false)
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",
@@ -160,5 +169,53 @@ async function getFiltersData() {
 function resetFilters() {
     Object.assign(filters, DEFAULT_FILTERS)
     getData();
+}
+
+function editMembership(membership) {
+    isNew.value = false
+    modalMembership.value = { ...membership }
+    modal.value.show()
+}
+
+function saveMembership(membershipData, done) {
+    isNew.value ? createMembership(membershipData, done) : updateMembership(membershipData, done)
+}
+
+function updateMembership(membershipData, done) {
+    axios.patch(`/memberships/${membershipData.id}.json`, { membership: membershipData }).then(res => {
+        const index = data.value.findIndex(c => c.id === res.data.id)
+        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
+        done()
+    })
+}
+
+function createMembership(membershipData, done) {
+    axios.post('/memberships.json', { membership: membershipData }).then(res => {
+        const newMembership = { ...res.data }
+        data.value.unshift(newMembership)
+    })
+    done()
+}
+
+function createNew() {
+    isNew.value = true
+    resetNewMembership()
+    modal.value.show()
+}
+
+function cancelCreate() {
+    resetNewMembership();
+}
+
+function resetNewMembership() {
+    modalMembership.value = {}
+}
+
+function deleteMembership(id) {
+    if (confirm('Esti sigur ca vrei sa stergi această afiliere?')) {
+        axios.delete(`/memberships/${id}`).then(() => {
+            data.value = data.value.filter(membership => membership.id !== id)
+        })
+    }
 }
 </script>
