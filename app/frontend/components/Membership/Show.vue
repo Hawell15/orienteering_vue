@@ -65,13 +65,19 @@
         </div>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editCategory(category)">Editeaza</button>
-        <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Sterge</button>
+        <button class="btn btn-sm btn-success" @click="editMembership(membership)">Editeaza</button>
+        <button class="btn btn-danger btn-sm" @click="deleteMembership(membership.id)">Sterge</button>
+        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
+    <MembershipModal ref="modal" :membership="modalMembership" :isNew="false" @save="saveMembership" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import MembershipModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
+
 const membership = ref({})
 const membershipId = ref("")
 const results = ref([])
@@ -79,6 +85,9 @@ const resultSorting = ref({
     "sorting[sort_by]": "date",
     "sorting[direction]": "desc"
 })
+
+const modalMembership = ref({})
+const modal = ref(null)
 
 onMounted(() => {
     membershipId.value = window.location.pathname.split('/').pop();
@@ -107,5 +116,37 @@ function formatResultTime(seconds) {
         String(m).padStart(2, '0') + ':' +
         String(s).padStart(2, '0')
     );
+}
+
+function editMembership(membership) {
+    modalMembership.value = { ...membership }
+    modal.value.show()
+}
+
+function saveMembership(membershipData, done) {
+    axios.patch(`/memberships/${membershipData.id}.json`, { membership: membershipData }).then(res => {
+        getData();
+        done()
+    })
+}
+
+function deleteMembership(id) {
+    if (confirm('Esti sigur ca vrei sa stergi această afiliere?')) {
+        axios.delete(`/memberships/${id}`).then(() => {
+            if (document.referrer) {
+                window.location = document.referrer;
+            } else {
+                window.location = "/memberships";
+            }
+        })
+    }
+}
+
+function goBack() {
+    if (document.referrer) {
+        window.location = document.referrer;
+    } else {
+        window.location = "/memberships";
+    }
 }
 </script>
