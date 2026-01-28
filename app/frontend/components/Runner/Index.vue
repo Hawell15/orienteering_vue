@@ -196,15 +196,13 @@ onMounted(() => {
     getFiltersData()
     const urlParams = new URLSearchParams(window.location.search);
 
-    return getData();
-    if (urlParams.toString() === '')
-
-        urlParams.forEach((value, key) => {
-            if (key in filters) {
-                const isNumber = typeof DEFAULT_FILTERS[key] === 'number';
-                filters[key] = isNumber ? Number(value) : value;
-            }
-        });
+    urlParams.forEach((value, key) => {
+        if (key in filters) {
+            const isNumber = typeof DEFAULT_FILTERS[key] === 'number';
+            filters[key] = isNumber ? Number(value) : value;
+        }
+    });
+    getData();
 })
 
 function orderTable(sortKey) {
