@@ -43,10 +43,8 @@ class RunnersController < ApplicationController
 
     respond_to do |format|
       if @runner.save
-        format.html { redirect_to @runner, notice: "Runner was successfully created." }
-        format.json { render :show, status: :created, location: @runner }
+        format.json { render json: index_base_query.find(@runner.id), status: :ok }
       else
-        format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @runner.errors, status: :unprocessable_entity }
       end
     end
@@ -56,10 +54,8 @@ class RunnersController < ApplicationController
   def update
     respond_to do |format|
       if @runner.update(runner_params)
-        format.html { redirect_to @runner, notice: "Runner was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @runner }
+        format.json { render json: index_base_query.find(@runner.id), status: :ok }
       else
-        format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @runner.errors, status: :unprocessable_entity }
       end
     end
