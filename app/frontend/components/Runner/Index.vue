@@ -51,6 +51,8 @@
     </div>
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
     <hr>
+    <button class="btn btn-info mb-2" @click="createNew">Adauga Sportiv</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -85,28 +87,20 @@
                 <td>
                     <p v-if="element.forest_wre_place">{{element.forest_wre_place}}/{{element.forest_wre_rang}}</p>
                 </td>
-                <td>
-                    <a class="btn btn-sm btn-warning" :href="`runners/${element.id}`">
-                        Arată
-                    </a>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-success" @click="editElement(element)">
-                        Editează
-                    </button>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">
-                        Șterge
-                    </button>
-                </td>
+                <td><a class="btn btn-sm btn-warning" :href="`runners/${element.id}`">Arată</a></td>
+                <td><button class="btn btn-sm btn-success" @click="editRunner(element)">Editează</button></td>
+                <td><button class="btn btn-sm btn-danger" @click="deleteRunner(element.id)">Șterge</button></td>
             </tr>
         </tbody>
     </table>
+    <RunnerModal ref="modal" :runner="modalRunner" :isNew="isNew" @save="saveRunner" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import RunnerModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const data = ref([])
 const filterData = ref({})
@@ -130,6 +124,10 @@ const DEFAULT_FILTERS = {
 const filters = reactive({ ...DEFAULT_FILTERS });
 
 let debounceTimeout = null;
+
+const modalRunner = ref({})
+const modal = ref(null)
+const isNew = ref(false)
 
 watch(
     filters,
@@ -225,5 +223,53 @@ async function getFiltersData() {
 function resetFilters() {
     Object.assign(filters, DEFAULT_FILTERS)
     getData();
+}
+
+function editRunner(runner) {
+    isNew.value = false
+    modalRunner.value = { ...runner }
+    modal.value.show()
+}
+
+function saveRunner(runnerData, done) {
+    isNew.value ? createRunner(runnerData, done) : updateRunner(runnerData, done)
+}
+
+function updateRunner(runnerData, done) {
+    axios.patch(`/runners/${runnerData.id}.json`, { runner: runnerData }).then(res => {
+        const index = data.value.findIndex(c => c.id === res.data.id)
+        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
+        done()
+    })
+}
+
+function createRunner(runnerData, done) {
+    axios.post('/runners.json', { runner: runnerData }).then(res => {
+        const newRunner = { ...res.data }
+        data.value.unshift(newRunner)
+    })
+    done()
+}
+
+function createNew() {
+    isNew.value = true
+    resetNewRunner()
+    modal.value.show()
+}
+
+function cancelCreate() {
+    resetNewRunner();
+}
+
+function resetNewRunner() {
+    modalRunner.value = {}
+}
+
+function deleteRunner(id) {
+    if (confirm('Esti sigur ca vrei sa stergi aceast sportiv?')) {
+        axios.delete(`/runners/${id}`).then(() => {
+            data.value = data.value.filter(runner => runner.id !== id)
+        })
+    }
 }
 </script>
