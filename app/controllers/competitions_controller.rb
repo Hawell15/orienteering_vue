@@ -1,5 +1,5 @@
 class CompetitionsController < ApplicationController
-  before_action :set_competition, only: %i[ show edit update destroy ]
+  before_action :set_competition, only: %i[ show edit update destroy group_filters]
   has_scope :search
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :country
@@ -79,6 +79,15 @@ class CompetitionsController < ApplicationController
 
   def distance_types
    render json:  Competition::DISTANCE_TYPES
+  end
+
+  def group_filters
+    render json:
+    {
+      groups: @competition.groups.select(:id, :group_name).order(:group_name).as_json,
+      ecn: @competition.ecn.present?,
+      wre: @competition.wre_id.present?
+    }
   end
 
   private
