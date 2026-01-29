@@ -210,15 +210,14 @@ onMounted(() => {
     getFiltersData()
     const urlParams = new URLSearchParams(window.location.search);
 
-    return getData();
-    if (urlParams.toString() === '')
 
-        urlParams.forEach((value, key) => {
-            if (key in filters) {
-                const isNumber = typeof DEFAULT_FILTERS[key] === 'number';
-                filters[key] = isNumber ? Number(value) : value;
-            }
-        });
+    urlParams.forEach((value, key) => {
+        if (key in filters) {
+            const isNumber = typeof DEFAULT_FILTERS[key] === 'number';
+            filters[key] = isNumber ? Number(value) : value;
+        }
+    })
+    getData();
 })
 
 function orderTable(sortKey) {
@@ -242,19 +241,15 @@ async function getFiltersGroupData() {
     if (filters.competition === competitionValue.value) return
     competitionValue.value = filters.competition
 
+    delete filters.group_data
+
     if (filters.competition === "all") {
         delete filterData.value.groups
-        delete filters.group_data
         return;
     }
+    const res = await axios.get(`/competitions/group_filters/${filters.competition}.json`)
 
-    const cleanParams = {};
-
-    cleanParams["competition"] = filters.competition
-
-    const res = await axios.get(`/results/group_filters.json?competition=${filters.competition}`)
-
-    filterData.value.groups = res.data
+    filterData.value.groups = res.data.groups
 }
 
 function resetFilters() {

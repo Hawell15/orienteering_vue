@@ -5,12 +5,13 @@ Rails.application.routes.draw do
 
   resources :results do
     get :filters, on: :collection
-    get :group_filters, on: :collection
   end
 
   resources :groups do
     get :filters, on: :collection
   end
+  get "/competitions/group_filters/:id", to: "competitions#group_filters", as: :competition_group_filters
+
   resources :competitions do
     get :distance_types, on: :collection
     get :filters, on: :collection

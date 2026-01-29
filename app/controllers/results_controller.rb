@@ -1,5 +1,6 @@
 class ResultsController < ApplicationController
   before_action :set_result, only: %i[ show edit update destroy ]
+  before_action :set_membership, only: %i[ create update ]
 
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
@@ -54,13 +55,12 @@ class ResultsController < ApplicationController
   # POST /results or /results.json
   def create
     @result = Result.new(result_params)
+    @result.membership_id = @membership.id
 
     respond_to do |format|
       if @result.save
-        format.html { redirect_to @result, notice: "Result was successfully created." }
-        format.json { render :show, status: :created, location: @result }
+        format.json { render json: index_base_query.find(@result.id), status: :ok }
       else
-        format.html { render :new, status: :unprocessable_entity }
         format.json { render json: @result.errors, status: :unprocessable_entity }
       end
     end
@@ -69,11 +69,9 @@ class ResultsController < ApplicationController
   # PATCH/PUT /results/1 or /results/1.json
   def update
     respond_to do |format|
-      if @result.update(result_params)
-        format.html { redirect_to @result, notice: "Result was successfully updated.", status: :see_other }
-        format.json { render :show, status: :ok, location: @result }
+      if @result.update(result_params.merge(membership_id: @membership.id))
+        format.json { render json: index_base_query.find(@result.id), status: :ok }
       else
-        format.html { render :edit, status: :unprocessable_entity }
         format.json { render json: @result.errors, status: :unprocessable_entity }
       end
     end
@@ -98,19 +96,19 @@ class ResultsController < ApplicationController
       }
   end
 
-  def group_filters
-    render json: Group.competition(params[:competition]).select(:id, :group_name).order(:group_name).as_json
-  end
-
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_result
       @result = Result.find(params.expect(:id))
     end
 
+    def set_membership
+      @membership = Membership.find_or_create_by(club_id: params.dig(:result, :club_id), runner_id: params.dig(:result, :runner_id))
+    end
+
     # Only allow a list of trusted parameters through.
     def result_params
-      params.expect(result: [ :place, :time, :wre_points, :date, :ecn_points, :status, :runner_id, :category_id, :group_id ])
+      params.expect(result: [ :place, :time, :wre_points, :date, :ecn_points, :status, :category_id, :group_id ])
     end
 
     def index_base_query
