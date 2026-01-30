@@ -17,20 +17,29 @@
         <p v-show="result.ecn_points"><strong>Ecn Puncte: </strong>{{result.ecn_points}}</p>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editCategory(category)">Editeaza</button>
-        <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Sterge</button>
+        <button class="btn btn-sm btn-success" @click="editResult(result)">Editeaza</button>
+        <button class="btn btn-danger btn-sm" @click="deleteResult(result.id)">Sterge</button>
+        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
+    <ResultModal ref="modal" :result="modalResult" :isNew="false" @save="saveResult" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import ResultModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
+
 const result = ref({})
 const resultId = ref("")
+const modalResult = ref({})
+const modal = ref(null)
 
 
 onMounted(() => {
     resultId.value = window.location.pathname.split('/').pop();
     getData();
+
 })
 
 async function getData() {
@@ -48,5 +57,47 @@ function formatResultTime(seconds) {
         String(m).padStart(2, '0') + ':' +
         String(s).padStart(2, '0')
     );
+}
+
+function editResult(result) {
+    modalResult.value = {
+        ...result,
+        club_id: result.membership ? .club_id,
+        runner_id: result.membership ? .runner_id,
+        competition_id: result.group ? .competition_id,
+        time: formatResultTime(result.time)
+    }
+
+    console.log(modalResult.value.time);
+
+    modal.value.show()
+}
+
+function saveResult(resultData, done) {
+    console.log(resultData.time);
+    axios.patch(`/results/${resultData.id}.json`, { result: resultData }).then(res => {
+        getData();
+        done()
+    })
+}
+
+function deleteResult(id) {
+    if (confirm('Esti sigur ca vrei sa stergi aceast rezultat?')) {
+        axios.delete(`/results/${id}`).then(() => {
+            if (document.referrer) {
+                window.location = document.referrer;
+            } else {
+                window.location = "/results";
+            }
+        })
+    }
+}
+
+function goBack() {
+    if (document.referrer) {
+        window.location = document.referrer;
+    } else {
+        window.location = "/results";
+    }
 }
 </script>
