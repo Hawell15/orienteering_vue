@@ -30,7 +30,7 @@
                         </div>
                         <div class="mb-3">
                             <label for="time" class="form-label">Timpul</label>
-                            <input type="number" class="form-control" id="time" v-model="localResult.time" />
+                            <input type="time" step="1" class="form-control" id="time" v-model="localResult.time" />
                         </div>
                         <div class="mb-3">
                             <label for="date" class="form-label">Data</label>
@@ -156,12 +156,21 @@ function hide() {
 }
 
 function handleSave() {
+    if (!competitionData.value.wre) { localResult.value.wre_points = null }
+    if (!competitionData.value.ecn) { localResult.value.ecn_points = null }
+    localResult.value.time = timeToSeconds(localResult.value.time)
     emit('save', localResult.value, hide)
 }
 
 async function getCompetitionData() {
     const res = await axios.get(`/competitions/group_filters/${localResult.value.competition_id}.json`)
     competitionData.value = res.data
+}
+
+function timeToSeconds(time) {
+  if (!time) return 0
+  const [h, m, s] = time.split(':').map(Number)
+  return h * 3600 + m * 60 + (s || 0)
 }
 
 defineExpose({ show, hide })
