@@ -62,19 +62,16 @@ function formatResultTime(seconds) {
 function editResult(result) {
     modalResult.value = {
         ...result,
-        club_id: result.membership ? .club_id,
-        runner_id: result.membership ? .runner_id,
-        competition_id: result.group ? .competition_id,
+        club_id: result.membership.club_id,
+        runner_id: result.membership.runner_id,
+        competition_id: result.group.competition_id,
         time: formatResultTime(result.time)
     }
-
-    console.log(modalResult.value.time);
 
     modal.value.show()
 }
 
 function saveResult(resultData, done) {
-    console.log(resultData.time);
     axios.patch(`/results/${resultData.id}.json`, { result: resultData }).then(res => {
         getData();
         done()
