@@ -63,6 +63,9 @@
         </div>
     </div>
     <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
+    <hr>
+    <button class="btn btn-info mb-2" @click="createNew">Adauga Rezultat</button>
+    <hr>
     <table class="table table-striped table-bordered table-hover">
         <thead class="table-primary">
             <tr>
@@ -95,28 +98,20 @@
                 <td><a :href="`groups/${element.group_id}`">{{element.group_name}}</a></td>
                 <td>{{element.wre_points}}</td>
                 <td>{{element.ecn_points}}</td>
-                <td>
-                    <a class="btn btn-sm btn-warning" :href="`results/${element.id}`">
-                        Arată
-                    </a>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-success" @click="editElement(element)">
-                        Editează
-                    </button>
-                </td>
-                <td>
-                    <button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">
-                        Șterge
-                    </button>
-                </td>
+                <td><a class="btn btn-sm btn-warning" :href="`results/${element.id}`">Arată</a></td>
+                <td><button class="btn btn-sm btn-success" @click="editResult(element)">Editează</button></td>
+                <td><button class="btn btn-sm btn-danger" @click="deleteResult(element.id)">Șterge</button></td>
             </tr>
         </tbody>
     </table>
+    <ResultModal ref="modal" :result="modalResult" :isNew="isNew" @save="saveResult" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import ResultModal from './Modal.vue'
+
+axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const data = ref([])
 const filterData = ref({})
@@ -139,6 +134,11 @@ const DEFAULT_FILTERS = {
 }
 
 const filters = reactive({ ...DEFAULT_FILTERS });
+
+const modalResult = ref({})
+const modal = ref(null)
+const isNew = ref(false)
+
 
 let debounceTimeout = null;
 
@@ -267,5 +267,56 @@ function formatResultTime(seconds) {
         String(m).padStart(2, '0') + ':' +
         String(s).padStart(2, '0')
     );
+}
+
+function editResult(result) {
+    isNew.value = false
+    modalResult.value = {
+        ...result,
+        time: formatResultTime(result.time)
+    }
+    modal.value.show()
+}
+
+function saveResult(resultData, done) {
+    isNew.value ? createResult(resultData, done) : updateResult(resultData, done)
+}
+
+function updateResult(resultData, done) {
+    axios.patch(`/results/${resultData.id}.json`, { result: resultData }).then(res => {
+        const index = data.value.findIndex(c => c.id === res.data.id)
+        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
+        done()
+    })
+}
+
+function createResult(resultData, done) {
+    axios.post('/results.json', { result: resultData }).then(res => {
+        const newResult = { ...res.data }
+        data.value.unshift(newResult)
+    })
+    done()
+}
+
+function createNew() {
+    isNew.value = true
+    resetNewResult()
+    modal.value.show()
+}
+
+function cancelCreate() {
+    resetNewResult();
+}
+
+function resetNewResult() {
+    modalResult.value = {}
+}
+
+function deleteResult(id) {
+    if (confirm('Esti sigur ca vrei sa stergi aceast rezultat?')) {
+        axios.delete(`/results/${id}`).then(() => {
+            data.value = data.value.filter(result => result.id !== id)
+        })
+    }
 }
 </script>
