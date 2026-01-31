@@ -1,10 +1,17 @@
 <template>
-    <Create @save="saveCategory" />
+    <Create ref="create" @save="saveCategory" />
+    <button class="btn btn-primary" @click="$refs.create.createNew()">Creaza Categorie</button>
 </template>
 <script setup>
-    import Create from './Create.vue'
+import { ref, onMounted } from 'vue'
+import Create from './Create.vue'
+const create = ref(null)
 
-    function saveCategory() {
-         window.location = "/categories?sorting[direction]=desc";
-    }
+onMounted(() => {
+    create.value.createNew()
+})
+
+function saveCategory() {
+    window.location = "/categories?sorting[direction]=desc";
+}
 </script>

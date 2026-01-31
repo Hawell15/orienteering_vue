@@ -130,23 +130,22 @@
         </div>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editCategory(category)">Editeaza</button>
+        <button class="btn btn-sm btn-success" @click="editElement(category)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Sterge</button>
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
-
     </p>
-     <CategoryModal ref="modal" :category="modalCategory" :isNew="false" @save="saveCategory" />
+    <Modal ref="modal" :category="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import CategoryModal from './Modal.vue'
+import Modal from './Modal.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[  name="csrf-token"]').getAttribute('content')
 
 
 const category = ref({})
-const modalCategory = ref({})
+const modalElement = ref({})
 const modal = ref(null)
 const runners = ref([])
 const results = ref([])
@@ -215,12 +214,12 @@ function orderTable(sortKey, filters) {
     filters.value["sorting[sort_by]"] = sortKey;
 }
 
-function editCategory(category) {
-    modalCategory.value = { ...category }
+function editElement(category) {
+    modalElement.value = { ...category }
     modal.value.show()
 }
 
-function saveCategory(caetgoryData, done) {
+function updateElement(caetgoryData, done) {
     axios.patch(`/categories/${caetgoryData.id}.json`, { category: caetgoryData }).then(res => {
         category.value = res.data
         done()

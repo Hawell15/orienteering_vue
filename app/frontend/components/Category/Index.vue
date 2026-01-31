@@ -158,6 +158,7 @@ function resetFilters() {
     Object.assign(filters, DEFAULT_FILTERS)
     getData();
 }
+
 function createNew() {
     modal.value.createNew()
 }

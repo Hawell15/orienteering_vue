@@ -11,7 +11,7 @@
                 <th colspan="3">Actiuni</th>
             </tr>
         </thead>
-         <tbody>
+        <tbody>
             <tr v-for="element in elements" :key="element.id">
                 <td><a :href="`categories/${element.id}`">{{ element.id }}</a></td>
                 <td><a :href="`categories/${element.id}`">{{ element.category_name }}</a></td>
@@ -51,7 +51,7 @@ import Modal from './Modal.vue'
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const props = defineProps({
-  elements: Object
+    elements: Object
 })
 
 const emit = defineEmits(['order'])
@@ -83,6 +83,4 @@ function updateElement(elementData, done) {
 function orderTable(sortKey) {
     emit('order', sortKey)
 }
-
-
 </script>
