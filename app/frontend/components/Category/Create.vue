@@ -2,7 +2,7 @@
     <Modal ref="modal" :category="{}" :isNew="true" @save="saveCategory" />
 </template>
 <script setup>
-import {ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import axios from 'axios'
 import Modal from './Modal.vue'
 
@@ -16,9 +16,6 @@ defineExpose({ createNew })
 function createNew() {
     modal.value.show()
 }
-
-onMounted(() => {
-})
 
 function saveCategory(categoryData, done) {
     axios.post('/categories.json', { category: categoryData })
