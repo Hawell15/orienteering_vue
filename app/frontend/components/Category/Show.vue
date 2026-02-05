@@ -219,8 +219,8 @@ function editElement(category) {
     modal.value.show()
 }
 
-function updateElement(caetgoryData, done) {
-    axios.patch(`/categories/${caetgoryData.id}.json`, { category: caetgoryData }).then(res => {
+function updateElement(categoryData, done) {
+    axios.patch(`/categories/${categoryData.id}.json`, { category: categoryData }).then(res => {
         category.value = res.data
         done()
     })

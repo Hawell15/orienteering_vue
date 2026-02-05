@@ -163,7 +163,8 @@ function createNew() {
     modal.value.createNew()
 }
 
-function saveCategory(categoryData, done) {
-    orderTable("created_at")
+function saveCategory() {
+    filters["sorting[sort_by]"] = "created_at"
+    filters["sorting[direction]"] = "desc"
 }
 </script>
