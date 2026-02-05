@@ -65,16 +65,16 @@
         </div>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editMembership(membership)">Editeaza</button>
+        <button class="btn btn-sm btn-success" @click="editElement(membership)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteMembership(membership.id)">Sterge</button>
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
-    <MembershipModal ref="modal" :membership="modalMembership" :isNew="false" @save="saveMembership" />
+    <Modal ref="modal" :membership="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import MembershipModal from './Modal.vue'
+import Modal from './Modal.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
 
@@ -86,7 +86,7 @@ const resultSorting = ref({
     "sorting[direction]": "desc"
 })
 
-const modalMembership = ref({})
+const modalElement = ref({})
 const modal = ref(null)
 
 onMounted(() => {
@@ -118,12 +118,12 @@ function formatResultTime(seconds) {
     );
 }
 
-function editMembership(membership) {
-    modalMembership.value = { ...membership }
+function editElement(membership) {
+    modalElement.value = { ...membership }
     modal.value.show()
 }
 
-function saveMembership(membershipData, done) {
+function updateElement(membershipData, done) {
     axios.patch(`/memberships/${membershipData.id}.json`, { membership: membershipData }).then(res => {
         getData();
         done()
