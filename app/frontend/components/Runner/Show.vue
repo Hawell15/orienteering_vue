@@ -176,16 +176,16 @@
         </div>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editRunner(runner)">Editeaza</button>
+        <button class="btn btn-sm btn-success" @click="editElement(runner)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteRunner(runner.id)">Sterge</button>
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
-    <RunnerModal ref="modal" :runner="modalRunner" :isNew="false" @save="saveRunner" />
+    <Modal ref="modal" :runner="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import RunnerModal from './Modal.vue'
+import Modal from './Modal.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
 
@@ -207,7 +207,7 @@ const membershipSorting = ref({
     "sorting[direction]": "asc"
 })
 
-const modalRunner = ref({})
+const modalElement = ref({})
 const modal = ref(null)
 
 onMounted(() => {
@@ -277,12 +277,12 @@ function orderTable(sortKey, filters) {
     filters.value["sorting[sort_by]"] = sortKey;
 }
 
-function editRunner(runner) {
-    modalRunner.value = { ...runner }
+function editElement(runner) {
+    modalElement.value = { ...runner }
     modal.value.show()
 }
 
-function saveRunner(runnerData, done) {
+function updateElement(runnerData, done) {
     axios.patch(`/runners/${runnerData.id}.json`, { runner: runnerData }).then(res => {
         getData();
         done()

@@ -1,6 +1,6 @@
 <template>
     <Create ref="create" @save="saveClub" />
-    <button class="btn btn-primary" @click="$refs.create.createNew()">Creaza Afiliere</button>
+    <button class="btn btn-primary" @click="$refs.create.createNew()">Creaza Club</button>
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
