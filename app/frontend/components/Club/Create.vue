@@ -1,5 +1,5 @@
 <template>
-    <Modal ref="modal" :membership="modalElement" :isNew="true" @save="saveElement" />
+    <Modal ref="modal" :club="modalElement" :isNew="true" @save="saveElement" />
 </template>
 <script setup>
 import { ref } from 'vue'
@@ -20,7 +20,7 @@ function createNew() {
 }
 
 function saveElement(elementData, done) {
-    axios.post('/memberships.json', { membership: elementData })
+    axios.post('/clubs.json', { club: elementData })
     done()
     emit('save')
 }
