@@ -132,21 +132,21 @@
         </div>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editClub(club)">Editeaza</button>
+        <button class="btn btn-sm btn-success" @click="editElement(club)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteClub(club.id)">Sterge</button>
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
-    <ClubModal ref="modal" :club="modalClub" :isNew="false" @save="saveClub" />
+    <Modal ref="modal" :club="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import ClubModal from './Modal.vue'
+import Modal from './Modal.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[  name="csrf-token"]').getAttribute('content')
 
 const club = ref({})
-const modalClub = ref({})
+const modalElement = ref({})
 const modal = ref(null)
 const runners = ref([])
 const results = ref([])
@@ -215,12 +215,12 @@ function orderTable(sortKey, filters) {
     filters.value["sorting[sort_by]"] = sortKey;
 }
 
-function editClub(club) {
-    modalClub.value = { ...club }
+function editElement(club) {
+    modalElement.value = { ...club }
     modal.value.show()
 }
 
-function saveClub(clubData, done) {
+function updateElement(clubData, done) {
     axios.patch(`/clubs/${clubData.id}.json`, { club: clubData }).then(res => {
         club.value = res.data
         done()

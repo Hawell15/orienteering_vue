@@ -1,36 +1,17 @@
 <template>
-    <ClubModal ref="modal" :club="modalClub" :isNew="true" @save="saveClub" />
+    <Create ref="create" @save="saveClub" />
+    <button class="btn btn-primary" @click="$refs.create.createNew()">Creaza Afiliere</button>
 </template>
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue'
-import axios from 'axios'
-import ClubModal from './Modal.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
-const modalClub = ref({
-    club_name: '',
-    territory: '',
-    representative: '',
-    email: '',
-    phone: '',
-    alternative_club_name: '',
-    runners_count: 0
-})
-const modal = ref(null)
-
-
-function createNew() {
-    modal.value.show()
-}
+import { ref, onMounted } from 'vue'
+import Create from './Create.vue'
+const create = ref(null)
 
 onMounted(() => {
-    createNew()
+    create.value.createNew()
 })
 
-function saveClub(clubData, done) {
-    axios.post('/clubs.json', { club: clubData }).then(res => {
-        window.location = "/clubs?sorting[direction]=desc";
-    })
+function saveClub() {
+    window.location = "/clubs?sorting[direction]=desc";
 }
 </script>
