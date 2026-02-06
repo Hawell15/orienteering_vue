@@ -8,7 +8,7 @@ class Competition < ApplicationRecord
  }
 
   scope :sorting, ->(sort_by, direction) {
-    allowed_columns = %w[id competition_name date location country distance_type wre_id ecn]
+    allowed_columns = %w[id competition_name date location country distance_type wre_id ecn created_at]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"
     direction       = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
 

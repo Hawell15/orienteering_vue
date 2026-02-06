@@ -66,50 +66,14 @@
     <hr>
     <button class="btn btn-info mb-2" @click="createNew">Adauga Rezultat</button>
     <hr>
-    <table class="table table-striped table-bordered table-hover">
-        <thead class="table-primary">
-            <tr>
-                <td @click="orderTable('place')">Locul</td>
-                <td @click="orderTable('full_name')">Sportiv</td>
-                <td @click="orderTable('club_name')">Club</td>
-                <td @click="orderTable('runner_category_name')">Categoria actuala</td>
-                <td @click="orderTable('time')">Timpul</td>
-                <td @click="orderTable('result_category_name')">Categoria Indeplinita</td>
-                <td @click="orderTable('status')">Indeplinire</td>
-                <td @click="orderTable('date')">Data</td>
-                <td @click="orderTable('competition_name')">Competitia</td>
-                <td @click="orderTable('group_name')">Grupa</td>
-                <td @click="orderTable('wre_points')">WRE Puncte</td>
-                <td @click="orderTable('ecn_points')">ECN Puncte</td>
-                <th colspan="3">Actiuni</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="element in data" :key="element.id">
-                <td>{{element.place}}</td>
-                <td><a :href="`runners/${element.runner_id}`">{{element.full_name}}</a></td>
-                <td><a :href="`clubs/${element.club_id}`">{{element.club_name}}</a></td>
-                <td><a :href="`categories/${element.runner_category_id}`">{{element.runner_category_name}}</a></td>
-                <td>{{formatResultTime(element.time)}}</td>
-                <td><a :href="`categories/${element.result_category_id}`">{{element.result_category_name}}</a></td>
-                <td>{{element.status}}</td>
-                <td>{{element.date}}</td>
-                <td><a :href="`competitions/${element.competition_id}`">{{element.competition_name}}</a></td>
-                <td><a :href="`groups/${element.group_id}`">{{element.group_name}}</a></td>
-                <td>{{element.wre_points}}</td>
-                <td>{{element.ecn_points}}</td>
-                <td><a class="btn btn-sm btn-warning" :href="`results/${element.id}`">Arată</a></td>
-                <td><button class="btn btn-sm btn-success" @click="editResult(element)">Editează</button></td>
-                <td><button class="btn btn-sm btn-danger" @click="deleteResult(element.id)">Șterge</button></td>
-            </tr>
-        </tbody>
-    </table>
-    <ResultModal ref="modal" :result="modalResult" :isNew="isNew" @save="saveResult" />
+    <Table :elements="data" @order="orderTable"></Table>
+    <Create ref="modal" @save="saveResult" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
-import ResultModal from './Modal.vue'
+import Create from './Create.vue'
+import Table from './Table.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
@@ -135,9 +99,7 @@ const DEFAULT_FILTERS = {
 
 const filters = reactive({ ...DEFAULT_FILTERS });
 
-const modalResult = ref({})
 const modal = ref(null)
-const isNew = ref(false)
 
 
 let debounceTimeout = null;
@@ -257,66 +219,13 @@ function resetFilters() {
     getData();
 }
 
-function formatResultTime(seconds) {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-
-    return (
-        String(h).padStart(2, '0') + ':' +
-        String(m).padStart(2, '0') + ':' +
-        String(s).padStart(2, '0')
-    );
-}
-
-function editResult(result) {
-    isNew.value = false
-    modalResult.value = {
-        ...result,
-        time: formatResultTime(result.time)
-    }
-    modal.value.show()
-}
-
-function saveResult(resultData, done) {
-    isNew.value ? createResult(resultData, done) : updateResult(resultData, done)
-}
-
-function updateResult(resultData, done) {
-    axios.patch(`/results/${resultData.id}.json`, { result: resultData }).then(res => {
-        const index = data.value.findIndex(c => c.id === res.data.id)
-        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
-        done()
-    })
-}
-
-function createResult(resultData, done) {
-    axios.post('/results.json', { result: resultData }).then(res => {
-        const newResult = { ...res.data }
-        data.value.unshift(newResult)
-    })
-    done()
-}
-
 function createNew() {
-    isNew.value = true
-    resetNewResult()
-    modal.value.show()
+    modal.value.createNew()
 }
 
-function cancelCreate() {
-    resetNewResult();
+function saveResult() {
+    filters["sorting[sort_by]"] = "created_at"
+    filters["sorting[direction]"] = "desc"
 }
 
-function resetNewResult() {
-    modalResult.value = {}
-}
-
-function deleteResult(id) {
-    if (confirm('Esti sigur ca vrei sa stergi aceast rezultat?')) {
-        axios.delete(`/results/${id}`).then(() => {
-            data.value = data.value.filter(result => result.id !== id)
-        })
-    }
-}
 </script>

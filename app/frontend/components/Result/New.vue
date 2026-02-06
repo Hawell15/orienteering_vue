@@ -1,27 +1,17 @@
 <template>
-    <RunnerModal ref="modal" :result="modalResult" :isNew="true" @save="saveResult" />
+    <Create ref="create" @save="saveResult" />
+    <button class="btn btn-primary" @click="$refs.create.createNew()">Creaza Rezultat</button>
 </template>
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue'
-import axios from 'axios'
-import RunnerModal from './Modal.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
-const modalResult = ref({})
-const modal = ref(null)
-
-function createNew() {
-    modal.value.show()
-}
+import { ref, onMounted } from 'vue'
+import Create from './Create.vue'
+const create = ref(null)
 
 onMounted(() => {
-    createNew()
+    create.value.createNew()
 })
 
-function saveResult(resultData, done) {
-    axios.post('/results.json', { result: resultData }).then(res => {
-        window.location = "/results?sorting[direction]=desc";
-    })
+function saveResult() {
+    window.location = "/results?sorting[direction]=desc";
 }
 </script>

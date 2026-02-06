@@ -7,7 +7,7 @@ class Club < ApplicationRecord
   }
 
   scope :sorting, ->(sort_by, direction) {
-    allowed_columns = %w[id club_name territory representative email phone]
+    allowed_columns = %w[id club_name territory representative email phone created_at]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"
     direction       = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
 
