@@ -1,27 +1,17 @@
 <template>
-    <GroupModal ref="modal" :group="modalGroup" :isNew="true" @save="saveGroup" />
+    <Create ref="create" @save="saveGroup" />
+    <button class="btn btn-primary" @click="$refs.create.createNew()">Creaza Grupa</button>
 </template>
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue'
-import axios from 'axios'
-import GroupModal from './Modal.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
-const modalGroup = ref({})
-const modal = ref(null)
-
-function createNew() {
-    modal.value.show()
-}
+import { ref, onMounted } from 'vue'
+import Create from './Create.vue'
+const create = ref(null)
 
 onMounted(() => {
-    createNew()
+    create.value.createNew()
 })
 
-function saveGroup(groupData, done) {
-    axios.post('/groups.json', { group: groupData }).then(res => {
-        window.location = "/groups?sorting[direction]=desc";
-    })
+function saveGroup() {
+    window.location = "/groups?sorting[direction]=desc";
 }
 </script>

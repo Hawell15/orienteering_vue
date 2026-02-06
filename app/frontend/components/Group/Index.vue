@@ -36,50 +36,20 @@
     <hr>
     <button class="btn btn-info mb-2" @click="createNew">Adauga Grupă</button>
     <hr>
-    <table class="table table-striped table-bordered table-hover">
-        <thead class="table-primary">
-            <tr>
-                <th @click="orderTable('id')">ID</th>
-                <th @click="orderTable('group_name')">Grupa</th>
-                <th @click="orderTable('competition_name')">Competiția</th>
-                <th @click="orderTable('date')">Data</th>
-                <th @click="orderTable('rang')">Rang</th>
-                <th @click="orderTable('clasa')">Clasa</th>
-                <th @click="orderTable('ecn_coeficient')">ECN Coeficient</th>
-                <th @click="orderTable('results_count')">Rezultate</th>
-                <th colspan="3">Acțiuni</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="element in data" :key="element.id">
-                <td><a :href="`groups/${element.id}`">{{element.id}}</a></td>
-                <td><a :href="`groups/${element.id}`">{{element.group_name}}</a></td>
-                <td><a :href="`competitions/${element.competition_id}`">{{element.competition_name}}</a></td>
-                <td>{{element.date}}</td>
-                <td>{{element.rang}}</td>
-                <td>{{element.clasa_name}}</td>
-                <td>{{element.ecn_coeficient}}</td>
-                <td><a :href="`results?group_id=${element.id}`">{{element.results_count}}</a></td>
-                <td><a class="btn btn-sm btn-warning" :href="`groups/${element.id}`"> Arată </a></td>
-                <td><button class="btn btn-sm btn-success" @click="editGroup(element)">Editează</button></td>
-                <td><button class="btn btn-sm btn-danger" @click="deleteGroup(element.id)">Șterge</button></td>
-            </tr>
-        </tbody>
-    </table>
-    <GroupModal ref="modal" :group="modalGroup" :isNew="isNew" @save="saveGroup" />
+    <Table :elements="data" @order="orderTable"></Table>
+    <Create ref="modal" @save="saveGroup" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from 'axios'
-import GroupModal from './Modal.vue'
+import Create from './Create.vue'
+import Table from './Table.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
 
 const data = ref([])
 const filterData = ref({})
-const modalGroup = ref({})
 const modal = ref(null)
-const isNew = ref(false)
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",
@@ -192,51 +162,12 @@ function resetFilters() {
     getData();
 }
 
-function editGroup(group) {
-    isNew.value = false
-    modalGroup.value = { ...group }
-    modal.value.show()
-}
-
-function saveGroup(groupData, done) {
-    isNew.value ? createGroup(groupData, done) : updateGroup(groupData, done)
-}
-
-function updateGroup(groupData, done) {
-    axios.patch(`/groups/${groupData.id}.json`, { group: groupData }).then(res => {
-        const index = data.value.findIndex(c => c.id === res.data.id)
-        if (index !== -1) data.value[index] = { ...data.value[index], ...res.data }
-        done()
-    })
-}
-
-function createGroup(groupData, done) {
-    axios.post('/groups.json', { group: groupData }).then(res => {
-        const newGroup = { ...res.data }
-        data.value.unshift(newGroup)
-    })
-    done()
-}
-
 function createNew() {
-    isNew.value = true
-    resetNewGroup()
-    modal.value.show()
+    modal.value.createNew()
 }
 
-function cancelCreate() {
-    resetNewGroup();
-}
-
-function resetNewGroup() {
-    modalGroup.value = {}
-}
-
-function deleteGroup(id) {
-    if (confirm('Esti sigur ca vrei sa stergi această grupă?')) {
-        axios.delete(`/groups/${id}`).then(() => {
-            data.value = data.value.filter(group => group.id !== id)
-        })
-    }
+function saveGroup() {
+    filters["sorting[sort_by]"] = "created_at"
+    filters["sorting[direction]"] = "desc"
 }
 </script>

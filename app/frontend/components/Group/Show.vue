@@ -81,16 +81,16 @@
         <div>Clasa: {{group.category_name}} </div>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editGroup(group)">Editeaza</button>
+        <button class="btn btn-sm btn-success" @click="editElement(group)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteGroup(group.id)">Sterge</button>
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
-    <GroupModal ref="modal" :group="modalGroup" :isNew="false" @save="saveGroup" />
+    <Modal ref="modal" :group="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import GroupModal from './Modal.vue'
+import Modal from './Modal.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
 
@@ -102,7 +102,7 @@ const resultSorting = ref({
     "sorting[direction]": "asc"
 })
 
-const modalGroup = ref({})
+const modalElement = ref({})
 const modal = ref(null)
 
 onMounted(() => {
@@ -152,12 +152,12 @@ function formatStatus(status) {
     return map[status]
 }
 
-function editGroup(group) {
-    modalGroup.value = { ...group }
+function editElement(group) {
+    modalElement.value = { ...group }
     modal.value.show()
 }
 
-function saveGroup(groupData, done) {
+function updateElement(groupData, done) {
     axios.patch(`/groups/${groupData.id}.json`, { group: groupData }).then(res => {
         getData();
         done()
