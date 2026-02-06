@@ -7,10 +7,10 @@ class Runner < ApplicationRecord
 
   scope :sorting, ->(sort_by, direction) {
     allowed_columns = %w[
-      id full_name category_id category_valid gender yob club_name best_category_id wre_id sprint_wre_place forest_wre_place
+      id full_name category_id category_valid gender yob club_name best_category_id wre_id sprint_wre_place forest_wre_place created_at
     ]
 
-    column    = allowed_columns.include?(sort_by) ? sort_by : "date"
+    column    = allowed_columns.include?(sort_by) ? sort_by : "id"
     direction = %w[asc desc].include?(direction.to_s.downcase) ? direction : "desc"
     order("#{column} #{direction}")
   }
