@@ -191,7 +191,6 @@ function createNew() {
 }
 
 function saveRunner() {
-    console.log(342);
     filters["sorting[sort_by]"] = "created_at"
     filters["sorting[direction]"] = "desc"
 }
