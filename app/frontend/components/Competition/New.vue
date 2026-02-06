@@ -1,36 +1,17 @@
 <template>
-    <CompetitionModal ref="modal" :competition="modalCompetition" :isNew="true" @save="saveCompetition" />
+    <Create ref="create" @save="saveCompetition" />
+    <button class="btn btn-primary" @click="$refs.create.createNew()">Creaza Competiție</button>
 </template>
 <script setup>
-import { reactive, ref, onMounted, watch } from 'vue'
-import axios from 'axios'
-import CompetitionModal from './Modal.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
-const modalCompetition = ref({
-    competition_name: '',
-    date: '',
-    location: '',
-    country: '',
-    distance_type: '',
-    wre_id: null,
-    ecn: false
-})
-const modal = ref(null)
-
-
-function createNew() {
-    modal.value.show()
-}
+import { ref, onMounted } from 'vue'
+import Create from './Create.vue'
+const create = ref(null)
 
 onMounted(() => {
-    createNew()
+    create.value.createNew()
 })
 
-function saveCompetition(competitionbData, done) {
-    axios.post('/competitions.json', { competition: competitionbData }).then(res => {
-        window.location = "/competitions?sorting[direction]=desc";
-    })
+function saveCompetition() {
+    window.location = "/competitions?sorting[direction]=desc";
 }
 </script>

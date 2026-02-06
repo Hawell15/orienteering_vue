@@ -90,22 +90,22 @@
         <div>Clasa: {{formatGroupClasa(activeGroup?.group_clasa)}} </div>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editCompetition(competition)">Editeaza</button>
+        <button class="btn btn-sm btn-success" @click="editElement(competition)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteCompetition(competition.id)">Sterge</button>
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
-    <CompetitionModal ref="modal" :competition="modalCompetition" :isNew="false" @save="saveCompetition" />
+    <Modal ref="modal" :competition="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import CompetitionModal from './Modal.vue'
+import Modal from './Modal.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
 
 const competition = ref({})
 const competitionId = ref("")
-const modalCompetition = ref({})
+const modalElement = ref({})
 const modal = ref(null)
 
 const groups = ref([])
@@ -198,12 +198,12 @@ function formatGroupClasa(clasa) {
     return map[clasa]
 }
 
-function editCompetition(competition) {
-    modalCompetition.value = { ...competition }
+function editElement(competition) {
+    modalElement.value = { ...competition }
     modal.value.show()
 }
 
-function saveCompetition(competitionData, done) {
+function updateElement(competitionData, done) {
     axios.patch(`/competitions/${competitionData.id}.json`, { competition: competitionData }).then(res => {
         competition.value = res.data
         done()
