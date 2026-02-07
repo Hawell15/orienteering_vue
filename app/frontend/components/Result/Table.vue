@@ -25,7 +25,7 @@
                 <td><a :href="`/categories/${element.runner_category_id}`">{{element.runner_category_name}}</a></td>
                 <td>{{formatResultTime(element.time)}}</td>
                 <td><a :href="`/categories/${element.result_category_id}`">{{element.result_category_name}}</a></td>
-                <td>{{element.status}}</td>
+                <td>{{formatStatus(element.status)}}</td>
                 <td>{{element.date}}</td>
                 <td><a :href="`/competitions/${element.competition_id}`">{{element.competition_name}}</a></td>
                 <td><a :href="`/groups/${element.group_id}`">{{element.group_name}}</a></td>
@@ -93,6 +93,11 @@ function formatResultTime(seconds) {
         String(m).padStart(2, '0') + ':' +
         String(s).padStart(2, '0')
     );
+}
+
+function formatStatus(status) {
+    const map = { confirmed: "Îndeplinit", pending: "În așteptare", unconfirmed: "Neconfirmat" }
+    return map[status]
 }
 
 </script>
