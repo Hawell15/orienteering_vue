@@ -20,18 +20,18 @@
         <tbody>
             <tr v-for="element in elements" :key="element.id">
                 <td>{{element.place}}</td>
-                <td><a :href="`runners/${element.runner_id}`">{{element.full_name}}</a></td>
-                <td><a :href="`clubs/${element.club_id}`">{{element.club_name}}</a></td>
-                <td><a :href="`categories/${element.runner_category_id}`">{{element.runner_category_name}}</a></td>
+                <td><a :href="`/runners/${element.runner_id}`">{{element.full_name}}</a></td>
+                <td><a :href="`/clubs/${element.club_id}`">{{element.club_name}}</a></td>
+                <td><a :href="`/categories/${element.runner_category_id}`">{{element.runner_category_name}}</a></td>
                 <td>{{formatResultTime(element.time)}}</td>
-                <td><a :href="`categories/${element.result_category_id}`">{{element.result_category_name}}</a></td>
+                <td><a :href="`/categories/${element.result_category_id}`">{{element.result_category_name}}</a></td>
                 <td>{{element.status}}</td>
                 <td>{{element.date}}</td>
-                <td><a :href="`competitions/${element.competition_id}`">{{element.competition_name}}</a></td>
-                <td><a :href="`groups/${element.group_id}`">{{element.group_name}}</a></td>
+                <td><a :href="`/competitions/${element.competition_id}`">{{element.competition_name}}</a></td>
+                <td><a :href="`/groups/${element.group_id}`">{{element.group_name}}</a></td>
                 <td>{{element.wre_points}}</td>
                 <td>{{element.ecn_points}}</td>
-                <td><a class="btn btn-sm btn-warning" :href="`results/${element.id}`">Arată</a></td>
+                <td><a class="btn btn-sm btn-warning" :href="`/results/${element.id}`">Arată</a></td>
                 <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
                 <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
             </tr>

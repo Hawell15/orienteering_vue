@@ -13,9 +13,9 @@
         </thead>
         <tbody>
             <tr v-for="element in elements" :key="element.id">
-                <td><a :href="`categories/${element.id}`">{{ element.id }}</a></td>
-                <td><a :href="`categories/${element.id}`">{{ element.category_name }}</a></td>
-                <td><a :href="`categories/${element.id}`">{{ element.full_name }}</a></td>
+                <td><a :href="`/categories/${element.id}`">{{ element.id }}</a></td>
+                <td><a :href="`/categories/${element.id}`">{{ element.category_name }}</a></td>
+                <td><a :href="`/categories/${element.id}`">{{ element.full_name }}</a></td>
                 <td>{{ element.points }}</td>
                 <td>{{ element.validaty_period }}</td>
                 <td>
@@ -24,7 +24,7 @@
                     </a>
                 </td>
                 <td>
-                    <a class="btn btn-sm btn-warning" :href="`categories/${element.id}`">
+                    <a class="btn btn-sm btn-warning" :href="`/categories/${element.id}`">
                         Arată
                     </a>
                 </td>
