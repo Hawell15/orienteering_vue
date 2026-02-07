@@ -7,52 +7,7 @@
         <p><strong>Tipul Distanței: </strong>{{group.competition?.distance_type}}</p>
         <p v-if="group.competition?.ecn"><strong>Coeficient ECN: </strong>{{group.ecn_coeficient}}</p>
         <hr class="my-4">
-        <table class="table table-striped table-bordered table-hover">
-            <thead class="table-primary">
-                <tr>
-                    <td @click="orderResultTable('place')">Locul</td>
-                    <td @click="orderResultTable('full_name')">Sportiv</td>
-                    <td @click="orderResultTable('yob')">Anul Nașterii</td>
-                    <td @click="orderResultTable('club_name')">Club</td>
-                    <td @click="orderResultTable('runner_category_name')">Categoria actuala</td>
-                    <td @click="orderResultTable('time')">Timpul</td>
-                    <td @click="orderResultTable('result_category_name')">Categoria Indeplinita</td>
-                    <td @click="orderResultTable('status')">Indeplinire</td>
-                    <td v-if="group.competition?.wre_id" @click="orderResultTable('wre_points')">WRE Puncte</td>
-                    <td v-if="group.competition?.ecn" @click="orderResultTable('ecn_points')">ECN Puncte</td>
-                    <th colspan="3">Actiuni</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="element in results" :key="element.id">
-                    <td>{{element.place}}</td>
-                    <td><a :href="`/runners/${element.runner_id}`">{{element.full_name}}</a></td>
-                    <td>{{element.yob}}</td>
-                    <td><a :href="`/clubs/${element.club_id}`">{{element.club_name}}</a></td>
-                    <td><a :href="`/categories/${element.runner_category_id}`">{{element.runner_category_name}}</a></td>
-                    <td>{{formatResultTime(element.time)}}</td>
-                    <td><a :href="`/categories/${element.result_category_id}`">{{element.result_category_name}}</a></td>
-                    <td :class="element.status">{{formatStatus(element.status)}}</td>
-                    <td v-if="group.competition?.wre_id">{{element.wre_points}}</td>
-                    <td v-if="group.competition?.ecn">{{element.ecn_points}}</td>
-                    <td>
-                        <a class="btn btn-sm btn-warning" :href="`/results/${element.id}`">
-                            Arată
-                        </a>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-success" @click="editElement(element)">
-                            Editează
-                        </button>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">
-                            Șterge
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <ResultsTable :elements="results" @order="orderResultTable"></ResultsTable>
         <div class="half-width-table">
             <table class="table table-striped table-bordered table-hover">
                 <thead class="table-warning">
@@ -91,6 +46,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import Modal from './Modal.vue'
+import ResultsTable from '../Result/Table.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
 
