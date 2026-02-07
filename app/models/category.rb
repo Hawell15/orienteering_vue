@@ -3,7 +3,7 @@ class Category < ApplicationRecord
   has_many :results
 
   scope :sorting, ->(sort_by, direction) {
-    allowed_columns = %w[id category_name points validaty_period runners_count]
+    allowed_columns = %w[id category_name points validaty_period runners_count created_at]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"
     direction       = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
 

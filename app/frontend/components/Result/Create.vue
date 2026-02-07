@@ -1,5 +1,5 @@
 <template>
-    <Modal ref="modal" :group="modalElement" :isNew="true" @save="saveElement" />
+    <Modal ref="modal" :result="modalElement" :isNew="true" @save="saveElement" />
 </template>
 <script setup>
 import { ref } from 'vue'
@@ -20,7 +20,7 @@ function createNew() {
 }
 
 function saveElement(elementData, done) {
-    axios.post('/groups.json', { group: elementData })
+    axios.post('/results.json', { result: elementData })
     done()
     emit('save')
 }

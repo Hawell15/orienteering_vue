@@ -17,22 +17,22 @@
         <p v-show="result.ecn_points"><strong>Ecn Puncte: </strong>{{result.ecn_points}}</p>
     </div>
     <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editResult(result)">Editeaza</button>
+        <button class="btn btn-sm btn-success" @click="editElement(result)">Editeaza</button>
         <button class="btn btn-danger btn-sm" @click="deleteResult(result.id)">Sterge</button>
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
-    <ResultModal ref="modal" :result="modalResult" :isNew="false" @save="saveResult" />
+    <Modal ref="modal" :result="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import ResultModal from './Modal.vue'
+import Modal from './Modal.vue'
 
 axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
 
 const result = ref({})
 const resultId = ref("")
-const modalResult = ref({})
+const modalElement = ref({})
 const modal = ref(null)
 
 
@@ -59,8 +59,8 @@ function formatResultTime(seconds) {
     );
 }
 
-function editResult(result) {
-    modalResult.value = {
+function editElement(result) {
+    modalElement.value = {
         ...result,
         club_id: result.membership.club_id,
         runner_id: result.membership.runner_id,
@@ -71,7 +71,7 @@ function editResult(result) {
     modal.value.show()
 }
 
-function saveResult(resultData, done) {
+function updateElement(resultData, done) {
     axios.patch(`/results/${resultData.id}.json`, { result: resultData }).then(res => {
         getData();
         done()

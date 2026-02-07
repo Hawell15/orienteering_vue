@@ -15,9 +15,9 @@
         </thead>
         <tbody>
             <tr v-for="element in elements" :key="element.id">
-                <td><a :href="`competitions/${element.id}`">{{ element.id }}</a></td>
-                <td><a :href="`competitions/${element.id}`">{{ element.date }}</a></td>
-                <td><a :href="`competitions/${element.id}`">{{ element.competition_name }}</a></td>
+                <td><a :href="`/competitions/${element.id}`">{{ element.id }}</a></td>
+                <td><a :href="`/competitions/${element.id}`">{{ element.date }}</a></td>
+                <td><a :href="`/competitions/${element.id}`">{{ element.competition_name }}</a></td>
                 <td>{{ element.location }}</td>
                 <td>{{ element.country }}</td>
                 <td>{{ element.distance_type }}</td>
@@ -25,7 +25,7 @@
                 <td :class="element.ecn ? 'bg-true' : 'bg-false'">
                     {{ element.ecn ? "Da" : "Nu" }}
                 </td>
-                <td><a class="btn btn-sm btn-warning" :href="`competitions/${element.id}`">Arată</a></td>
+                <td><a class="btn btn-sm btn-warning" :href="`/competitions/${element.id}`">Arată</a></td>
                 <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
                 <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
             </tr>

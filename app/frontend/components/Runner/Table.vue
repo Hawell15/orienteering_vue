@@ -18,14 +18,14 @@
         </thead>
         <tbody>
             <tr v-for="element in elements" :key="element.id">
-                <td><a :href="`runners/${element.id}`">{{element.id}}</a></td>
-                <td><a :href="`runners/${element.id}`">{{element.full_name}}</a></td>
-                <td><a :href="`categories/${element.category_id}`">{{element.category_name}}</a></td>
+                <td><a :href="`/runners/${element.id}`">{{element.id}}</a></td>
+                <td><a :href="`/runners/${element.id}`">{{element.full_name}}</a></td>
+                <td><a :href="`/categories/${element.category_id}`">{{element.category_name}}</a></td>
                 <td>{{element.category_valid}}</td>
                 <td>{{element.gender}}</td>
                 <td>{{element.yob}}</td>
-                <td><a :href="`clubs/${element.club_id}`">{{element.club_name}}</a></td>
-                <td><a :href="`categories/${element.best_category_id}`">{{element.best_category_name}}</a></td>
+                <td><a :href="`/clubs/${element.club_id}`">{{element.club_name}}</a></td>
+                <td><a :href="`/categories/${element.best_category_id}`">{{element.best_category_name}}</a></td>
                 <td>{{element.wre_id}}</td>
                 <td>
                     <p v-if="element.sprint_wre_place">{{element.sprint_wre_place}}/{{element.sprint_wre_rang}}</p>
@@ -33,7 +33,7 @@
                 <td>
                     <p v-if="element.forest_wre_place">{{element.forest_wre_place}}/{{element.forest_wre_rang}}</p>
                 </td>
-                <td><a class="btn btn-sm btn-warning" :href="`runners/${element.id}`">Arată</a></td>
+                <td><a class="btn btn-sm btn-warning" :href="`/runners/${element.id}`">Arată</a></td>
                 <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
                 <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
             </tr>

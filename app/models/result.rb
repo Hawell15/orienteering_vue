@@ -85,7 +85,7 @@ class Result < ApplicationRecord
   allowed_columns = %w[
     id place full_name club_name runner_category_name time
     result_category_name status date competition_name
-    group_name wre_points ecn_points yob
+    group_name wre_points ecn_points yob created_at
   ]
 
   column    = allowed_columns.include?(sort_by) ? sort_by : "date"

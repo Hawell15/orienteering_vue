@@ -9,7 +9,7 @@ class Membership < ApplicationRecord
   }
 
   scope :sorting, ->(sort_by, direction) {
-    allowed_columns = %w[id club_name full_name results_count]
+    allowed_columns = %w[id club_name full_name results_count created_at]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"
     direction       = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
 

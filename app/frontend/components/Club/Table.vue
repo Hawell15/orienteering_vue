@@ -14,13 +14,13 @@
         </thead>
         <tbody>
             <tr v-for="element in elements" :key="element.id">
-                <td><a :href="`clubs/${element.id}`">{{ element.id }}</a></td>
-                <td><a :href="`clubs/${element.id}`">{{ element.club_name }}</a></td>
-                <td><a :href="`clubs/${element.id}`">{{ element.territory }}</a></td>
+                <td><a :href="`/clubs/${element.id}`">{{ element.id }}</a></td>
+                <td><a :href="`/clubs/${element.id}`">{{ element.club_name }}</a></td>
+                <td><a :href="`/clubs/${element.id}`">{{ element.territory }}</a></td>
                 <td>{{ element.representative }}</td>
                 <td>{{ element.email }}</td>
                 <td>{{ element.phone }}</td>
-                <td><a class="btn btn-sm btn-warning" :href="`clubs/${element.id}`"> Arată </a></td>
+                <td><a class="btn btn-sm btn-warning" :href="`/clubs/${element.id}`"> Arată </a></td>
                 <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
                 <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
             </tr>

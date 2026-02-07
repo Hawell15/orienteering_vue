@@ -8,7 +8,7 @@ class Group < ApplicationRecord
   }
 
   scope :sorting, ->(sort_by, direction) {
-    allowed_columns = %w[id group_name competition_name date rang clasa ecn_coeficient results_count]
+    allowed_columns = %w[id group_name competition_name date rang clasa ecn_coeficient results_count created_at]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"
     direction       = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
 

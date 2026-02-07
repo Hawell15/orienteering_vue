@@ -15,15 +15,15 @@
         </thead>
         <tbody>
             <tr v-for="element in elements" :key="element.id">
-                <td><a :href="`groups/${element.id}`">{{element.id}}</a></td>
-                <td><a :href="`groups/${element.id}`">{{element.group_name}}</a></td>
-                <td><a :href="`competitions/${element.competition_id}`">{{element.competition_name}}</a></td>
+                <td><a :href="`/groups/${element.id}`">{{element.id}}</a></td>
+                <td><a :href="`/groups/${element.id}`">{{element.group_name}}</a></td>
+                <td><a :href="`/competitions/${element.competition_id}`">{{element.competition_name}}</a></td>
                 <td>{{element.date}}</td>
                 <td>{{element.rang}}</td>
                 <td>{{element.clasa_name}}</td>
                 <td>{{element.ecn_coeficient}}</td>
-                <td><a :href="`results?group_id=${element.id}`">{{element.results_count}}</a></td>
-                <td><a class="btn btn-sm btn-warning" :href="`groups/${element.id}`"> Arată </a></td>
+                <td><a :href="`/results?group_id=${element.id}`">{{element.results_count}}</a></td>
+                <td><a class="btn btn-sm btn-warning" :href="`/groups/${element.id}`"> Arată </a></td>
                 <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
                 <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
             </tr>
