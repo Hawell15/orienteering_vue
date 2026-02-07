@@ -11,11 +11,11 @@ RSpec.describe Category, type: :model do
     let!(:cat2) { Category.create!(category_name: "B", points: 20) }
 
     it "sorts by allowed column asc" do
-      expect(Category.sorting("points", "asc")).to eq([cat1, cat2])
+      expect(Category.sorting("points", "asc")).to eq([ cat1, cat2 ])
     end
 
     it "sorts by allowed column desc" do
-      expect(Category.sorting("points", "desc")).to eq([cat2, cat1])
+      expect(Category.sorting("points", "desc")).to eq([ cat2, cat1 ])
     end
 
     it "falls back to id for invalid column" do
@@ -23,7 +23,7 @@ RSpec.describe Category, type: :model do
     end
 
     it "falls back to asc for invalid direction" do
-      expect(Category.sorting("points", "hack")).to eq([cat1, cat2])
+      expect(Category.sorting("points", "hack")).to eq([ cat1, cat2 ])
     end
   end
 
