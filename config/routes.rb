@@ -20,7 +20,9 @@ Rails.application.routes.draw do
      get :filters, on: :collection
   end
 
-  resources :clubs
+  post "/clubs/merge_clubs/:id", to: "clubs#merge_clubs"
+  resources :clubs do
+  end
   resources :categories
 
   root "home#index"

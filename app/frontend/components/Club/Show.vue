@@ -1,7 +1,7 @@
 <template>
     <div class="mt-4 p-5 bg-light text-black rounded --bs-gray-500">
         <h1> {{club.club_name}}</h1>
-        <p><strong>Alte Nume: </strong>{{club.alternative_club_name}}</p>
+        <p><strong>Alte Nume: </strong>{{ club.alternative_club_names?.join(',')}}</p>
         <p><strong>Teritoriu: </strong>{{club.territory}}</p>
         <p><strong>Reprezentant: </strong>{{club.representative}}</p>
         <hr class="my-4">
@@ -9,6 +9,19 @@
         <p><strong>Telefon: </strong>{{club.phone}}</p>
         <p><strong>Numarul de sportivi: </strong><a :href="`/runners?club=${club.id}`">{{runners.length}}</a></p>
         <p><strong>Numarul de rezultate: </strong><a :href="`/results?club=${club.id}`">{{results.length}}</a></p>
+    </div>
+    <div>
+        <label for="club" class="form-label">Club dublicat cu:</label>
+                            <select id="club_id" v-model="selectedClub" class="custom-select">
+                                <option v-for="club in clubsData" :key="club.id" :value="club.id">
+                                    {{ club.club_name }}
+                                </option>
+                            </select>
+
+        Pastreaza acesta?<input v-model="mainClub" type="checkbox" checked/>
+        <button class="btn btn-sm btn-success" @click="mergeClub()">Salveaza</button>
+        <hr>
+
     </div>
     <p class="d-inline-flex gap-1">
         <a class="btn btn-primary" data-bs-toggle="collapse" href="#runnersTable" role="button" aria-expanded="false" aria-controls="runnersTable">
@@ -57,17 +70,27 @@ const runnerSorting = ref({
     "sorting[sort_by]": "id",
     "sorting[direction]": "asc"
 })
-
 const resultSorting = ref({
     "sorting[sort_by]": "date",
     "sorting[direction]": "desc"
 })
+
+const clubsSorting = ref({
+    "sorting[sort_by]": "club_name",
+    "sorting[direction]": "asc"
+})
+
+const clubsData = ref([])
+const mainClub = ref(true)
+const selectedClub = ref({})
+
 
 onMounted(() => {
     clubId.value = window.location.pathname.split('/').pop();
     getData();
     getRunners();
     getResults();
+    getClubs();
 })
 
 async function getData() {
@@ -135,5 +158,22 @@ function goBack() {
     } else {
         window.location = "/clubs";
     }
+}
+
+async function getClubs() {
+    const res = await axios.get('/clubs.json', { params: clubsSorting.value })
+    clubsData.value = res.data;
+}
+
+function mergeClub() {
+    let mainId = null;
+    let mergedId = null;
+
+    mainId = mainClub.value ? clubId.value : selectedClub.value
+    mergedId = mainClub.value ? selectedClub.value : clubId.value
+
+    axios.post(`/clubs/merge_clubs/${mainId}`, {merged_club_id: mergedId})
+
+    window.location = `/clubs/${mainId}`;
 }
 </script>

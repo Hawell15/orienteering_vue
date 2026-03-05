@@ -28,8 +28,8 @@
                                 <input type="text" class="form-control" id="phone" v-model="localClub.phone" />
                             </div>
                             <div class="mb-3">
-                                <label for="alternative_club_name" class="form-label">Alt Nume</label>
-                                <input type="text" class="form-control" id="alternative_club_name" v-model="localClub.alternative_club_name" />
+                                <label for="alternative_club_names" class="form-label">Alt Nume</label>
+                                <input type="text" class="form-control" id="alternative_club_names" v-model="localClub.alternative_club_names" />
                             </div>
                         </div>
                     </form>
@@ -58,9 +58,22 @@ let modalInstance = null
 watch(
     () => props.club,
     (newVal) => {
-        localClub.value = { ...newVal }
+        localClub.value = {
+            ...newVal,
+            alternative_club_names: Array.isArray(newVal?.alternative_club_names)
+                ? newVal.alternative_club_names.join(', ')
+                : (newVal?.alternative_club_names || '')
+        }
     }
 )
+
+onMounted(() => {
+    if (Array.isArray(localClub.value.alternative_club_names)) {
+        localClub.value.alternative_club_names = localClub.value.alternative_club_names.join(', ')
+    } else if (!localClub.value.alternative_club_names) {
+        localClub.value.alternative_club_names = ''
+    }
+})
 
 function show() {
     if (!modalInstance) {
@@ -74,7 +87,15 @@ function hide() {
 }
 
 function handleSave() {
-    emit('save', localClub.value, hide)
+    const payload = {
+        ...localClub.value,
+        alternative_club_names: (localClub.value.alternative_club_names || '')
+            .split(',')
+            .map(name => name.trim())
+            .filter(name => name.length > 0)
+    }
+
+    emit('save', payload, hide)
 }
 
 defineExpose({ show, hide })
