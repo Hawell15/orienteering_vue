@@ -1,5 +1,5 @@
 class ClubsController < ApplicationController
-  before_action :set_club, only: %i[ show edit update destroy ]
+  before_action :set_club, only: %i[ show edit update destroy merge_clubs]
 
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
@@ -53,6 +53,17 @@ class ClubsController < ApplicationController
     end
   end
 
+  # POST /clubs/merge_clubs/:id
+  # @club is the main club (kept)
+  # params[:merged_club_id] is the club that will be merged into @club and then deleted
+  def merge_clubs
+    merged_club = Club.find(params.expect(:merged_club_id))
+
+    @club.merge_from!(merged_club)
+
+    render status: :ok
+  end
+
   # DELETE /clubs/1 or /clubs/1.json
   def destroy
     @club.destroy!
@@ -71,7 +82,7 @@ class ClubsController < ApplicationController
 
   # Only allow a list of trusted parameters through.
   def club_params
-    params.expect(club: [ :club_name, :territory, :representative, :email, :phone, :alternative_club_name, :formatted_name ])
+    params.expect(club: [ :club_name, :territory, :representative, :email, :phone, { alternative_club_names: [] }, :formatted_name ])
   end
 
   def index_base_query
