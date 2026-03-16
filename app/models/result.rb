@@ -4,6 +4,8 @@ class Result < ApplicationRecord
   belongs_to :group
   has_one :runner, through: :membership
 
+  before_validation :add_date
+
   scope :search, ->(search) {
     where("LOWER(competitions.competition_name) LIKE :search OR LOWER(CONCAT(runners.runner_name, \' \', runners.surname)) LIKE :search OR LOWER(CONCAT(runners.surname, \' \', runners.runner_name)) LIKE :search OR LOWER(clubs.club_name) LIKE :search", search: "%#{search.downcase}%")
   }
@@ -81,20 +83,28 @@ class Result < ApplicationRecord
   SQL
   }
 
- scope :sorting, ->(sort_by, direction) {
-  allowed_columns = %w[
-    id place full_name club_name runner_category_name time
-    result_category_name status date competition_name
-    group_name wre_points ecn_points yob created_at
-  ]
+  scope :sorting, ->(sort_by, direction) {
+    allowed_columns = %w[
+      id place full_name club_name runner_category_name time
+      result_category_name status date competition_name
+      group_name wre_points ecn_points yob created_at
+    ]
 
-  column    = allowed_columns.include?(sort_by) ? sort_by : "date"
-  direction = %w[asc desc].include?(direction.to_s.downcase) ? direction : "desc"
+    column    = allowed_columns.include?(sort_by) ? sort_by : "date"
+    direction = %w[asc desc].include?(direction.to_s.downcase) ? direction : "desc"
 
-  if %w[wre_points ecn_points].include?(column)
-    order(Arel.sql("COALESCE(#{column}, -1) #{direction}"))
-  else
-    order("#{column} #{direction}")
+    if %w[wre_points ecn_points].include?(column)
+      order(Arel.sql("COALESCE(#{column}, -1) #{direction}"))
+    else
+      order("#{column} #{direction}")
+    end
+  }
+
+  private
+
+  def add_date
+    return if date
+
+    date = group.competition.date
   end
-}
 end
