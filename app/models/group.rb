@@ -1,6 +1,10 @@
 class Group < ApplicationRecord
+  THREE_RESULTS_GROUP_ID = 1346
+
   belongs_to :competition
   has_many :results, dependent: :destroy
+
+  before_validation :pretify_group_name
 
   scope :search, ->(val) {
     left_joins(:competition)
@@ -36,4 +40,26 @@ class Group < ApplicationRecord
   scope :date, ->(from, to) {
     left_joins(:competition).where("competitions.date" => from..to)
   }
+
+
+  def self.normalize_group_name(name)
+    name.upcase.remove(" ").sub("М", "M").sub("Ж", "W")
+  end
+
+  def self.add_group(params)
+    params = params.with_indifferent_access
+    return Group.find_by(id: params["group_id"]) if params["group_id"]
+
+    if params["group_name"] && params["competition_id"]
+      return Group.find_by(group_name: params["group_name"], competition_id: params["competition_id"])
+    end
+
+    Group.find_or_create_by(params)
+  end
+
+  private
+
+  def pretify_group_name
+    self.group_name = self.class.normalize_group_name(self.group_name)
+  end
 end
