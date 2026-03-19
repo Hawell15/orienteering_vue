@@ -2,6 +2,8 @@ class Category < ApplicationRecord
   has_many :runners
   has_many :results
 
+  NO_CATEGORY_ID = 10.freeze
+
   scope :sorting, ->(sort_by, direction) {
     allowed_columns = %w[id category_name points validaty_period runners_count created_at]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"

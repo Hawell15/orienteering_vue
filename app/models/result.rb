@@ -100,6 +100,12 @@ class Result < ApplicationRecord
     end
   }
 
+  STATUSES = %w[unconfirmed confirmed pending]
+
+  STATUSES.each do |name|
+    const_set(name.upcase, name)
+  end
+
   private
 
   def add_date
