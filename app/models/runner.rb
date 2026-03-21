@@ -7,6 +7,24 @@ class Runner < ApplicationRecord
 
   before_save :add_checksum
 
+  scope :search, ->(search) {
+    next all if search.blank?
+
+    term = "%#{search.downcase}%"
+
+    where(
+      <<~SQL, term: term, id: (Integer(search) rescue nil)
+        (
+          LOWER(CONCAT(runners.runner_name, ' ', runners.surname)) LIKE :term OR
+          LOWER(CONCAT(runners.surname, ' ', runners.runner_name)) LIKE :term OR
+          LOWER(clubs.club_name) LIKE :term OR
+          (:id IS NOT NULL AND runners.id = :id) OR
+          (:id IS NOT NULL AND runners.wre_id = :id)
+        )
+      SQL
+    )
+  }
+
   scope :sorting, ->(sort_by, direction) {
     allowed_columns = %w[
       id full_name category_id category_valid gender yob club_name best_category_id wre_id sprint_wre_place forest_wre_place created_at
