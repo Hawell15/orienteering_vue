@@ -1,6 +1,7 @@
 class RunnersController < ApplicationController
   before_action :set_runner, only: %i[ show edit update destroy ]
   has_scope :sorting, using: %i[sort_by direction], type: :hash
+  has_scope :search
   has_scope :club
   has_scope :membership
   has_scope :category
