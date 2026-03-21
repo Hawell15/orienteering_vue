@@ -69,6 +69,8 @@ class Runner < ApplicationRecord
     params["surname"]     = RussianConversion.convert_from_russian(params["surname"].downcase).titlecase
 
     runner = matching_runner(params).first
+    update_yob(runner, params[:yob])
+
     runner ||= RunnerMatching.get_runner_by_matching(params) unless skip_matching
     params["id"] ||= (Runner.maximum(:id) || 0) + 1
     runner ||= Runner.create!(params.except("category_id", "date"))
@@ -117,5 +119,12 @@ class Runner < ApplicationRecord
 
   def junior_runner?
     Time.now.year - yob.year < 18
+  end
+
+  def self.update_yob(runner, yob)
+    return unless runner.yob.zero?
+    return if yob.blank? || yob.zero?
+
+    runner.update!(yob: yob)
   end
 end
