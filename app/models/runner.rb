@@ -125,6 +125,10 @@ class Runner < ApplicationRecord
     save! if changed?
   end
 
+  def junior_runner?
+    Time.now.year - yob < 18
+  end
+
   private
 
   def add_checksum
@@ -133,10 +137,6 @@ class Runner < ApplicationRecord
 
   def self.get_checksum(runner_name, surname, yob, gender)
     (Digest::SHA2.new << "#{runner_name}-#{surname}-#{yob}-#{gender}").to_s
-  end
-
-  def junior_runner?
-    Time.now.year - yob.year < 18
   end
 
   def self.update_yob(runner, yob)

@@ -68,7 +68,7 @@ class IofRunnersParser < BaseParser
 
     runners.each do |runner|
       iof_id = runner["IOF ID"].to_i
-      binding.pry if iof_id == 8458
+
       next if existing_ids.include?(iof_id)
       age = request_age(iof_id)
 
@@ -97,11 +97,8 @@ class IofRunnersParser < BaseParser
   end
 
   def request_age(id)
-    url = URI("https://ranking.orienteering.org/PersonView?person=#{id}")
+    response = Nokogiri::HTML(Net::HTTP.get(URI("https://ranking.orienteering.org/PersonView?person=#{id}")))
 
-    https = Net::HTTP.new(url.host, url.port)
-    https.use_ssl = true
-    response = Nokogiri::HTML(https.get(url).body)
     response.css("div.align-items-start div")
                   .find { |div| div.text.strip.match?(/^Age: \d+$/) }.text[/\d+/].to_i
   end

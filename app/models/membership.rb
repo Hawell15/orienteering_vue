@@ -33,4 +33,10 @@ class Membership < ApplicationRecord
   scope :results_count, ->(from, to) {
     having("COUNT(results.id) BETWEEN ? AND ?", from.to_i, to.to_i)
   }
+
+  def self.add_membership(params)
+    params = params.with_indifferent_access
+
+    Membership.find_or_create_by(params)
+  end
 end
