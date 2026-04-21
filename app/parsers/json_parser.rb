@@ -29,7 +29,6 @@ class JsonParser < BaseParser
     json.map do |group|
       {
         group_name: group["name"],
-        clasa:      convert_group_class(group["distance_class"]),
         results:    extract_results(group["results"], extract_gender(group["name"].first), date)
       }
     end
@@ -42,20 +41,21 @@ class JsonParser < BaseParser
       {
         place:       result["place"],
         time:        convert_time(result["time"]),
-        runner:      extract_runner(result, gender, date),
+        runner:      extract_runner(result, gender),
         membership:  result["club"],
         category_id: Category::NO_CATEGORY_ID
       }
     end
   end
 
-  def extract_runner(result, gender, date)
+  def extract_runner(result, gender)
     runner_name, surname = result["runner_name"].split(" ", 2)
 
     {
       runner_name: runner_name,
       surname:     surname,
       yob:         extract_yob(result["date_of_birth"]),
+      club:        result["club"],
       gender:      gender
     }.compact
   end
