@@ -39,16 +39,6 @@ class ResultProcessor
     @result = Result.create!(params.except("runner_id", "membership"))
   end
 
-  def update_result
-    params = @params.with_indifferent_access
-
-    result.update!(params)
-    result.entry&.destroy
-    add_entry
-
-    result
-  end
-
   private
 
   def better_category?
