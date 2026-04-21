@@ -91,29 +91,27 @@ class Club < ApplicationRecord
     memberships.update_all(club_id: DEFAULT_CLUB_ID)
 
     runners.includes(:memberships, :results).find_each do |runner|
-      other_memberships = runner.memberships.where.not(club_id: club_id)
+      other_memberships = runner.memberships.where.not(club_id: DEFAULT_CLUB_ID)
 
       unless other_memberships.exists?
         runner.update!(club_id: DEFAULT_CLUB_ID)
         next
       end
 
-      next
+      new_club_id =
+        runner.results
+              .where(membership_id: other_memberships.select(:id))
+              .order(date: :desc)
+              .joins(:membership)
+              .limit(1)
+              .pick("memberships.club_id")
+
+      new_club_id ||= other_memberships
+                        .order(created_at: :desc)
+                        .limit(1)
+                        .pick(:club_id)
+
+      runner.update!(club_id: new_club_id)
     end
-
-    new_club_id =
-      runner.results
-            .where(membership_id: other_memberships.select(:id))
-            .order(date: :desc)
-            .joins(:membership)
-            .limit(1)
-            .pick("memberships.club_id")
-
-    new_club_id ||= other_memberships
-                      .order(created_at: :desc)
-                      .limit(1)
-                      .pick(:club_id)
-
-    runner.update!(club_id: new_club_id)
-    end
+  end
 end

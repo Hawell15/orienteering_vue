@@ -59,7 +59,7 @@ class Runner < ApplicationRecord
   scope :best_category, ->(val) {
     case val.to_s
     when "all" then all
-    else where(best_category: val)
+    else where(best_category_id: val)
     end
   }
 
