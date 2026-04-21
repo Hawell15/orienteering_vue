@@ -51,7 +51,7 @@
         <input type="checkbox" id="confirmed" value="confirmed" v-model="filters.status" />
         <label for="pending">În așteptare</label>
         <input type="checkbox" id="pending" value="pending" v-model="filters.status" />
-        <label for="unconfirmed">Neconfirmat</label>
+        <label for="unconfirmed">Fără îndeplinire</label>
         <input type="checkbox" id="unconfirmed" value="unconfirmed" v-model="filters.status" />
     </div>
     <div class="filter-item">

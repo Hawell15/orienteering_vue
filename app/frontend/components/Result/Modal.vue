@@ -116,7 +116,7 @@ const statusData = ref([{
     },
     {
         id: "unconfirmed",
-        name: "Neconfirmat"
+        name: "Fără îndeplinire"
     }
 ])
 

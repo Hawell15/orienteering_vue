@@ -1,5 +1,9 @@
 class Group < ApplicationRecord
-  THREE_RESULTS_GROUP_ID = 1346
+  THREE_RESULTS_GROUP_ID              = 1346
+  REDUCTION_CATEGORY_GROUP_ID         = 2
+  TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID = 2320
+
+
 
   belongs_to :competition
   has_many :results, dependent: :destroy
@@ -48,11 +52,7 @@ class Group < ApplicationRecord
 
   def self.add_group(params)
     params = params.with_indifferent_access
-    return Group.find_by(id: params["group_id"]) if params["group_id"]
-
-    if params["group_name"] && params["competition_id"]
-      return Group.find_by(group_name: params["group_name"], competition_id: params["competition_id"])
-    end
+    return Group.find(params["group_id"]) if params["group_id"]
 
     Group.find_or_create_by(params)
   end
