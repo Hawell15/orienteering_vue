@@ -1,5 +1,5 @@
 class ResultProcessor
-  attr_reader :params, :result, :runner
+  attr_accessor :params, :result, :runner
 
   def initialize(params = nil, result = nil)
     @params = params.with_indifferent_access
@@ -7,7 +7,7 @@ class ResultProcessor
     @runner = Runner.find(params[:runner_id])
   end
 
-   def add_result
+  def add_result
     params = @params.with_indifferent_access
 
     params["membership_id"] =  add_membership_id
@@ -20,11 +20,13 @@ class ResultProcessor
 
     check_params.merge!(date: params["date"]) if params["date"]
 
-    result = Result.find_by(check_params)
+    @result = Result.find_by(check_params)
+
     params["status"] ||= Result::UNCONFIRMED
 
-
-    return handle_update_result if result
+    if result
+      return handle_update_result
+    end
 
     if better_category?
       create_pending_result
@@ -34,18 +36,16 @@ class ResultProcessor
 
     add_tree_results_category
 
-    result = Result.create!(params.except("runner_id", "membership"))
+    @result = Result.create!(params.except("runner_id", "membership"))
   end
 
   def update_result
     params = @params.with_indifferent_access
 
     result.update!(params)
+    result.entry&.destroy
+    add_entry
 
-      # if params.keys.any? { |key| ['runner_id', 'category_id', 'date'].include?(key) }
-      result.entry&.destroy
-      add_entry
-    # end
     result
   end
 
@@ -111,7 +111,7 @@ class ResultProcessor
 
     return false if runner_category_on_date && runner_category_on_date.category_id < 9
 
-    results = runner.results.where(date: "2024-03-25".to_date .. params[".date"])
+    results = runner.results.where(date: "2024-03-25".to_date .. params["date"])
 
     return false if results.count < 3
 

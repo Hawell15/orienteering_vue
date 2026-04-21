@@ -87,11 +87,11 @@ class Runner < ApplicationRecord
     params["surname"]     = RussianConversion.convert_from_russian(params["surname"].downcase).titlecase
 
     runner = matching_runner(params).first
-    update_yob(runner, params[:yob])
 
     runner ||= RunnerMatching.get_runner_by_matching(params) unless skip_matching
     params["id"] ||= (Runner.maximum(:id) || 0) + 1
     runner ||= Runner.create!(params.except("category_id", "date"))
+    update_yob(runner, params[:yob])
 
     runner
   end
@@ -99,7 +99,6 @@ class Runner < ApplicationRecord
   def category_on_date(date = Date.today)
     results
       .joins(:category, :runner)
-      .joins(:runner)
       .where(status: Result::CONFIRMED)
       .where("results.date <= :date", date: date)
       .where.not("results.category_id = ?", Category::NO_CATEGORY_ID)

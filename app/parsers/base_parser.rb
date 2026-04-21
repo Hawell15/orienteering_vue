@@ -58,11 +58,13 @@ class BaseParser
 
   def convert_group_class(string)
     case string
-    when /juniori/         then "Juniori"
-    when /(c|с)ategoria I/ then "Seniori"
-    when /CMSRM/           then "CMSRM"
-    when /MSRM/            then "MSRM"
-    else "Fara Categorii"
+    when /juniori/          then 7
+    when /(c|с)ategoria II/ then 5
+    when /(c|с)ategoria I/  then 4
+    when /CMSRM/            then 3
+    when /MSRM/             then 2
+    when /MISRM/            then 1
+    else 10
     end
   end
 

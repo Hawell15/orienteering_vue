@@ -13,7 +13,7 @@ Rails.application.routes.draw do
   get "/competitions/group_filters/:id", to: "competitions#group_filters", as: :competition_group_filters
 
   resources :competitions do
-    get :distance_types, on: :collection
+    get :distance_types, on:  :collection
     get :filters, on: :collection
   end
   resources :runners do
@@ -21,8 +21,10 @@ Rails.application.routes.draw do
   end
 
   post "/clubs/merge_clubs/:id", to: "clubs#merge_clubs"
+
   resources :clubs do
   end
+
   resources :categories
 
   root "home#index"
@@ -33,8 +35,11 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
+  get "parser/index", as: "parser"
   get "parser/iof_runners", as: "iof_runners"
   get "parser/iof_results", as: "iof_results"
+  get 'parser/file_results', as: 'file_results'
+  post 'parser/file_results'
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

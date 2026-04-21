@@ -55,8 +55,7 @@ class IofResultsParser < BaseParser
   end
 
   def get_data
-    # runners_with_wre_id = Runner.where.not(wre_id: nil).select(:id, :wre_id, :gender)
-    runners_with_wre_id = Runner.where(wre_id: [ 8458, 19013, 22504 ]).select(:id, :wre_id, :gender)
+    runners_with_wre_id = Runner.where.not(wre_id: nil).select(:id, :wre_id, :gender)
 
     runners_with_wre_id.map do |runner|
       get_runner_results(runner)
@@ -79,7 +78,7 @@ class IofResultsParser < BaseParser
   end
 
   def get_wre_category(points)
-    category_id = case points
+    case points
     when 700..900   then 4
     when 901..1050  then 3
     when 1051..1250 then 2
