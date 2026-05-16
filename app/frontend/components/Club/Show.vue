@@ -53,13 +53,10 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Modal from './Modal.vue'
 import RunnersTable from '../Runner/Table.vue'
 import ResultsTable from '../Result/Table.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[  name="csrf-token"]').getAttribute('content')
-
 const club = ref({})
 const modalElement = ref({})
 const modal = ref(null)
@@ -83,8 +80,6 @@ const clubsSorting = ref({
 const clubsData = ref([])
 const mainClub = ref(true)
 const selectedClub = ref({})
-
-
 onMounted(() => {
     clubId.value = window.location.pathname.split('/').pop();
     getData();

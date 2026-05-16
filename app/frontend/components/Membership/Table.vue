@@ -25,11 +25,8 @@
 </template>
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Modal from './Modal.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
 const props = defineProps({
     elements: Object
 })

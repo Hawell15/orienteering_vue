@@ -52,7 +52,7 @@
 </template>
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 
 const props = defineProps({
     competition: Object,

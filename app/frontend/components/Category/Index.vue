@@ -38,17 +38,14 @@
     <hr>
     <button class="btn btn-info mb-2" @click="createNew">Adauga Categorie</button>
     <hr>
-    <Table :elements="data" @order="orderTable"></Table>
+    <Table :elements="data" @order="orderTable" @deleted="removeCategory" @updated="updateCategory"></Table>
     <Create ref="modal" @save="saveCategory" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Create from './Create.vue'
 import Table from './Table.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
 const data = ref([])
 const modal = ref(null)
 
@@ -161,6 +158,15 @@ function resetFilters() {
 
 function createNew() {
     modal.value.createNew()
+}
+
+function removeCategory(id) {
+    data.value = data.value.filter(c => c.id !== id)
+}
+
+function updateCategory(updated) {
+    const index = data.value.findIndex(c => c.id === updated.id)
+    if (index !== -1) data.value[index] = { ...data.value[index], ...updated }
 }
 
 function saveCategory() {

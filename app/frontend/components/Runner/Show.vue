@@ -114,13 +114,10 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Modal from './Modal.vue'
 import MembershipsTable from '../Membership/Table.vue'
 import ResultsTable from '../Result/Table.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
-
 const runner = ref({})
 const runnerId = ref("")
 const results = ref([])
@@ -178,8 +175,6 @@ async function getConfirmationResults() {
     const res = await axios.get('/results.json', { params: params })
     confirmationResults.value = res.data;
 }
-
-
 function orderResultTable(sortKey) {
     orderTable(sortKey, resultSorting)
     getResults();

@@ -41,12 +41,9 @@
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Create from './Create.vue'
 import Table from './Table.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
 const data = ref([])
 const filterData = ref({})
 const modal = ref(null)

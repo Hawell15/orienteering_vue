@@ -71,12 +71,9 @@
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Create from './Create.vue'
 import Table from './Table.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
 const data = ref([])
 const filterData = ref({})
 const competitionValue = ref("")
@@ -100,8 +97,6 @@ const DEFAULT_FILTERS = {
 const filters = reactive({ ...DEFAULT_FILTERS });
 
 const modal = ref(null)
-
-
 let debounceTimeout = null;
 
 watch(
@@ -171,8 +166,6 @@ async function getData() {
 onMounted(() => {
     getFiltersData()
     const urlParams = new URLSearchParams(window.location.search);
-
-
     urlParams.forEach((value, key) => {
         if (key in filters) {
             const isNumber = typeof DEFAULT_FILTERS[key] === 'number';

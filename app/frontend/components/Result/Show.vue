@@ -25,17 +25,12 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Modal from './Modal.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[ name="csrf-token"]').getAttribute('content')
-
 const result = ref({})
 const resultId = ref("")
 const modalElement = ref({})
 const modal = ref(null)
-
-
 onMounted(() => {
     resultId.value = window.location.pathname.split('/').pop();
     getData();

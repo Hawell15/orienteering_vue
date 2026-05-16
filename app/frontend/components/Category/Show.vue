@@ -38,13 +38,10 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Modal from './Modal.vue'
 import RunnersTable from '../Runner/Table.vue'
 import ResultsTable from '../Result/Table.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[  name="csrf-token"]').getAttribute('content')
-
 
 const category = ref({})
 const modalElement = ref({})

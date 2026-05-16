@@ -7,13 +7,14 @@ class Category < ApplicationRecord
   scope :sorting, ->(sort_by, direction) {
     allowed_columns = %w[id category_name points validaty_period runners_count created_at]
     column          = allowed_columns.include?(sort_by) ? sort_by : "id"
-    direction       = %w[asc desc].include?(direction.to_s.downcase) ? direction : "asc"
+    dir             = %w[asc desc].include?(direction.to_s.downcase) ? direction.to_s.downcase : "asc"
 
-    order("#{column} #{direction}")
+    order(Arel.sql("#{column} #{dir}"))
   }
 
   scope :search, ->(val) {
-    where("LOWER(category_name) LIKE :search OR LOWER(full_name) LIKE :search", search: "%#{val.downcase}%")
+    where("LOWER(category_name) LIKE :search OR LOWER(full_name) LIKE :search",
+          search: "%#{sanitize_sql_like(val.downcase)}%")
   }
 
   scope :age, ->(val) {
