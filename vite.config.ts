@@ -1,11 +1,17 @@
 // vite.config.ts
 import { defineConfig } from 'vite'
+import { resolve } from 'path'
 import RubyPlugin from 'vite-plugin-ruby'
-import vue from '@vitejs/plugin-vue' // Add this
+import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [
     RubyPlugin(),
-    vue(), // Add this
+    vue(),
   ],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'app/frontend'),
+    },
+  },
 })

@@ -64,7 +64,7 @@
 </template>
 <script setup>
 import { ref, watch, onBeforeMount, computed } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 
 const props = defineProps({
     runner: Object,

@@ -45,16 +45,13 @@
 </template>
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
+import axios from '@/axios'
 import Modal from './Modal.vue'
-
-axios.defaults.headers['X-CSRF-Token'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-
 const props = defineProps({
     elements: Object
 })
 
-const emit = defineEmits(['order'])
+const emit = defineEmits(['order', 'deleted', 'updated'])
 
 const modalElement = ref({})
 const modal = ref(null)
@@ -62,7 +59,7 @@ const modal = ref(null)
 function deleteElement(id) {
     if (confirm('Esti sigur ca vrei sa stergi această categorie?')) {
         axios.delete(`/categories/${id}`).then(() => {
-            props.elements = props.elements.filter(category => category.id !== id)
+            emit('deleted', id)
         })
     }
 }
@@ -74,8 +71,7 @@ function editElement(element) {
 
 function updateElement(elementData, done) {
     axios.patch(`/categories/${elementData.id}.json`, { category: elementData }).then(res => {
-        const index = props.elements.findIndex(c => c.id === res.data.id)
-        if (index !== -1) props.elements[index] = { ...props.elements[index], ...res.data }
+        emit('updated', res.data)
         done()
     })
 }
