@@ -42,7 +42,7 @@ class CategoriesController < ApplicationController
       if @category.save
         format.json { render json: @category, status: :ok }
       else
-        format.json { render json: @category.errors, status: :unprocessable_entity }
+        format.json { render json: @category.errors, status: :unprocessable_content }
       end
     end
   end
@@ -54,7 +54,7 @@ class CategoriesController < ApplicationController
         format.json { render json: @category, status: :ok }
       else
         # Handle errors and respond in both formats
-        format.json { render json: @category.errors, status: :unprocessable_entity }
+        format.json { render json: @category.errors, status: :unprocessable_content }
       end
     end
   end

@@ -42,7 +42,7 @@ class MembershipsController < ApplicationController
       if @membership.save
         format.json { render json: index_base_query.find(@membership.id), status: :ok }
       else
-        format.json { render json: @membership.errors, status: :unprocessable_entity }
+        format.json { render json: @membership.errors, status: :unprocessable_content }
       end
     end
   end
@@ -53,7 +53,7 @@ class MembershipsController < ApplicationController
       if @membership.update(membership_params)
         format.json { render json: index_base_query.find(@membership.id), status: :ok }
       else
-        format.json { render json: @membership.errors, status: :unprocessable_entity }
+        format.json { render json: @membership.errors, status: :unprocessable_content }
       end
     end
   end

@@ -61,7 +61,7 @@ class ResultsController < ApplicationController
       if @result.save
         format.json { render json: index_base_query.find(@result.id), status: :ok }
       else
-        format.json { render json: @result.errors, status: :unprocessable_entity }
+        format.json { render json: @result.errors, status: :unprocessable_content }
       end
     end
   end
@@ -72,7 +72,7 @@ class ResultsController < ApplicationController
       if @result.update(result_params.merge(membership_id: @membership.id))
         format.json { render json: index_base_query.find(@result.id), status: :ok }
       else
-        format.json { render json: @result.errors, status: :unprocessable_entity }
+        format.json { render json: @result.errors, status: :unprocessable_content }
       end
     end
   end
