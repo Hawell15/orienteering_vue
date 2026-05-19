@@ -61,7 +61,7 @@ class ClubsController < ApplicationController
 
     @club.merge_from!(merged_club)
 
-    render status: :ok
+    head :ok
   end
 
   # DELETE /clubs/1 or /clubs/1.json
