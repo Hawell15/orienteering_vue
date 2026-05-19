@@ -37,7 +37,7 @@ class ClubsController < ApplicationController
       if @club.save
         format.json { render json: @club, status: :ok }
       else
-        format.json { render json: @club.errors, status: :unprocessable_entity }
+        format.json { render json: @club.errors, status: :unprocessable_content }
       end
     end
   end
@@ -48,7 +48,7 @@ class ClubsController < ApplicationController
       if @club.update(club_params)
         format.json { render json: @club, status: :ok }
       else
-        format.json { render json: @club.errors, status: :unprocessable_entity }
+        format.json { render json: @club.errors, status: :unprocessable_content }
       end
     end
   end

@@ -14,7 +14,7 @@ class EcnProcessor
 
     winner_time = winner.time
 
-    group.results.where.not(time: [nil, 0]).each do |result|
+    group.results.where.not(time: [ nil, 0 ]).each do |result|
       result.update!(ecn_points: get_ecn_points(winner_time, coeficient, result.time))
     end
   end

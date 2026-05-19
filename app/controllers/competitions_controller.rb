@@ -41,7 +41,7 @@ class CompetitionsController < ApplicationController
       if @competition.save
         format.json { render json: @competition, status: :ok }
       else
-        format.json { render json: @competition.errors, status: :unprocessable_entity }
+        format.json { render json: @competition.errors, status: :unprocessable_content }
       end
     end
   end
@@ -52,7 +52,7 @@ class CompetitionsController < ApplicationController
       if @competition.update(competition_params)
         format.json { render json: @competition, status: :ok }
       else
-        format.json { render json: @competition.errors, status: :unprocessable_entity }
+        format.json { render json: @competition.errors, status: :unprocessable_content }
       end
     end
   end

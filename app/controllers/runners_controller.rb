@@ -46,7 +46,7 @@ class RunnersController < ApplicationController
       if @runner.save
         format.json { render json: index_base_query.find(@runner.id), status: :ok }
       else
-        format.json { render json: @runner.errors, status: :unprocessable_entity }
+        format.json { render json: @runner.errors, status: :unprocessable_content }
       end
     end
   end
@@ -57,7 +57,7 @@ class RunnersController < ApplicationController
       if @runner.update(runner_params)
         format.json { render json: index_base_query.find(@runner.id), status: :ok }
       else
-        format.json { render json: @runner.errors, status: :unprocessable_entity }
+        format.json { render json: @runner.errors, status: :unprocessable_content }
       end
     end
   end
