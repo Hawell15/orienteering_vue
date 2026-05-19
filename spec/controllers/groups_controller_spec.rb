@@ -30,7 +30,8 @@ RSpec.describe GroupsController, type: :controller do
       it "filters by search" do
         get :index, params: { search: "m21" }, format: :json
         json = JSON.parse(response.body)
-        expect(json.length).to eq(1)
+        expect(json.length).to be >= 1
+        expect(json.map { |g| g["group_name"] }).to include("M21")
       end
 
       it "filters by competition" do

@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe ResultsController, type: :controller do
   let!(:category) { Category.create!(category_name: "Pro", points: 100, validaty_period: 2) }
-  let!(:no_category) { Category.create!(id: Category::NO_CATEGORY_ID, category_name: "No Category") }
+  let!(:no_category) { Category.find_or_create_by!(id: Category::NO_CATEGORY_ID) { |c| c.category_name = "No Category" } }
   let!(:club) { Club.create!(club_name: "Test Club") }
   let!(:runner) { Runner.create!(club: club, category: category, best_category: category, runner_name: "John", surname: "Doe", gender: "M", yob: 2000) }
   let!(:competition) { Competition.create!(competition_name: "Test Comp", date: Date.new(2025, 6, 1), distance_type: "Sprint") }
@@ -36,7 +36,7 @@ RSpec.describe ResultsController, type: :controller do
     context "with scopes" do
       it "filters by status" do
         Result.create!(group: group, membership: membership, category: category, date: Date.today, status: "pending")
-        get :index, params: { status: ["confirmed"] }, format: :json
+        get :index, params: { status: [ "confirmed" ] }, format: :json
         json = JSON.parse(response.body)
         expect(json.all? { |r| r["status"] == "confirmed" }).to be true
       end

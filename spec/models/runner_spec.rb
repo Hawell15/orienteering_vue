@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe Runner, type: :model do
   let!(:category) { Category.create!(category_name: "Test", points: 100, validaty_period: 2) }
-  let!(:no_category) { Category.create!(id: Category::NO_CATEGORY_ID, category_name: "No Category") }
+  let!(:no_category) { Category.find_or_create_by!(id: Category::NO_CATEGORY_ID) { |c| c.category_name = "No Category" } }
   let!(:club) { Club.create!(club_name: "Test Club") }
 
   describe "associations" do

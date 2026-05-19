@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe RunnersController, type: :controller do
   let!(:category) { Category.create!(category_name: "Pro", points: 100, validaty_period: 2) }
-  let!(:no_category) { Category.create!(id: Category::NO_CATEGORY_ID, category_name: "No Category") }
+  let!(:no_category) { Category.find_or_create_by!(id: Category::NO_CATEGORY_ID) { |c| c.category_name = "No Category" } }
   let!(:club) { Club.create!(club_name: "Test Club") }
   let!(:runner) { Runner.create!(club: club, category: category, best_category: category, runner_name: "John", surname: "Doe", gender: "M", yob: 2000) }
   let(:valid_attributes) { { runner_name: "Jane", surname: "Smith", gender: "W", yob: 2001, club_id: club.id, category_id: category.id, best_category_id: category.id } }

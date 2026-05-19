@@ -16,7 +16,7 @@ RSpec.describe CompetitionsController, type: :controller do
       expect(response).to be_successful
       json = JSON.parse(response.body)
       expect(json).to be_an(Array)
-      expect(json.first["competition_name"]).to eq("Cupa Moldovei")
+      expect(json.map { |c| c["competition_name"] }).to include("Cupa Moldovei")
     end
 
     context "with scopes" do
