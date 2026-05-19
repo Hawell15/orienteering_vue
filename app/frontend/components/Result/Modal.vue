@@ -163,7 +163,7 @@ function handleSave() {
 }
 
 async function getCompetitionData() {
-    const res = await axios.get(`/competitions/group_filters/${localResult.value.competition_id}.json`)
+    const res = await axios.get(`/competitions/${localResult.value.competition_id}/group_filters.json`)
     competitionData.value = res.data
 }
 
