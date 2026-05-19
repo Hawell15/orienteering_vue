@@ -8,6 +8,8 @@ class Group < ApplicationRecord
   belongs_to :competition
   has_many :results, dependent: :destroy
 
+  after_update :clear_ecn_points, if: -> { saved_change_to_ecn_coeficient? && ecn_coeficient.zero? }
+
   before_validation :pretify_group_name
 
   scope :search, ->(val) {
@@ -58,6 +60,10 @@ class Group < ApplicationRecord
   end
 
   private
+
+  def clear_ecn_points
+    results.update_all(ecn_points: 0.0)
+  end
 
   def pretify_group_name
     self.group_name = self.class.normalize_group_name(self.group_name)

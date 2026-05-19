@@ -1,6 +1,7 @@
 class Competition < ApplicationRecord
   has_many :groups, dependent: :destroy
   before_save :add_checksum
+  after_update :clear_ecn_data, if: -> { saved_change_to_ecn? && !ecn }
 
   DISTANCE_TYPES = [ "Sprint", "Medie", "Lungă", "Alegere", "Knock-out Sprint", "Labirint", "Alta" ].freeze
 
@@ -43,6 +44,10 @@ class Competition < ApplicationRecord
 
   def self.get_checksum(competition_name, date, distance_type, wre_id)
     (Digest::SHA2.new << "#{competition_name}-#{date.as_json}-#{distance_type}-#{wre_id}").to_s
+  end
+
+  def clear_ecn_data
+    groups.each { |group| group.update(ecn_coeficient: 0.0) }
   end
 
   def self.add_competition(params)

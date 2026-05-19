@@ -2,6 +2,26 @@
     <div class="mt-4 p-5 bg-light text-black rounded --bs-gray-500">
         <h1> {{competition.competition_name}} </h1>
         <hr class="my-4">
+        <div class="d-inline-block">
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Acțiuni
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <button class="dropdown-item" @click="toggleEcn">
+                            {{ competition.ecn ? 'Exclude din ECN' : 'Adauga la ECN' }}
+                        </button>
+                    </li>
+
+                    <li v-if="competition.ecn">
+                        <button class="dropdown-item" @click="openEcnModal">
+                            Seteaza Coeficientii Grupelor
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
         <p><strong>Data: </strong>{{competition.date}}</p>
         <p><strong>Tipul Distanței: </strong>{{competition.distance_type}}</p>
         <p><strong>ECN: </strong>{{competition.ecn ? "Da" : "Nu"}}</p>
@@ -16,7 +36,7 @@
                 </button>
             </li>
         </ul>
-        <ResultsTable :elements="activeGroup.results" @order="orderResultTable"></ResultsTable>
+        <ResultsTable v-if="activeGroup" :elements="activeGroup.results" @order="orderResultTable"></ResultsTable>
         <div class="half-width-table">
             <table class="table table-striped table-bordered table-hover">
                 <thead class="table-warning">
@@ -50,16 +70,19 @@
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
     <Modal ref="modal" :competition="modalElement" :isNew="false" @save="updateElement" />
+    <EcnCoeficients ref="ecnModal" :competitionId="competitionId" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from '@/axios'
 import Modal from './Modal.vue'
+import EcnCoeficients from './EcnCoeficients.vue'
 import ResultsTable from '../Result/Table.vue'
 const competition = ref({})
 const competitionId = ref("")
 const modalElement = ref({})
 const modal = ref(null)
+const ecnModal = ref(null)
 
 const groups = ref([])
 const activeGroup = ref(null)
@@ -73,6 +96,13 @@ onMounted(() => {
 async function getData() {
     const res = await axios.get(`/competitions/${competitionId.value}.json`)
     competition.value = res.data;
+}
+
+async function toggleEcn() {
+    const res = await axios.patch(`/competitions/${competitionId.value}.json`, {
+        competition: { ecn: !competition.value.ecn }
+    })
+    competition.value = res.data
 }
 
 async function getResults() {
@@ -132,6 +162,10 @@ function formatGroupClasa(clasa) {
         "10": "f/c"
     }
     return map[clasa]
+}
+
+function openEcnModal() {
+    ecnModal.value.show()
 }
 
 function editElement(competition) {

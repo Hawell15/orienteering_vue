@@ -10,11 +10,14 @@ Rails.application.routes.draw do
   resources :groups do
     get :filters, on: :collection
   end
-  get "/competitions/group_filters/:id", to: "competitions#group_filters", as: :competition_group_filters
-
   resources :competitions do
     get :distance_types, on:  :collection
     get :filters, on: :collection
+    member do
+      get "group_filters"
+      get "ecn_coeficients"
+      post "group_ecn_coeficients"
+    end
   end
   resources :runners do
      get :filters, on: :collection

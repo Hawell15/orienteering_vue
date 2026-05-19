@@ -202,7 +202,7 @@ async function getFiltersGroupData() {
         delete filterData.value.groups
         return;
     }
-    const res = await axios.get(`/competitions/group_filters/${filters.competition}.json`)
+    const res = await axios.get(`/competitions/${filters.competition}/group_filters.json`)
 
     filterData.value.groups = res.data.groups
 }

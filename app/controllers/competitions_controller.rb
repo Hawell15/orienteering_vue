@@ -1,5 +1,5 @@
 class CompetitionsController < ApplicationController
-  before_action :set_competition, only: %i[ show edit update destroy group_filters]
+  before_action :set_competition, only: %i[ show edit update destroy group_filters ecn_coeficients group_ecn_coeficients]
   has_scope :search
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :country
@@ -88,6 +88,23 @@ class CompetitionsController < ApplicationController
       ecn: @competition.ecn.present?,
       wre: @competition.wre_id.present?
     }
+  end
+
+  def ecn_coeficients
+    respond_to do |format|
+      format.html # renders index.html.erb
+      format.json { render json: @competition.groups.order(:group_name).select(:group_name, :ecn_coeficient, :id) }
+    end
+  end
+
+  def group_ecn_coeficients
+    groups_params = params.require(:groups)
+      groups_params.each do |gp|
+        group = @competition.groups.find(gp[:id])
+        group.update!(ecn_coeficient: gp[:ecn_coeficient])
+      end
+
+    render json: @competition.groups.order(:group_name).select(:group_name, :ecn_coeficient, :id)
   end
 
   private
