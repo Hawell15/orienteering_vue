@@ -99,10 +99,13 @@ class CompetitionsController < ApplicationController
 
   def group_ecn_coeficients
     groups_params = params.require(:groups)
-      groups_params.each do |gp|
-        group = @competition.groups.find(gp[:id])
-        group.update!(ecn_coeficient: gp[:ecn_coeficient])
-      end
+
+    groups_params.each do |gp|
+      group = @competition.groups.find(gp[:id])
+      group.update!(ecn_coeficient: gp[:ecn_coeficient])
+    end
+
+    EcnProcessor.competition_processor(@competition)
 
     render json: @competition.groups.order(:group_name).select(:group_name, :ecn_coeficient, :id)
   end

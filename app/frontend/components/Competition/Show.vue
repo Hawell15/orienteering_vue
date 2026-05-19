@@ -70,7 +70,7 @@
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
     <Modal ref="modal" :competition="modalElement" :isNew="false" @save="updateElement" />
-    <EcnCoeficients ref="ecnModal" :competitionId="competitionId" />
+    <EcnCoeficients ref="ecnModal" :competitionId="competitionId" @save="getResults" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'

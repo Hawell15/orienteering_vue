@@ -40,6 +40,8 @@ const props = defineProps({
     competitionId: [String, Number]
 })
 
+const emit = defineEmits(['save'])
+
 const groups = ref([])
 const modalRef = ref(null)
 let modalInstance = null
@@ -64,6 +66,7 @@ function hide() {
 async function handleSave() {
     const payload = groups.value.map(g => ({ id: g.id, ecn_coeficient: g.ecn_coeficient || 0 }))
     await axios.post(`/competitions/${props.competitionId}/group_ecn_coeficients.json`, { groups: payload })
+    emit('save')
     hide()
 }
 
