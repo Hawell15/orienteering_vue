@@ -74,7 +74,7 @@
                         </div>
                         <div class="mb-3" v-if="competitionData.ecn">
                             <label for="ecn_points" class="form-label">ECN Puncte</label>
-                            <input type="number" class="form-control" id="ecnpoints" v-model="localResult.ecn_points" />
+                            <input type="number" step="0.01" class="form-control" id="ecnpoints" v-model="localResult.ecn_points" />
                         </div>
                     </form>
                 </div>

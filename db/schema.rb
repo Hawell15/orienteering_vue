@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_13_124215) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_20_084605) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -73,7 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_124215) do
     t.bigint "category_id", default: 10, null: false
     t.datetime "created_at", null: false
     t.date "date"
-    t.integer "ecn_points"
+    t.float "ecn_points"
     t.bigint "group_id", default: 1, null: false
     t.bigint "membership_id", null: false
     t.integer "place"

@@ -112,7 +112,7 @@ async function getResults() {
         "sorting[direction]": "asc",
     }
     const res = await axios.get('/results.json', { params: params })
-    groups.value = Object.values(convertResultsFormat(res.data));
+    groups.value = Object.values(convertResultsFormat(res.data)).sort((a, b) => a.group_name.localeCompare(b.group_name));
 
     selectGroupFromHash();
 }
