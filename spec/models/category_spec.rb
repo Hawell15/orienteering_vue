@@ -84,8 +84,8 @@ RSpec.describe Category, type: :model do
   end
 
   describe ".age" do
-    let!(:senior) { Category.create!(id: 1, category_name: "Senior") }
-    let!(:junior) { Category.create!(id: 7, category_name: "Junior") }
+    let!(:senior) { Category.find_or_create_by!(id: 1) { |c| c.category_name = "Senior" } }
+    let!(:junior) { Category.find_or_create_by!(id: 7) { |c| c.category_name = "Junior" } }
 
     it "returns senior categories (ids 1-6 and 10)" do
       expect(Category.age("senior")).to include(senior)
@@ -107,7 +107,7 @@ RSpec.describe Category, type: :model do
     end
 
     it "includes id 10 in both senior and junior" do
-      no_cat = Category.create!(id: 10, category_name: "No Category")
+      no_cat = Category.find_or_create_by!(id: 10) { |c| c.category_name = "No Category" }
       expect(Category.age("senior")).to include(no_cat)
       expect(Category.age("junior")).to include(no_cat)
     end

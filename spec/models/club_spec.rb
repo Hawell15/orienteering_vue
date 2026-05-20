@@ -135,7 +135,7 @@ RSpec.describe Club, type: :model do
 
   describe ".add_club" do
     it "returns default club for blank name" do
-      default_club = Club.create!(id: Club::DEFAULT_CLUB_ID, club_name: "Default")
+      default_club = Club.find_or_create_by!(id: Club::DEFAULT_CLUB_ID) { |c| c.club_name = "Default" }
       result = Club.add_club(club_name: "")
       expect(result).to eq(default_club)
     end
@@ -153,7 +153,7 @@ RSpec.describe Club, type: :model do
     end
 
     it "creates a new club if not found" do
-      Club.create!(id: Club::DEFAULT_CLUB_ID, club_name: "Default")
+      Club.find_or_create_by!(id: Club::DEFAULT_CLUB_ID) { |c| c.club_name = "Default" }
       expect {
         Club.add_club(club_name: "Brand New Club")
       }.to change(Club, :count).by(1)
