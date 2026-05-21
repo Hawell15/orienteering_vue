@@ -3,6 +3,7 @@ import Index from '../components/Competition/Index.vue'
 import Show from '../components/Competition/Show.vue'
 import New from '../components/Competition/New.vue'
 import EcnCoeficients from '../components/Competition/EcnCoeficients.vue'
+import NewRunners from '../components/Competition/NewRunners.vue'
 
 
 function mountIfExists(id, component) {
@@ -15,4 +16,5 @@ document.addEventListener('DOMContentLoaded', () => {
   mountIfExists('show', Show)
   mountIfExists('new', New)
   mountIfExists('ecn_coeficients', EcnCoeficients)
+  mountIfExists('new_runners', NewRunners)
 })

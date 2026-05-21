@@ -1,5 +1,5 @@
 class CompetitionsController < ApplicationController
-  before_action :set_competition, only: %i[ show edit update destroy group_filters ecn_coeficients group_ecn_coeficients]
+  before_action :set_competition, only: %i[ show edit update destroy group_filters ecn_coeficients group_ecn_coeficients new_runners]
   has_scope :search
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :country
@@ -94,6 +94,31 @@ class CompetitionsController < ApplicationController
     respond_to do |format|
       format.html # renders index.html.erb
       format.json { render json: @competition.groups.order(:group_name).select(:group_name, :ecn_coeficient, :id) }
+    end
+  end
+
+  def new_runners
+    respond_to do |format|
+      format.html
+      format.json do
+        include_options = {
+          club:          { only: [ :id, :club_name ] },
+          category:      { only: [ :id, :category_name ] },
+          best_category: { only: [ :id, :category_name ] }
+        }
+
+        runners = Runner
+                    .where(created_at: @competition.created_at..@competition.created_at + 10.minutes)
+                    .includes(:club, :category, :best_category)
+                    .as_json(include: include_options)
+
+        all_runners = Runner
+                        .order(:runner_name, :surname)
+                        .includes(:club, :category, :best_category)
+                        .as_json(include: include_options)
+
+        render json: { runners: runners, all_runners: all_runners }
+      end
     end
   end
 

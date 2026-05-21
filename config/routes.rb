@@ -16,11 +16,15 @@ Rails.application.routes.draw do
     member do
       get "group_filters"
       get "ecn_coeficients"
+      get "new_runners"
       post "group_ecn_coeficients"
     end
   end
   resources :runners do
      get :filters, on: :collection
+     member do
+       post "merge_runners"
+     end
   end
 
   post "/clubs/merge_clubs/:id", to: "clubs#merge_clubs"

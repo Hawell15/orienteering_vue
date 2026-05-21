@@ -128,6 +128,28 @@ class Runner < ApplicationRecord
     Time.now.year - yob < 18
   end
 
+  def merge_from!(other_runner, params)
+    raise ArgumentError, "Cannot merge a runner into itself" if other_runner.id == id
+
+    transaction do
+      other_runner.memberships.each do |other_membership|
+        own_membership = memberships.find_by(club_id: other_membership.club_id)
+
+        if own_membership
+          other_membership.results.update_all(membership_id: own_membership.id)
+          other_membership.destroy!
+        else
+          other_membership.update!(runner_id: id)
+        end
+      end
+    end
+
+    update!(params)
+
+    other_runner.memberships.reload
+
+    other_runner.destroy!
+  end
   private
 
   def add_checksum
