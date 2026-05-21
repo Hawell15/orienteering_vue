@@ -19,6 +19,11 @@
                             Seteaza Coeficientii Grupelor
                         </button>
                     </li>
+                    <li v-if="competition.ecn">
+                        <a class="dropdown-item" :href="`/competitions/${competitionId}/new_runners`">
+                            Sportivi noi
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>

@@ -59,6 +59,18 @@
             </div>
         </div>
     </div>
+    <div>
+        <label for="runner_id" class="form-label">Sportiv dublicat cu:</label>
+        <select id="runner_id" v-model="selectedRunner" class="custom-select">
+            <option v-for="r in runnersData" :key="r.id" :value="r.id">
+                {{ r.runner_name }} {{ r.surname }}
+            </option>
+        </select>
+
+        Pastreaza acesta?<input v-model="mainRunner" type="checkbox" checked/>
+        <button class="btn btn-sm btn-success" @click="openMergeModal()">Salveaza</button>
+        <hr>
+    </div>
     <br>
     <p class="d-inline-flex gap-1">
         <a class="btn btn-primary" data-bs-toggle="collapse" href="#membershipsTable" role="button" aria-expanded="false" aria-controls="membershipsTable">
@@ -111,11 +123,13 @@
         <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
     </p>
     <Modal ref="modal" :runner="modalElement" :isNew="false" @save="updateElement" />
+    <MergeModal ref="mergeModal" @save="handleMergeSave" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from '@/axios'
 import Modal from './Modal.vue'
+import MergeModal from './MergeModal.vue'
 import MembershipsTable from '../Membership/Table.vue'
 import ResultsTable from '../Result/Table.vue'
 const runner = ref({})
@@ -139,13 +153,61 @@ const membershipSorting = ref({
 const modalElement = ref({})
 const modal = ref(null)
 
+const runnersData = ref([])
+const selectedRunner = ref(null)
+const mainRunner = ref(true)
+const mergeModal = ref(null)
+
 onMounted(() => {
     runnerId.value = window.location.pathname.split('/').pop();
     getData();
     getConfirmationResults();
     getResults();
     getMemberships();
+    getRunners();
 })
+
+async function getRunners() {
+    const res = await axios.get('/runners.json', { params: { "sorting[sort_by]": "runner_name", "sorting[direction]": "asc" } })
+    runnersData.value = res.data
+}
+
+async function openMergeModal() {
+    if (!selectedRunner.value) return
+
+    const currentId = parseInt(runnerId.value, 10)
+    const otherId   = selectedRunner.value
+
+    const mainId   = mainRunner.value ? currentId : otherId
+    const mergedId = mainRunner.value ? otherId   : currentId
+
+    const [ main, merged ] = await Promise.all([
+        axios.get(`/runners/${mainId}.json`).then(r => r.data),
+        axios.get(`/runners/${mergedId}.json`).then(r => r.data)
+    ])
+
+    mergeModal.value.show(main, merged)
+}
+
+async function handleMergeSave(payload) {
+    const attributes = {}
+    Object.entries(payload.selections).forEach(([ key, source ]) => {
+        if (source === 'merged') {
+            attributes[key] = payload.mergedRunner[key]
+        } else if (source === 'other') {
+            attributes[key] = payload.otherValues[key]
+        }
+    })
+
+    const body = { merged_runner_id: payload.mergedRunner.id }
+    if (Object.keys(attributes).length > 0) {
+        body.runner = attributes
+    }
+
+    await axios.post(`/runners/${payload.mainRunner.id}/merge_runners`, body)
+
+    window.location = `/runners/${payload.mainRunner.id}`
+}
 
 async function getData() {
     const res = await axios.get(`/runners/${runnerId.value}.json`)
