@@ -1,5 +1,5 @@
 class RunnersController < ApplicationController
-  before_action :set_runner, only: %i[ show edit update destroy ]
+  before_action :set_runner, only: %i[ show edit update destroy merge_runners]
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :club
@@ -79,6 +79,14 @@ class RunnersController < ApplicationController
         categories: Category.select(:id, :category_name).order(:id).as_json,
         genders:    Runner.select(:gender).distinct.map(&:gender)
       }
+  end
+
+  def merge_runners
+    merged_runner = Runner.find(params.expect(:merged_runner_id))
+    attrs = params[:runner].present? ? runner_params : {}
+    @runner.merge_from!(merged_runner, attrs)
+
+    head :ok
   end
 
   private

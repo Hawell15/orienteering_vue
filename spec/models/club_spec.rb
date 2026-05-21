@@ -193,5 +193,19 @@ RSpec.describe Club, type: :model do
       main_club.merge_from!(other_club)
       expect { other_club.reload }.to raise_error(ActiveRecord::RecordNotFound)
     end
+
+    it "collapses duplicate memberships when same runner has memberships in both clubs" do
+      competition = Competition.create!(competition_name: "C1", date: Date.today, distance_type: "Sprint")
+      group  = Group.create!(competition: competition, group_name: "G1")
+      runner = Runner.create!(club: main_club, category: category, best_category: category, runner_name: "A", surname: "B", gender: "M", yob: 2000)
+      main_membership  = Membership.create!(runner: runner, club: main_club)
+      other_membership = Membership.create!(runner: runner, club: other_club)
+      result = Result.create!(membership: other_membership, group: group, category: category, date: Date.today)
+
+      main_club.merge_from!(other_club)
+
+      expect(result.reload.membership_id).to eq(main_membership.id)
+      expect { other_membership.reload }.to raise_error(ActiveRecord::RecordNotFound)
+    end
   end
 end

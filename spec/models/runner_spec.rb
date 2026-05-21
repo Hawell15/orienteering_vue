@@ -204,4 +204,37 @@ RSpec.describe Runner, type: :model do
       expect(runner.reload.yob).to eq(0)
     end
   end
+
+  describe "#merge_from!" do
+    let!(:club_a) { Club.create!(club_name: "Club A") }
+    let!(:club_b) { Club.create!(club_name: "Club B") }
+    let!(:competition) { Competition.create!(competition_name: "C1", date: Date.today, distance_type: "Sprint") }
+    let!(:group) { Group.create!(competition: competition, group_name: "G1") }
+    let!(:main) { Runner.create!(club: club, category: category, best_category: category, runner_name: "Main", surname: "X", gender: "M", yob: 2000) }
+    let!(:other) { Runner.create!(club: club, category: category, best_category: category, runner_name: "Other", surname: "Y", gender: "M", yob: 2000) }
+
+    it "raises when merging into itself" do
+      expect { main.merge_from!(main, {}) }.to raise_error(ArgumentError, "Cannot merge a runner into itself")
+    end
+
+    it "moves results to existing membership when main already has one in the same club" do
+      main_membership  = Membership.create!(runner: main, club: club_a)
+      other_membership = Membership.create!(runner: other, club: club_a)
+      result = Result.create!(membership: other_membership, group: group, category: category, date: Date.today)
+
+      main.merge_from!(other, {})
+
+      expect(result.reload.membership_id).to eq(main_membership.id)
+      expect { other_membership.reload }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "reassigns the membership when main has no membership in that club" do
+      other_membership = Membership.create!(runner: other, club: club_b)
+
+      main.merge_from!(other, {})
+
+      expect(other_membership.reload.runner_id).to eq(main.id)
+      expect(other_membership.club_id).to eq(club_b.id)
+    end
+  end
 end

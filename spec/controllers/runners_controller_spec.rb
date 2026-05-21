@@ -173,4 +173,27 @@ RSpec.describe RunnersController, type: :controller do
       expect(json).to have_key("genders")
     end
   end
+
+  describe "POST #merge_runners" do
+    let!(:other_runner) { Runner.create!(club: club, category: category, best_category: category, runner_name: "Other", surname: "Z", gender: "M", yob: 1999) }
+
+    it "calls merge_from! with permitted attributes and destroys the merged runner" do
+      post :merge_runners,
+           params: { id: runner.id, merged_runner_id: other_runner.id, runner: { runner_name: "Merged" } },
+           format: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(runner.reload.runner_name).to eq("Merged")
+      expect { other_runner.reload }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+
+    it "succeeds when runner params are omitted" do
+      post :merge_runners,
+           params: { id: runner.id, merged_runner_id: other_runner.id },
+           format: :json
+
+      expect(response).to have_http_status(:ok)
+      expect { other_runner.reload }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
 end
