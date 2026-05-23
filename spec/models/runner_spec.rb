@@ -164,6 +164,17 @@ RSpec.describe Runner, type: :model do
       runner = Runner.new(yob: Time.now.year - 20)
       expect(runner.junior_runner?).to be false
     end
+
+    it "evaluates against the supplied date, not Time.now" do
+      runner = Runner.new(yob: 2010)
+      expect(runner.junior_runner?(Date.new(2025, 6, 1))).to be true
+      expect(runner.junior_runner?(Date.new(2028, 6, 1))).to be false
+    end
+
+    it "accepts a string date" do
+      runner = Runner.new(yob: 2010)
+      expect(runner.junior_runner?("2025-06-01")).to be true
+    end
   end
 
   describe ".matching_runner" do

@@ -101,7 +101,7 @@ function orderTable(sortKey, filters) {
 }
 
 function formatStatus(status) {
-    const map = { confirmed: "Îndeplinit", pending: "În așteptare", unconfirmed: "Fără îndeplinire" }
+    const map = { confirmed: "Îndeplinit", pending: "În așteptare", unconfirmed: "Fără îndeplinire", capped: "Plafonat" }
     return map[status]
 }
 
@@ -148,5 +148,9 @@ function goBack() {
 
 .unconfirmed {
     background-color: #f8d7da;
+}
+
+.capped {
+    background-color: #fff3cd;
 }
 </style>

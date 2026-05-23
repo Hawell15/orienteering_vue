@@ -19,6 +19,11 @@
                             Seteaza Coeficientii Grupelor
                         </button>
                     </li>
+                    <li>
+                        <button class="dropdown-item" @click="openClasaModal">
+                            Seteaza Clasele Grupelor
+                        </button>
+                    </li>
                     <li v-if="competition.ecn">
                         <a class="dropdown-item" :href="`/competitions/${competitionId}/new_runners`">
                             Sportivi noi
@@ -76,18 +81,21 @@
     </p>
     <Modal ref="modal" :competition="modalElement" :isNew="false" @save="updateElement" />
     <EcnCoeficients ref="ecnModal" :competitionId="competitionId" @save="getResults" />
+    <GroupClasa ref="clasaModal" :competitionId="competitionId" @save="" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from '@/axios'
 import Modal from './Modal.vue'
 import EcnCoeficients from './EcnCoeficients.vue'
+import GroupClasa from './GroupClasa.vue'
 import ResultsTable from '../Result/Table.vue'
 const competition = ref({})
 const competitionId = ref("")
 const modalElement = ref({})
 const modal = ref(null)
 const ecnModal = ref(null)
+const clasaModal = ref(null)
 
 const groups = ref([])
 const activeGroup = ref(null)
@@ -131,6 +139,7 @@ function convertResultsFormat(results) {
                 id: r.group_id,
                 group_name: r.group_name,
                 group_rang: r.group_rang,
+                group_clasa: r.group_clasa,
                 results: []
             }
         }
@@ -158,6 +167,7 @@ function selectGroupFromHash() {
 }
 
 function formatGroupClasa(clasa) {
+    console.log(activeGroup.value);
     const map = {
         "2": "MSRM",
         "3": "CMSRM",
@@ -171,6 +181,10 @@ function formatGroupClasa(clasa) {
 
 function openEcnModal() {
     ecnModal.value.show()
+}
+
+function openClasaModal() {
+    clasaModal.value.show()
 }
 
 function editElement(competition) {

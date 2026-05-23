@@ -19,13 +19,14 @@ RSpec.describe Result, type: :model do
 
   describe "constants" do
     it "defines STATUSES" do
-      expect(Result::STATUSES).to eq(%w[unconfirmed confirmed pending])
+      expect(Result::STATUSES).to eq(%w[unconfirmed confirmed pending capped])
     end
 
     it "defines status constants" do
       expect(Result::UNCONFIRMED).to eq("unconfirmed")
       expect(Result::CONFIRMED).to eq("confirmed")
       expect(Result::PENDING).to eq("pending")
+      expect(Result::CAPPED).to eq("capped")
     end
   end
 

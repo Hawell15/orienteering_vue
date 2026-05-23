@@ -15,9 +15,9 @@ Rails.application.routes.draw do
     get :filters, on: :collection
     member do
       get "group_filters"
-      get "ecn_coeficients"
       get "new_runners"
       post "group_ecn_coeficients"
+      post "update_group_clasa"
     end
   end
   resources :runners do

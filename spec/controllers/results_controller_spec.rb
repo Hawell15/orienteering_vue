@@ -31,6 +31,8 @@ RSpec.describe ResultsController, type: :controller do
       expect(json.first).to have_key("club_name")
       expect(json.first).to have_key("competition_name")
       expect(json.first).to have_key("group_name")
+      expect(json.first).to have_key("pending_result_id")
+      expect(json.first).to have_key("pending_category_name")
     end
 
     context "with scopes" do
@@ -65,6 +67,65 @@ RSpec.describe ResultsController, type: :controller do
       it "sorts by date" do
         get :index, params: { sorting: { sort_by: "date", direction: "desc" } }, format: :json
         expect(response).to be_successful
+      end
+    end
+
+    context "runner_category_on_date lateral join" do
+      let!(:prior_category) do
+        Category.find_or_create_by!(id: 3) do |c|
+          c.category_name = "II"
+          c.points = 50
+          c.validaty_period = 2
+        end
+      end
+      let!(:prior_competition) do
+        Competition.create!(competition_name: "Prior Comp", date: Date.new(2024, 6, 1), distance_type: "Sprint")
+      end
+      let!(:prior_group) { Group.create!(competition: prior_competition, group_name: "M21") }
+      let!(:prior_result) do
+        Result.create!(
+          group: prior_group,
+          membership: membership,
+          category: prior_category,
+          date: Date.new(2024, 6, 1),
+          status: "confirmed",
+          place: 1,
+          time: 3500
+        )
+      end
+
+      it "exposes the runner's prior category on the current result" do
+        get :index, params: { group_data: group.id }, format: :json
+        json = JSON.parse(response.body)
+        target = json.find { |r| r["id"] == result.id }
+        expect(target).to be_present
+        expect(target["runner_category_id"]).to eq(prior_category.id)
+      end
+
+      it "falls back to NO_CATEGORY when the runner has no strictly-earlier confirmed result" do
+        get :index, params: { group_data: prior_group.id }, format: :json
+        json = JSON.parse(response.body)
+        target = json.find { |r| r["id"] == prior_result.id }
+        expect(target).to be_present
+        expect(target["runner_category_id"]).to eq(Category::NO_CATEGORY_ID)
+      end
+
+      it "ignores prior results that are not confirmed" do
+        Result.create!(
+          group: prior_group,
+          membership: membership,
+          category: prior_category,
+          date: Date.new(2023, 6, 1),
+          status: "pending",
+          place: 1,
+          time: 3500
+        )
+        prior_result.update!(status: "pending")
+
+        get :index, params: { group_data: group.id }, format: :json
+        json = JSON.parse(response.body)
+        target = json.find { |r| r["id"] == result.id }
+        expect(target["runner_category_id"]).to eq(Category::NO_CATEGORY_ID)
       end
     end
   end

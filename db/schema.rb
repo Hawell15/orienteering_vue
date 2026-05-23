@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_13_124215) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_23_095609) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_124215) do
     t.integer "ecn_points"
     t.bigint "group_id", default: 1, null: false
     t.bigint "membership_id", null: false
+    t.bigint "parent_result_id"
     t.integer "place"
     t.string "status"
     t.integer "time"
@@ -84,6 +85,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_124215) do
     t.index [ "category_id" ], name: "index_results_on_category_id"
     t.index [ "group_id" ], name: "index_results_on_group_id"
     t.index [ "membership_id" ], name: "index_results_on_membership_id"
+    t.index [ "parent_result_id" ], name: "index_results_on_parent_result_id"
   end
 
   create_table "runners", force: :cascade do |t|
@@ -115,6 +117,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_13_124215) do
   add_foreign_key "results", "categories"
   add_foreign_key "results", "groups"
   add_foreign_key "results", "memberships"
+  add_foreign_key "results", "results", column: "parent_result_id", on_delete: :cascade
   add_foreign_key "runners", "categories"
   add_foreign_key "runners", "clubs"
 end

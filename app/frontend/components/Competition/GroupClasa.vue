@@ -18,7 +18,13 @@
                             <tbody>
                                 <tr v-for="group in groups" :key="group.id">
                                     <td>{{group.group_name}}</td>
-                                    <td><input type="text" step="0.1" class="form-control" v-model="group.ecn_coeficient" /></td>
+                                    <td>
+                                        <select v-model="group.clasa" class="form-select form-select-sm">
+                                            <option v-for="c in classes" :key="c.id" :value="String(c.id)">
+                                                {{ c.category_name }}
+                                            </option>
+                                        </select>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -43,16 +49,34 @@ const props = defineProps({
 const emit = defineEmits(['save'])
 
 const groups = ref([])
+const classes  = ref([])
 const modalRef = ref(null)
 let modalInstance = null
 
 async function loadGroups() {
-     const res = await axios.get(`/groups.json?competition=${props.competitionId}&sorting[sort_by]=group_name&sorting[direction]=asc`)
-    groups.value = res.data
+    const res = await axios.get(`/groups.json?competition=${props.competitionId}&sorting[sort_by]=group_name&sorting[direction]=asc`)
+    groups.value = res.data.map(g => ({ ...g, clasa: g.clasa || defaultClasa(g.group_name) }))
+}
+
+function defaultClasa(groupName) {
+    const match = groupName?.match(/\d+/)
+    if (!match) return "10"
+
+    const n = parseInt(match[0], 10)
+    if (n < 13) return "7"
+    if (n === 14 || n > 36) return "5"
+    if (n >= 13 && n <= 36) return "4"
+    return "10"
+}
+
+async function getClasaData() {
+    const res = await axios.get('/groups/filters.json')
+    classes.value = res.data.clase
 }
 
 function show() {
     loadGroups()
+    getClasaData()
     if (!modalInstance) {
         modalInstance = new bootstrap.Modal(modalRef.value)
     }
@@ -64,8 +88,8 @@ function hide() {
 }
 
 async function handleSave() {
-    const payload = groups.value.map(g => ({ id: g.id, ecn_coeficient: g.ecn_coeficient || 0 }))
-    await axios.post(`/competitions/${props.competitionId}/group_ecn_coeficients.json`, { groups: payload })
+    const payload = groups.value.map(g => ({ id: g.id, clasa: g.clasa || 0 }))
+    await axios.post(`/competitions/${props.competitionId}/update_group_clasa.json`, { groups: payload })
     emit('save')
     hide()
 }

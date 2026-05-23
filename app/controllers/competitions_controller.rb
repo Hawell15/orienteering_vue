@@ -1,5 +1,5 @@
 class CompetitionsController < ApplicationController
-  before_action :set_competition, only: %i[ show edit update destroy group_filters ecn_coeficients group_ecn_coeficients new_runners]
+  before_action :set_competition, only: %i[ show edit update destroy group_filters group_ecn_coeficients update_group_clasa new_runners]
   has_scope :search
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :country
@@ -90,13 +90,6 @@ class CompetitionsController < ApplicationController
     }
   end
 
-  def ecn_coeficients
-    respond_to do |format|
-      format.html # renders index.html.erb
-      format.json { render json: @competition.groups.order(:group_name).select(:group_name, :ecn_coeficient, :id) }
-    end
-  end
-
   def new_runners
     respond_to do |format|
       format.html
@@ -133,6 +126,19 @@ class CompetitionsController < ApplicationController
     EcnProcessor.competition_processor(@competition)
 
     render json: @competition.groups.order(:group_name).select(:group_name, :ecn_coeficient, :id)
+  end
+
+  def update_group_clasa
+    results = Result.joins(:group).where("group.competition_id": @competition.id).update_all(category_id: Category::NO_CATEGORY_ID, status: Result::UNCONFIRMED)
+    groups_params = params.require(:groups)
+
+    groups_params.each do |gp|
+      group = @competition.groups.find(gp[:id])
+      group.update!(clasa: gp[:clasa])
+      next if group.results.blank?
+
+      GroupCategoriesProcessor.new(group).get_rang_and_categories
+    end
   end
 
   private
