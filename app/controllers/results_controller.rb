@@ -115,6 +115,7 @@ class ResultsController < ApplicationController
       Result
         .left_joins(:category, membership: [ :runner, :club ], group: :competition)
         .with_runner_category_on_date
+        .with_pending_title
         .select(<<~SQL)
           results.*,
           CONCAT(runners.runner_name, ' ', runners.surname) AS full_name,
@@ -131,7 +132,9 @@ class ResultsController < ApplicationController
           groups.group_name AS group_name,
           groups.id AS group_id,
           groups.rang AS group_rang,
-          groups.clasa AS group_clasa
+          groups.clasa AS group_clasa,
+          pending_title_query.id AS pending_result_id,
+          pending_title_query.category_name AS pending_category_name
         SQL
     end
 end

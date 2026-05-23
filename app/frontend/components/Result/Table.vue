@@ -25,7 +25,10 @@
                 <td><a :href="`/categories/${element.runner_category_id}`">{{element.runner_category_name}}</a></td>
                 <td>{{formatResultTime(element.time)}}</td>
                 <td><a :href="`/categories/${element.result_category_id}`">{{element.result_category_name}}</a></td>
-                <td>{{formatStatus(element.status)}}</td>
+                <td :title="element.status === 'capped' ? 'Sportivul a îndeplinit categorie superioară ce trebuie confirmată în Minister' : null">
+                    <a v-if="element.status === 'capped' && element.pending_result_id" :href="`/results/${element.pending_result_id}`">{{formatStatus(element.status)}}({{element.pending_category_name}})</a>
+                    <template v-else>{{formatStatus(element.status)}}</template>
+                </td>
                 <td>{{element.date}}</td>
                 <td><a :href="`/competitions/${element.competition_id}`">{{element.competition_name}}</a></td>
                 <td><a :href="`/groups/${element.group_id}`">{{element.group_name}}</a></td>
@@ -47,7 +50,7 @@ const props = defineProps({
     elements: Object
 })
 
-const emit = defineEmits(['order'])
+const emit = defineEmits(['order', 'refresh'])
 
 const modalElement = ref({})
 const modal = ref(null)
@@ -55,7 +58,7 @@ const modal = ref(null)
 function deleteElement(id) {
     if (confirm('Esti sigur ca vrei sa stergi aceast rezultat?')) {
         axios.delete(`/results/${id}`).then(() => {
-            props.elements = props.elements.filter(result => result.id !== id)
+            emit('refresh')
         })
     }
 }
@@ -69,10 +72,9 @@ function editElement(element) {
 }
 
 function updateElement(elementData, done) {
-    axios.patch(`/results/${elementData.id}.json`, { result: elementData }).then(res => {
-        const index = props.elements.findIndex(c => c.id === res.data.id)
-        if (index !== -1) props.elements[index] = { ...props.elements[index], ...res.data }
+    axios.patch(`/results/${elementData.id}.json`, { result: elementData }).then(() => {
         done()
+        emit('refresh')
     })
 }
 
@@ -93,7 +95,7 @@ function formatResultTime(seconds) {
 }
 
 function formatStatus(status) {
-    const map = { confirmed: "Îndeplinit", pending: "În așteptare", unconfirmed: "Fără îndeplinire" }
+    const map = { confirmed: "Îndeplinit", pending: "În așteptare", unconfirmed: "Fără îndeplinire", capped: "Plafonat" }
     return map[status]
 }
 

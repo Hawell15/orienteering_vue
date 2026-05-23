@@ -2,6 +2,8 @@ class Result < ApplicationRecord
   belongs_to :membership
   belongs_to :category
   belongs_to :group
+  belongs_to :parent_result, class_name: "Result", optional: true
+  has_many :child_results, class_name: "Result", foreign_key: :parent_result_id, dependent: :destroy
   has_one :runner, through: :membership
 
   before_validation :add_date
@@ -59,6 +61,20 @@ class Result < ApplicationRecord
     where(status: val)
   end
 
+  scope :with_pending_title, -> {
+    joins(<<~SQL)
+      LEFT JOIN LATERAL (
+        SELECT pending.id AS id, pending_cat.category_name AS category_name
+        FROM results pending
+        JOIN categories pending_cat ON pending_cat.id = pending.category_id
+        WHERE pending.parent_result_id = results.id
+          AND pending.group_id = #{Group::TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID}
+          AND pending.status = 'pending'
+        LIMIT 1
+      ) pending_title_query ON TRUE
+    SQL
+  }
+
   scope :with_runner_category_on_date, -> {
     joins(<<~SQL)
     LEFT JOIN LATERAL (
@@ -100,7 +116,7 @@ class Result < ApplicationRecord
     end
   }
 
-  STATUSES = %w[unconfirmed confirmed pending]
+  STATUSES = %w[unconfirmed confirmed pending capped]
 
   STATUSES.each do |name|
     const_set(name.upcase, name)
@@ -111,6 +127,6 @@ class Result < ApplicationRecord
   def add_date
     return if date
 
-    date = group.competition.date
+    self.date = group&.competition&.date
   end
 end

@@ -100,7 +100,7 @@ class Runner < ApplicationRecord
     results
       .joins(:category, :runner)
       .where(status: Result::CONFIRMED)
-      .where("results.date <= :date", date: date)
+      .where("results.date < :date", date: date)
       .where.not("results.category_id = ?", Category::NO_CATEGORY_ID)
       .where("results.date + (categories.validaty_period * INTERVAL '1 year') > :date", date: date)
       .where(
@@ -124,8 +124,8 @@ class Runner < ApplicationRecord
     save! if changed?
   end
 
-  def junior_runner?
-    Time.now.year - yob < 18
+  def junior_runner?(date = Date.today)
+    date.to_date.year - yob < 18
   end
 
   def merge_from!(other_runner, params)

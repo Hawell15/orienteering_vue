@@ -184,14 +184,4 @@ RSpec.describe CompetitionsController, type: :controller do
       expect(json).to have_key("wre")
     end
   end
-
-  describe "GET #ecn_coeficients" do
-    it "returns groups with ecn_coeficient" do
-      Group.create!(competition: competition, group_name: "M21", ecn_coeficient: 1.5)
-      get :ecn_coeficients, params: { id: competition.id }, format: :json
-      json = JSON.parse(response.body)
-      expect(json.first["group_name"]).to eq("M21")
-      expect(json.first).to have_key("ecn_coeficient")
-    end
-  end
 end

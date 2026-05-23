@@ -66,7 +66,7 @@
     <hr>
     <button class="btn btn-info mb-2" @click="createNew">Adauga Rezultat</button>
     <hr>
-    <Table :elements="data" @order="orderTable"></Table>
+    <Table :elements="data" @order="orderTable" @refresh="() => window.location.reload()"></Table>
     <Create ref="modal" @save="saveResult" />
 </template>
 <script setup>
