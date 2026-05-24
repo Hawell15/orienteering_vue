@@ -21,6 +21,22 @@ class CompetitionsController < ApplicationController
     respond_to do |format|
       format.html
       format.json { render json: @competition }
+      format.pdf do
+        load_pdf_data
+
+        html = render_to_string(
+          template: "competitions/pdf",
+          layout:   "pdf",
+          formats:  [ :html ]
+        )
+
+        pdf = Grover.new(html, display_url: request.base_url).to_pdf
+
+        send_data pdf,
+                  filename:    "#{@competition.competition_name.to_s.parameterize}-#{@competition.id}.pdf",
+                  type:        "application/pdf",
+                  disposition: "inline"
+      end
     end
   end
 
@@ -150,5 +166,29 @@ class CompetitionsController < ApplicationController
     # Only allow a list of trusted parameters through.
     def competition_params
       params.expect(competition: [ :competition_name, :date, :location, :country, :distance_type, :wre_id, :checksum, :ecn ])
+    end
+
+    def load_pdf_data
+      @pdf_groups = @competition.groups
+                                .includes(results: [
+                                  :category,
+                                  { child_results: :category },
+                                  { membership: [ :club, :runner ] }
+                                ])
+                                .order(:group_name)
+                                .to_a
+
+      result_ids = @pdf_groups.flat_map { |g| g.results.map(&:id) }
+
+      @runner_actual_category_name_by_result_id =
+        if result_ids.any?
+          Result.where(id: result_ids)
+                .joins(membership: :runner)
+                .with_runner_category_on_date
+                .pluck(:id, "runner_actual_category.category_name")
+                .to_h
+        else
+          {}
+        end
     end
 end
