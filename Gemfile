@@ -36,6 +36,9 @@ gem "thruster", require: false
 gem "text"
 gem "csv"
 
+# PDF rendering via headless Chromium (Puppeteer)
+gem "grover"
+
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem "rspec-rails"

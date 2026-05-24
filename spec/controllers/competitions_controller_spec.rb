@@ -77,6 +77,18 @@ RSpec.describe CompetitionsController, type: :controller do
       expect(json["competition_name"]).to eq("Cupa Moldovei")
       expect(json["distance_type"]).to eq("Sprint")
     end
+
+    context "with pdf format" do
+      it "renders a PDF via Grover" do
+        allow_any_instance_of(Grover).to receive(:to_pdf).and_return("%PDF-stub")
+
+        get :show, params: { id: competition.id }, format: :pdf
+
+        expect(response).to be_successful
+        expect(response.content_type).to start_with("application/pdf")
+        expect(response.body).to eq("%PDF-stub")
+      end
+    end
   end
 
   describe "GET #new" do

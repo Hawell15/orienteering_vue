@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><%= @competition&.competition_name %> — Rezultate</title>
+    <style>
+    body {
+        font-family: "Helvetica Neue", sans-serif;
+        margin: 40px;
+        background-color: #fff;
+        color: #333;
+    }
+
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 50px;
+        gap: 20px;
+    }
+
+    .group {
+        margin-bottom: 0;
+        page-break-before: always;
+        break-before: page;
+        page-break-after: always;
+        break-after: page;
+        position: relative;
+        height: calc(297mm - 22mm);
+        padding-bottom: 80mm;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .group:first-of-type {
+        page-break-before: auto;
+        break-before: auto;
+    }
+
+    .logo { flex-shrink: 0; }
+
+    .logo img {
+        height: 80px;
+        width: auto;
+    }
+
+    .title-block { text-align: center; }
+
+    .title-block h1 {
+        font-size: 36px;
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .title-block h2 {
+        font-size: 20px;
+        margin: 5px 0;
+        color: #7f8c8d;
+    }
+
+    .group h3 {
+        font-size: 24px;
+        padding-left: 12px;
+        margin-bottom: 20px;
+    }
+
+    .women {
+        border-left: 6px solid #f590e1;
+        color: #f590e1;
+    }
+
+    .men {
+        border-left: 6px solid #2980b9;
+        color: #2980b9;
+    }
+
+    div.half {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 35%;
+        font-size: 9pt;
+    }
+
+    div.half table { margin-bottom: 0; }
+
+    div.half th,
+    div.half td {
+        padding: 4px 6px;
+        font-size: 8pt;
+    }
+
+    div.half th { background-color: #faeba7; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 4px 6px;
+        text-align: center;
+        font-size: 10pt;
+    }
+
+    th {
+        background-color: #90EE90;
+        color: #2c3e50;
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) { background-color: #f9f9f9; }
+
+    @media print {
+        body {
+            margin: 0;
+            font-size: 10pt;
+        }
+
+        header {
+            flex-direction: row;
+            gap: 20px;
+        }
+
+        .logo img { height: 60px; }
+
+        .title-block h1 { font-size: 22pt; }
+        .title-block h2 { font-size: 12pt; }
+        .group h3      { font-size: 16pt; }
+
+        th, td { font-size: 9pt; }
+
+        div.half { font-size: 8pt; }
+        div.half th,
+        div.half td { font-size: 7pt; }
+    }
+    </style>
+</head>
+<body>
+    <%= yield %>
+</body>
+</html>
