@@ -32,18 +32,25 @@ const open = ref(false)
 const currentPath = ref(typeof window !== 'undefined' ? window.location.pathname : '/')
 
 const links = [
-    { href: '/competitions', label: 'Competiții', icon: '🏆' },
-    { href: '/runners',      label: 'Sportivi',   icon: '👤' },
-    { href: '/clubs',        label: 'Cluburi',    icon: '🏛' },
-    { href: '/groups',       label: 'Grupe',      icon: '🏃' },
-    { href: '/results',      label: 'Rezultate',  icon: '🏅' },
-    { href: '/memberships',  label: 'Afilieri',   icon: '🪪' },
-    { href: '/categories',   label: 'Categorii',  icon: '🎖' }
+    { href: '/competitions',              label: 'Competiții', icon: '🏆' },
+    { href: '/runners',                   label: 'Sportivi',   icon: '👤' },
+    { href: '/clubs',                     label: 'Cluburi',    icon: '🏛' },
+    { href: '/groups',                    label: 'Grupe',      icon: '🏃' },
+    { href: '/results',                   label: 'Rezultate',  icon: '🏅' },
+    { href: '/memberships',               label: 'Afilieri',   icon: '🪪' },
+    { href: '/categories',                label: 'Categorii',  icon: '🎖' },
+    { href: '/competitions/ecn_ranking',  label: 'Clasament',  icon: '🥇' }
 ]
 
 function isActive(href) {
     if (href === '/') return currentPath.value === '/'
-    return currentPath.value.startsWith(href)
+    if (!currentPath.value.startsWith(href)) return false
+    return !links.some(other =>
+        other.href !== href &&
+        other.href.length > href.length &&
+        other.href.startsWith(href) &&
+        currentPath.value.startsWith(other.href)
+    )
 }
 </script>
 

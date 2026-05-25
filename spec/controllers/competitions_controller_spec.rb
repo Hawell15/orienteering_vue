@@ -178,6 +178,45 @@ RSpec.describe CompetitionsController, type: :controller do
     end
   end
 
+  describe "GET #ecn_ranking" do
+    it "renders successfully" do
+      get :ecn_ranking
+      expect(response).to be_successful
+    end
+
+    it "returns JSON with default gender + date" do
+      get :ecn_ranking, format: :json
+      expect(response).to be_successful
+      expect(JSON.parse(response.body)).to be_an(Array)
+    end
+
+    it "accepts gender and date params" do
+      get :ecn_ranking, params: { gender: "W", date: "2025-06-01" }, format: :json
+      expect(response).to be_successful
+    end
+  end
+
+  describe "GET #ecn_runner_results" do
+    let!(:category) { Category.create!(category_name: "MSRM", full_name: "Maestru Sport", points: 100, validaty_period: 2) }
+    let!(:club) { Club.create!(club_name: "Test Club") }
+    let!(:runner) { Runner.create!(club: club, category: category, best_category: category, runner_name: "Ion", surname: "Pop", gender: "M", yob: 1990) }
+
+    it "returns JSON with results and threshold for a runner" do
+      get :ecn_runner_results, params: { runner_id: runner.id, date: "2025-06-01" }, format: :json
+      expect(response).to be_successful
+      json = JSON.parse(response.body)
+      expect(json).to have_key("min_limit_points")
+      expect(json).to have_key("limit_number")
+      expect(json["results"]).to be_an(Array)
+    end
+
+    it "404s for an unknown runner" do
+      expect {
+        get :ecn_runner_results, params: { runner_id: 0, date: "2025-06-01" }, format: :json
+      }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
   describe "GET #distance_types" do
     it "returns the list of distance types" do
       get :distance_types, format: :json
