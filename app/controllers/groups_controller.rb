@@ -1,5 +1,5 @@
 class GroupsController < ApplicationController
-  before_action :set_group, only: %i[ show edit update destroy]
+  before_action :set_group, only: %i[ show edit update destroy count_rang]
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :competition
@@ -80,6 +80,11 @@ class GroupsController < ApplicationController
         competitions: Competition.select(:id, :ecn, "CONCAT(competition_name, \'(\', TO_CHAR(date, 'DD-MM-YYYY'), \')\') AS competition_display").order(date: :desc, competition_name: :asc).as_json,
         clase: Category.where(id: [ 2, 3, 4, 5, 7, 10 ]).select(:id, :category_name).as_json
       }
+  end
+
+  def count_rang
+    GroupCategoriesProcessor.new(@group).get_rang_and_categories
+    head :ok
   end
 
   private

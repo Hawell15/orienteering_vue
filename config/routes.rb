@@ -9,6 +9,9 @@ Rails.application.routes.draw do
 
   resources :groups do
     get :filters, on: :collection
+    member do
+      post "count_rang"
+    end
   end
   resources :competitions do
     get :distance_types, on:  :collection
