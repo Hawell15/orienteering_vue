@@ -16,6 +16,8 @@ Rails.application.routes.draw do
   resources :competitions do
     get :distance_types, on:  :collection
     get :filters, on: :collection
+    get :ecn_ranking, on: :collection
+    get :ecn_runner_results, on: :collection
     member do
       get "group_filters"
       get "new_runners"

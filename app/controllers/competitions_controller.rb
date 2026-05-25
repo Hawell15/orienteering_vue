@@ -97,6 +97,42 @@ class CompetitionsController < ApplicationController
    render json:  Competition::DISTANCE_TYPES
   end
 
+  def ecn_ranking
+    respond_to do |format|
+      format.html
+      format.json do
+        gender = params[:gender].presence || "M"
+        date   = params[:date].presence  || Date.current
+        ranking = EcnProcessor.ranking(gender, date).includes(:club)
+        render json: ranking.as_json(
+          methods: [ :total_points, :ecn_results_count, :place ],
+          only:    [ :id, :runner_name, :surname, :yob, :club_id, :gender ],
+          include: { club: { only: [ :id, :club_name ] } }
+        )
+      end
+    end
+  end
+
+  def ecn_runner_results
+    runner = Runner.find(params[:runner_id])
+    date   = params[:date].presence || Date.current
+    data   = EcnProcessor.runner_results(runner, date)
+
+    render json: {
+      min_limit_points: data[:min_limit_points],
+      limit_number:     data[:limit_number],
+      results: data[:results].as_json(
+        only:    [ :id, :date, :place, :ecn_points ],
+        include: {
+          group: {
+            only:    [ :id, :group_name ],
+            include: { competition: { only: [ :id, :competition_name ] } }
+          }
+        }
+      )
+    }
+  end
+
   def group_filters
     render json:
     {
@@ -158,7 +194,7 @@ class CompetitionsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
+    # Use callbacks to share compmon setup or constraints between actions.
     def set_competition
       @competition = Competition.find(params.expect(:id))
     end
