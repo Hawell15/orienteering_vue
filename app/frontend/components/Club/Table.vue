@@ -1,15 +1,15 @@
 <template>
-    <table class="table table-striped table-bordered table-hover">
-        <thead class="table-primary">
+    <table class="forest-table">
+        <thead>
             <tr>
-                <th @click="orderTable('id')">ID</th>
-                <th @click="orderTable('club_name')">Nume</th>
-                <th @click="orderTable('territory')">Teritoriu</th>
-                <th @click="orderTable('representative')">Reprezentant</th>
-                <th @click="orderTable('email')">email</th>
-                <th @click="orderTable('phone')">Telefon</th>
-                <th @click="orderTable('runners_count')">Numar Sportivi</th>
-                <th colspan="3">Actiuni</th>
+                <th class="sortable" @click="orderTable('id')">ID</th>
+                <th class="sortable" @click="orderTable('club_name')">Nume</th>
+                <th class="sortable" @click="orderTable('territory')">Teritoriu</th>
+                <th class="sortable" @click="orderTable('representative')">Reprezentant</th>
+                <th class="sortable" @click="orderTable('email')">Email</th>
+                <th class="sortable" @click="orderTable('phone')">Telefon</th>
+                <th class="sortable" @click="orderTable('runners_count')">Sportivi</th>
+                <th>Acțiuni</th>
             </tr>
         </thead>
         <tbody>
@@ -20,9 +20,14 @@
                 <td>{{ element.representative }}</td>
                 <td>{{ element.email }}</td>
                 <td>{{ element.phone }}</td>
-                <td><a class="btn btn-sm btn-warning" :href="`/clubs/${element.id}`"> Arată </a></td>
-                <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
-                <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
+                <td>{{ element.runners_count }}</td>
+                <td>
+                    <div class="row-actions">
+                        <a class="row-action-btn show" :href="`/clubs/${element.id}`">Arată</a>
+                        <button class="row-action-btn edit" @click="editElement(element)">Editează</button>
+                        <button class="row-action-btn delete" @click="deleteElement(element.id)">Șterge</button>
+                    </div>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -66,3 +71,5 @@ function orderTable(sortKey) {
     emit('order', sortKey)
 }
 </script>
+
+<style scoped src="../shared/index.css"></style>

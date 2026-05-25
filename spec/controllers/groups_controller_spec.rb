@@ -68,6 +68,17 @@ RSpec.describe GroupsController, type: :controller do
       expect(json["competition"]).to be_present
       expect(json["competition"]["competition_name"]).to eq("Test Comp")
     end
+
+    it "includes category_percentages computed by GroupCategoriesProcessor" do
+      percentages = [ { category: "I", percent: 130, time: "00:01:30" } ]
+      expect(GroupCategoriesProcessor).to receive(:new).with(an_instance_of(Group)).and_return(
+        instance_double(GroupCategoriesProcessor, get_percent_and_times: percentages)
+      )
+
+      get :show, params: { id: group.id }, format: :json
+      json = JSON.parse(response.body)
+      expect(json["category_percentages"]).to eq([ { "category" => "I", "percent" => 130, "time" => "00:01:30" } ])
+    end
   end
 
   describe "GET #new" do

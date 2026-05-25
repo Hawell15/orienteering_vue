@@ -1,129 +1,166 @@
 <template>
-    <div class="mt-4 p-5 bg-light text-black rounded --bs-gray-500">
-        <h1>{{runner.runner_name}} {{runner.surname}}</h1>
-        <p><strong>Anul Nașterii: </strong>{{runner.yob}}</p>
-        <p><strong>Genul: </strong>{{runner.gender}}</p>
-        <p><strong>Clubul: </strong><a :href="`/clubs/${runner.club_id}`">{{runner.club?.club_name}}</a></p>
-        <p><strong>FOS ID: </strong>{{runner.id}}</p>
-        <hr class="my-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-6">
-                    <table>
-                        <tr>
-                            <td><strong>Titlul: </strong></td>
-                            <td>
-                                <a :href="`/categories/${runner.best_category_id}`">
-                                    {{runner.best_category?.category_name}}
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Categoria actula: </strong></td>
-                            <td>
-                                <a :href="`/categories/${runner.category_id}`">
-                                    {{runner.category?.category_name}}
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Valabila pina: </strong></td>
-                            <td>
-                                {{runner.category_valid}}
-                            </td>
-                        </tr>
-                    </table>
+    <div class="show-page">
+        <div class="hero">
+            <TopoBackdrop />
+            <div class="hero-inner">
+                <div class="hero-top">
+                    <div>
+                        <div class="eyebrow">👤 Sportiv</div>
+                        <h1 class="title">{{ runner.runner_name }} {{ runner.surname }}</h1>
+                        <div class="subtitle">
+                            <span v-if="runner.yob">{{ runner.yob }}</span>
+                            <template v-if="runner.gender">
+                                <span class="dot">·</span>
+                                <span>{{ runner.gender }}</span>
+                            </template>
+                            <template v-if="runner.club">
+                                <span class="dot">·</span>
+                                <span>
+                                    <a :href="`/clubs/${runner.club_id}`">{{ runner.club.club_name }}</a>
+                                </span>
+                            </template>
+                        </div>
+                        <div class="badges">
+                            <span class="badge-pill">FOS #{{ runner.id }}</span>
+                            <span v-if="runner.best_category" class="badge-pill ecn">Titlu: {{ runner.best_category.category_name }}</span>
+                            <span v-if="runner.wre_id" class="badge-pill wre">
+                                <a :href="`https://ranking.orienteering.org/PersonView?person=${runner.wre_id}`">WRE #{{ runner.wre_id }}</a>
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6">
-                    <table v-show="runner.wre_id">
-                        <tr>
-                            <td><strong>WRE ID: </strong></td>
-                            <td> <a :href="`https://ranking.orienteering.org/PersonView?person=${runner.wre_id}`">
-                                    {{runner.wre_id}}</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Sprint WRE Ranking(Locul/Puncte): </strong></td>
-                            <td>
-                                {{runner.sprint_wre_place}}/{{runner.sprint_wre_rang}}
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><strong>Padure WRE Ranking(Locul/Puncte): </strong></td>
-                            <td>
-                                {{runner.forest_wre_place}}/{{runner.forest_wre_rang}}
-                            </td>
-                        </tr>
+            </div>
+        </div>
+
+        <div class="stat-cards">
+            <div class="stat-card">
+                <div class="stat-icon">🎖</div>
+                <div class="stat-label">Titlul</div>
+                <div class="stat-value">
+                    <a v-if="runner.best_category" :href="`/categories/${runner.best_category_id}`">{{ runner.best_category.category_name }}</a>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">Categoria actuală</div>
+                <div class="stat-value">
+                    <a v-if="runner.category" :href="`/categories/${runner.category_id}`">{{ runner.category.category_name }}</a>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-label">Valabilă până</div>
+                <div class="stat-value">{{ runner.category_valid || '—' }}</div>
+            </div>
+            <div class="stat-card accent" v-if="runner.wre_id">
+                <div class="stat-icon">🌍</div>
+                <div class="stat-label">WRE</div>
+                <div class="stat-value">
+                    <a :href="`https://ranking.orienteering.org/PersonView?person=${runner.wre_id}`">#{{ runner.wre_id }}</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" v-if="runner.wre_id">
+            <div class="section-card">
+                <div class="section-card-title">🌍 WRE Ranking</div>
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="label">Sprint (Loc / Puncte)</span>
+                        <span class="value">{{ runner.sprint_wre_place || '—' }} / {{ runner.sprint_wre_rang || '—' }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Pădure (Loc / Puncte)</span>
+                        <span class="value">{{ runner.forest_wre_place || '—' }} / {{ runner.forest_wre_rang || '—' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-card">
+                <div class="section-card-title">🔀 Unește cu un alt sportiv</div>
+                <div class="merge-card">
+                    <label for="runner_id" class="merge-label">Sportiv duplicat cu:</label>
+                    <select id="runner_id" v-model="selectedRunner" class="form-select form-select-sm">
+                        <option v-for="r in runnersData" :key="r.id" :value="r.id">{{ r.runner_name }} {{ r.surname }}</option>
+                    </select>
+                    <div class="form-check">
+                        <input id="main_runner_check" v-model="mainRunner" type="checkbox" class="form-check-input" checked />
+                        <label class="form-check-label" for="main_runner_check">Păstrează acesta</label>
+                    </div>
+                    <button class="btn btn-sm btn-success" @click="openMergeModal">Salvează</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <button class="section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#membershipsTable" aria-expanded="false" aria-controls="membershipsTable">
+                <span class="section-icon">🪪</span>
+                <span class="section-title">Afilieri</span>
+                <span class="section-meta">{{ memberships.length }}</span>
+                <span class="section-caret">▾</span>
+            </button>
+            <div class="collapse" id="membershipsTable">
+                <div class="section-body">
+                    <MembershipsTable :elements="memberships" @order="orderMembershipTable"></MembershipsTable>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <button class="section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#confirmationsTable" aria-expanded="false" aria-controls="confirmationsTable">
+                <span class="section-icon">📜</span>
+                <span class="section-title">Istoria îndeplinirilor</span>
+                <span class="section-meta">{{ confirmationResults.length }}</span>
+                <span class="section-caret">▾</span>
+            </button>
+            <div class="collapse" id="confirmationsTable">
+                <div class="section-body">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data</th>
+                                <th>Categoria îndeplinită</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(element, index) in confirmationResults" :key="element.id"
+                                :class="{ newConfirmation: element.result_category_name !== confirmationResults[index + 1]?.result_category_name }">
+                                <td>{{ element.date }}</td>
+                                <td>{{ element.result_category_name }}</td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div>
-    <div>
-        <label for="runner_id" class="form-label">Sportiv dublicat cu:</label>
-        <select id="runner_id" v-model="selectedRunner" class="custom-select">
-            <option v-for="r in runnersData" :key="r.id" :value="r.id">
-                {{ r.runner_name }} {{ r.surname }}
-            </option>
-        </select>
 
-        Pastreaza acesta?<input v-model="mainRunner" type="checkbox" checked/>
-        <button class="btn btn-sm btn-success" @click="openMergeModal()">Salveaza</button>
-        <hr>
-    </div>
-    <br>
-    <p class="d-inline-flex gap-1">
-        <a class="btn btn-primary" data-bs-toggle="collapse" href="#membershipsTable" role="button" aria-expanded="false" aria-controls="membershipsTable">
-            Afilieri
-        </a>
-    </p>
-    <div class="collapse" id="membershipsTable">
-        <div class="card card-body">
-            <MembershipsTable :elements="memberships" @order="orderMembershipTable"></MembershipsTable>
+        <div class="section">
+            <button class="section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#resultsTable" aria-expanded="false" aria-controls="resultsTable">
+                <span class="section-icon">🏅</span>
+                <span class="section-title">Rezultate</span>
+                <span class="section-meta">{{ results.length }}</span>
+                <span class="section-caret">▾</span>
+            </button>
+            <div class="collapse" id="resultsTable">
+                <div class="section-body">
+                    <ResultsTable :elements="results" :hidden-columns="['full_name']" @order="orderResultTable"></ResultsTable>
+                </div>
+            </div>
         </div>
-    </div>
-    <br>
-    <p class="d-inline-flex gap-1">
-        <a class="btn btn-primary" data-bs-toggle="collapse" href="#confirmationsTable" role="button" aria-expanded="false" aria-controls="confirmationsTable">
-            Istoria Îndeplinirilor
-        </a>
-    </p>
-    <div class="collapse" id="confirmationsTable">
-        <div class="card card-body">
-            <table class="table table-striped table-bordered table-hover">
-                <thead class="table-primary">
-                    <tr>
-                        <td>Data</td>
-                        <td>Categoria Indeplinita</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(element, index) in confirmationResults" :key="element.id" :class="{newConfirmation: element.result_category_name !== confirmationResults[index + 1]?.result_category_name}">
-                        <td>{{element.date}}</td>
-                        <td>{{element.result_category_name}}</td>
-                    </tr>
-                </tbody>
-            </table>
+
+        <div class="footer-actions">
+            <button class="btn btn-outline-secondary" @click="goBack">← Înapoi</button>
+            <div class="action-group">
+                <button class="btn btn-success btn-sm" @click="editElement(runner)">Editează</button>
+                <button class="btn btn-danger btn-sm" @click="deleteRunner(runner.id)">Șterge</button>
+            </div>
         </div>
+
+        <Modal ref="modal" :runner="modalElement" :isNew="false" @save="updateElement" />
+        <MergeModal ref="mergeModal" @save="handleMergeSave" />
     </div>
-    <br>
-    <p class="d-inline-flex gap-1">
-        <a class="btn btn-primary" data-bs-toggle="collapse" href="#resultsTable" role="button" aria-expanded="false" aria-controls="resultsTable">
-            Rezultate
-        </a>
-    </p>
-    <div class="collapse" id="resultsTable">
-        <div class="card card-body">
-            <ResultsTable :elements="results" @order="orderResultTable"></ResultsTable>
-        </div>
-    </div>
-    <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editElement(runner)">Editeaza</button>
-        <button class="btn btn-danger btn-sm" @click="deleteRunner(runner.id)">Sterge</button>
-        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
-    </p>
-    <Modal ref="modal" :runner="modalElement" :isNew="false" @save="updateElement" />
-    <MergeModal ref="mergeModal" @save="handleMergeSave" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -132,6 +169,8 @@ import Modal from './Modal.vue'
 import MergeModal from './MergeModal.vue'
 import MembershipsTable from '../Membership/Table.vue'
 import ResultsTable from '../Result/Table.vue'
+import TopoBackdrop from '../shared/TopoBackdrop.vue'
+
 const runner = ref({})
 const runnerId = ref("")
 const results = ref([])
@@ -237,6 +276,7 @@ async function getConfirmationResults() {
     const res = await axios.get('/results.json', { params: params })
     confirmationResults.value = res.data;
 }
+
 function orderResultTable(sortKey) {
     orderTable(sortKey, resultSorting)
     getResults();
@@ -261,7 +301,7 @@ function editElement(runner) {
 }
 
 function updateElement(runnerData, done) {
-    axios.patch(`/runners/${runnerData.id}.json`, { runner: runnerData }).then(res => {
+    axios.patch(`/runners/${runnerData.id}.json`, { runner: runnerData }).then(() => {
         getData();
         done()
     })
@@ -270,25 +310,20 @@ function updateElement(runnerData, done) {
 function deleteRunner(id) {
     if (confirm('Esti sigur ca vrei sa stergi aceast sportiv?')) {
         axios.delete(`/runners/${id}`).then(() => {
-            if (document.referrer) {
-                window.location = document.referrer;
-            } else {
-                window.location = "/runners";
-            }
+            window.location = document.referrer || "/runners"
         })
     }
 }
 
 function goBack() {
-    if (document.referrer) {
-        window.location = document.referrer;
-    } else {
-        window.location = "/runners";
-    }
+    window.location = document.referrer || "/runners"
 }
 </script>
+
+<style scoped src="../shared/show.css"></style>
+
 <style scoped>
-.newConfirmation {
-    background-color: #d4edda;
+.newConfirmation td {
+    background-color: #dcfce7 !important;
 }
 </style>

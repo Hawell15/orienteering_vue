@@ -1,45 +1,72 @@
 <template>
-    <h1 style="text-align:center; color:green">Categorii</h1>
-    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
-    <hr>
-    <div class="filter-item">
-        <label :for="age" class="label-filter">Seniori/Juniori</label>
-        <select :id="age" v-model="filters.age" class="custom-select">
-            <option value="all" selected="selected">Toate</option>
-            <option value="senior">Seniori</option>
-            <option value="junior">Juniori</option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Puncte</label>
-        <div class="range-wrapper">
-            <input type="number" v-model="filters['points[from]']" min="0" max="300" class="custom-input" placeholder="De la" />
-            <span class="range-separator">—</span>
-            <input type="number" v-model="filters['points[to]']" min="0" max="300" class="custom-input" placeholder="Până la" />
+    <div class="index-page">
+        <div class="index-hero">
+            <div class="index-hero-inner">
+                <div class="index-title-block">
+                    <span class="index-eyebrow">🎖 Listă</span>
+                    <h1 class="index-title">Categorii</h1>
+                </div>
+                <span class="index-count">{{ data.length }}</span>
+                <div class="search-box">
+                    <input type="text" v-model="filters.search" placeholder="Caută categorii…" class="search-input" />
+                </div>
+                <button class="add-btn" @click="createNew">＋ Adaugă categorie</button>
+            </div>
         </div>
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Validitate(ani)</label>
-        <div class="range-wrapper">
-            <input type="number" v-model="filters['validaty_period[from]']" min="2" max="4" class="custom-input" placeholder="De la" />
-            <span class="range-separator">—</span>
-            <input type="number" v-model="filters['validaty_period[to]']" min="2" max="4" class="custom-input" placeholder="Până la" />
+
+        <div class="filter-panel">
+            <div class="filter-panel-head">
+                <span class="filter-panel-title">⚙ Filtre</span>
+                <button class="reset-btn" @click="resetFilters">Resetează</button>
+            </div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label for="age" class="label-filter">Seniori / Juniori</label>
+                    <select id="age" v-model="filters.age" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option value="senior">Seniori</option>
+                        <option value="junior">Juniori</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Puncte</label>
+                    <div class="range-wrapper">
+                        <input type="number" v-model="filters['points[from]']" min="0" max="300" class="custom-input" placeholder="De la" />
+                        <span class="range-separator">—</span>
+                        <input type="number" v-model="filters['points[to]']" min="0" max="300" class="custom-input" placeholder="Până la" />
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Validitate (ani)</label>
+                    <div class="range-wrapper">
+                        <input type="number" v-model="filters['validaty_period[from]']" min="2" max="4" class="custom-input" placeholder="De la" />
+                        <span class="range-separator">—</span>
+                        <input type="number" v-model="filters['validaty_period[to]']" min="2" max="4" class="custom-input" placeholder="Până la" />
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Număr sportivi</label>
+                    <div class="range-wrapper">
+                        <input type="number" v-model="filters['runners_count[from]']" min="0" class="custom-input" placeholder="De la" />
+                        <span class="range-separator">—</span>
+                        <input type="number" v-model="filters['runners_count[to]']" min="0" class="custom-input" placeholder="Până la" />
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Numar Sportivi</label>
-        <div class="range-wrapper">
-            <input type="number" v-model="filters['runners_count[from]']" min="0" class="custom-input" placeholder="De la" />
-            <span class="range-separator">—</span>
-            <input type="number" v-model="filters['runners_count[to]']" min="0" class="custom-input" placeholder="Până la" />
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <Table :elements="data" @order="orderTable" @deleted="removeCategory" @updated="updateCategory"></Table>
+            </div>
+            <div v-if="data.length === 0" class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div>Nu s-au găsit categorii. Modifică filtrele sau adaugă una nouă.</div>
+            </div>
         </div>
+
+        <Create ref="modal" @save="saveCategory" />
     </div>
-    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-    <hr>
-    <button class="btn btn-info mb-2" @click="createNew">Adauga Categorie</button>
-    <hr>
-    <Table :elements="data" @order="orderTable" @deleted="removeCategory" @updated="updateCategory"></Table>
-    <Create ref="modal" @save="saveCategory" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
@@ -67,9 +94,8 @@ let debounceTimeout = null;
 
 watch(
     filters,
-    (newVal) => {
+    () => {
         clearTimeout(debounceTimeout);
-
         debounceTimeout = setTimeout(() => {
             getData();
         }, 400);
@@ -107,7 +133,6 @@ async function getData() {
         let value = filters[key];
 
         if (keysToSkip.has(key)) return;
-
         if (value === "all") return;
 
         if (key !== 'search' && (value === "" || value === null)) {
@@ -174,3 +199,5 @@ function saveCategory() {
     filters["sorting[direction]"] = "desc"
 }
 </script>
+
+<style scoped src="../shared/index.css"></style>

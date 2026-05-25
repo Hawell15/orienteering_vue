@@ -1,16 +1,16 @@
 <template>
-    <table class="table table-striped table-bordered table-hover">
-        <thead class="table-primary">
+    <table class="forest-table">
+        <thead>
             <tr>
-                <th @click="orderTable('id')">ID</th>
-                <th @click="orderTable('date')">Data</th>
-                <th @click="orderTable('competition_name')">Nume</th>
-                <th @click="orderTable('location')">Oraș</th>
-                <th @click="orderTable('country')">Țara</th>
-                <th @click="orderTable('distance_type')">Tipul Distanței</th>
-                <th @click="orderTable('wre_id')">WRE ID</th>
-                <th @click="orderTable('ecn')">ECN</th>
-                <th colspan="3">Actiuni</th>
+                <th class="sortable" @click="orderTable('id')">ID</th>
+                <th class="sortable" @click="orderTable('date')">Data</th>
+                <th class="sortable" @click="orderTable('competition_name')">Nume</th>
+                <th class="sortable" @click="orderTable('location')">Oraș</th>
+                <th class="sortable" @click="orderTable('country')">Țara</th>
+                <th class="sortable" @click="orderTable('distance_type')">Tipul distanței</th>
+                <th class="sortable" @click="orderTable('wre_id')">WRE</th>
+                <th class="sortable" @click="orderTable('ecn')">ECN</th>
+                <th>Acțiuni</th>
             </tr>
         </thead>
         <tbody>
@@ -21,13 +21,21 @@
                 <td>{{ element.location }}</td>
                 <td>{{ element.country }}</td>
                 <td>{{ element.distance_type }}</td>
-                <td>{{ element.wre_id }}</td>
-                <td :class="element.ecn ? 'bg-true' : 'bg-false'">
-                    {{ element.ecn ? "Da" : "Nu" }}
+                <td>
+                    <span v-if="element.wre_id" class="cell-badge wre">#{{ element.wre_id }}</span>
+                    <span v-else class="cell-no">—</span>
                 </td>
-                <td><a class="btn btn-sm btn-warning" :href="`/competitions/${element.id}`">Arată</a></td>
-                <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
-                <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
+                <td>
+                    <span v-if="element.ecn" class="cell-badge ecn">Da</span>
+                    <span v-else class="cell-no">Nu</span>
+                </td>
+                <td>
+                    <div class="row-actions">
+                        <a class="row-action-btn show" :href="`/competitions/${element.id}`">Arată</a>
+                        <button class="row-action-btn edit" @click="editElement(element)">Editează</button>
+                        <button class="row-action-btn delete" @click="deleteElement(element.id)">Șterge</button>
+                    </div>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -47,7 +55,7 @@ const modalElement = ref({})
 const modal = ref(null)
 
 function deleteElement(id) {
-    if (confirm('Esti sigur ca vrei sa stergi aceast sportiv?')) {
+    if (confirm('Esti sigur ca vrei sa stergi această competiție?')) {
         axios.delete(`/competitions/${id}`).then(() => {
             props.elements = props.elements.filter(competition => competition.id !== id)
         })
@@ -71,3 +79,5 @@ function orderTable(sortKey) {
     emit('order', sortKey)
 }
 </script>
+
+<style scoped src="../shared/index.css"></style>

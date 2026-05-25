@@ -1,54 +1,81 @@
 <template>
-    <h1 style="text-align:center; color:green">Competiții</h1>
-    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
-    <hr>
-    <div class="filter-item">
-        <label for="country" class="label-filter">Țara</label>
-        <select id="country" v-model="filters.country" class="custom-select">
-            <option value="all">Toate</option>
-            <option value="international">Internaționale</option>
-            <option v-for="country in filterData.countries" :key="country" :value="country">
-                {{ country }}
-            </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="distance_type" class="label-filter">Tipul Distanței</label>
-        <select id="distance_type" v-model="filters.distance_type" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="distance_type in filterData.distance_types" :key="distance_type" :value="distance_type">
-                {{ distance_type }}
-            </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="wre" class="label-filter">WRE</label>
-        <input type="checkbox" name="wre" id="wre" class="custom-select" v-model="filters.wre">
-    </div>
-    <div class="filter-item">
-        <label for="ecn" class="label-filter">ECN</label>
-        <input type="checkbox" name="ecn" id="ecn" class="custom-select" v-model="filters.ecn">
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Data</label>
-        <div class="range-wrapper">
-            <input type="date" v-model="filters['date[from]']" min="0" class="custom-input" />
-            <span class="range-separator">—</span>
-            <input type="date" v-model="filters['date[to]']" min="0" class="custom-input" placeholder="Până la" />
+    <div class="index-page">
+        <div class="index-hero">
+            <div class="index-hero-inner">
+                <div class="index-title-block">
+                    <span class="index-eyebrow">🧭 Listă</span>
+                    <h1 class="index-title">Competiții</h1>
+                </div>
+                <span class="index-count">{{ data.length }}</span>
+                <div class="search-box">
+                    <input type="text" v-model="filters.search" placeholder="Caută competiții…" class="search-input" />
+                </div>
+                <button class="add-btn" @click="createNew">＋ Adaugă competiție</button>
+            </div>
         </div>
+
+        <div class="filter-panel">
+            <div class="filter-panel-head">
+                <span class="filter-panel-title">⚙ Filtre</span>
+                <button class="reset-btn" @click="resetFilters">Resetează</button>
+            </div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label for="country" class="label-filter">Țara</label>
+                    <select id="country" v-model="filters.country" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option value="international">Internaționale</option>
+                        <option v-for="country in filterData.countries" :key="country" :value="country">{{ country }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="distance_type" class="label-filter">Tipul distanței</label>
+                    <select id="distance_type" v-model="filters.distance_type" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="dt in filterData.distance_types" :key="dt" :value="dt">{{ dt }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Data</label>
+                    <div class="range-wrapper">
+                        <input type="date" v-model="filters['date[from]']" class="custom-input" />
+                        <span class="range-separator">—</span>
+                        <input type="date" v-model="filters['date[to]']" class="custom-input" />
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Indicatori</label>
+                    <div class="checkbox-row">
+                        <label class="checkbox-pill" :class="{ checked: filters.wre === true || filters.wre === 'true' }">
+                            <input type="checkbox" v-model="filters.wre" /> WRE
+                        </label>
+                        <label class="checkbox-pill" :class="{ checked: filters.ecn === true || filters.ecn === 'true' }">
+                            <input type="checkbox" v-model="filters.ecn" /> ECN
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <Table :elements="data" @order="orderTable"></Table>
+            </div>
+            <div v-if="data.length === 0" class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div>Nu s-au găsit competiții. Modifică filtrele sau adaugă una nouă.</div>
+            </div>
+        </div>
+
+        <Create ref="modal" @save="saveCompetition" />
     </div>
-    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-    <hr>
-    <button class="btn btn-info mb-2" @click="createNew">Adauga Competiție</button>
-    <hr>
-    <Table :elements="data" @order="orderTable"></Table>
-    <Create ref="modal" @save="saveCompetition" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
 import axios from '@/axios'
 import Create from './Create.vue'
 import Table from './Table.vue'
+
 const data = ref([])
 const filterData = ref({})
 const modal = ref(null)
@@ -71,9 +98,8 @@ let debounceTimeout = null;
 
 watch(
     filters,
-    (newVal) => {
+    () => {
         clearTimeout(debounceTimeout);
-
         debounceTimeout = setTimeout(() => {
             getData();
         }, 400);
@@ -109,9 +135,8 @@ async function getData() {
         let value = filters[key];
 
         if (keysToSkip.has(key)) return;
-
         if (value === "all") return;
-        if (value === "false") return;
+        if (value === "false" || value === false) return;
 
         if (key !== 'search' && (value === "" || value === null)) {
             value = DEFAULT_FILTERS[key];
@@ -174,12 +199,5 @@ function saveCompetition() {
     filters["sorting[direction]"] = "desc"
 }
 </script>
-<style scoped>
-.bg-true {
-    background-color: #d4edda;
-}
 
-.bg-false {
-    background-color: #f8d7da;
-}
-</style>
+<style scoped src="../shared/index.css"></style>
