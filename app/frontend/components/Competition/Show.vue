@@ -97,6 +97,12 @@
                 <ResultsTable :elements="activeGroup.results" :hidden-columns="['competition_name', 'group_name']" @refresh="getResults"></ResultsTable>
             </div>
 
+            <div class="results-toolbar">
+                <button class="btn btn-sm btn-outline-success" :disabled="countingRang" @click="countRang(activeGroup)">
+                    {{ countingRang ? '⏳ Se recalculează…' : '🔄 Recalculează rangul' }}
+                </button>
+            </div>
+
             <div v-if="activeGroup.category_percentages?.length" class="percentages">
                 <div class="percentages-title">Procente pe categorii</div>
                 <div class="percentages-grid">
@@ -138,6 +144,7 @@ const clasaModal = ref(null)
 const groups = ref([])
 const activeGroup = ref(null)
 const groupDetailsCache = new Map()
+const countingRang = ref(false)
 
 const podium = computed(() => (activeGroup.value?.results || []).slice(0, 3))
 
@@ -167,6 +174,7 @@ async function getResults() {
     }
     const res = await axios.get('/results.json', { params })
     groups.value = Object.values(convertResultsFormat(res.data))
+        .sort((a, b) => a.group_name.localeCompare(b.group_name, undefined, { numeric: true, sensitivity: 'base' }))
     selectGroupFromHash()
 }
 
@@ -203,6 +211,19 @@ async function loadGroupDetails(group) {
     const percentages = res.data.category_percentages || []
     groupDetailsCache.set(group.id, percentages)
     group.category_percentages = percentages
+}
+
+async function countRang(group) {
+    if (!group) return
+    if (!confirm(`Recalculează rangul și categoriile pentru grupa "${group.group_name}"?`)) return
+    countingRang.value = true
+    try {
+        await axios.post(`/groups/${group.id}/count_rang.json`)
+        groupDetailsCache.delete(group.id)
+        await getResults()
+    } finally {
+        countingRang.value = false
+    }
 }
 
 function selectGroupFromHash() {

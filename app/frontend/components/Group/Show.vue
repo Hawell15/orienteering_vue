@@ -66,6 +66,23 @@
             <div class="results-card">
                 <ResultsTable :elements="results" :hidden-columns="['group_name']" @order="orderResultTable"></ResultsTable>
             </div>
+
+            <div class="results-toolbar">
+                <button class="btn btn-sm btn-outline-success" :disabled="countingRang" @click="countRang">
+                    {{ countingRang ? '⏳ Se recalculează…' : '🔄 Recalculează rangul' }}
+                </button>
+            </div>
+
+            <div v-if="group.category_percentages?.length" class="percentages">
+                <div class="percentages-title">Procente pe categorii</div>
+                <div class="percentages-grid">
+                    <div v-for="row in group.category_percentages" :key="row.category" class="percent-row">
+                        <span class="cat">{{ row.category }}</span>
+                        <span class="pct">{{ row.percent }}</span>
+                        <span class="t">{{ row.time }}</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="footer-actions">
@@ -96,12 +113,25 @@ const resultSorting = ref({
 
 const modalElement = ref({})
 const modal = ref(null)
+const countingRang = ref(false)
 
 onMounted(() => {
     groupId.value = window.location.pathname.split('/').pop();
     getData();
     getResults();
 })
+
+async function countRang() {
+    if (!confirm('Recalculează rangul și categoriile pentru această grupă?')) return
+    countingRang.value = true
+    try {
+        await axios.post(`/groups/${groupId.value}/count_rang.json`)
+        await getData()
+        await getResults()
+    } finally {
+        countingRang.value = false
+    }
+}
 
 async function getData() {
     const res = await axios.get(`/groups/${groupId.value}.json`)
