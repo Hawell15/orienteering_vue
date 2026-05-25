@@ -1,40 +1,81 @@
 <template>
-    <div class="mt-4 p-5 bg-light text-black rounded --bs-gray-500">
-        <h1> {{category.full_name}}</h1>
-        <p><strong>Denumirea: </strong>{{category.category_name}}</p>
-        <hr class="my-4">
-        <p><strong>Puncte: </strong>{{category.points}}</p>
-        <p><strong>Validitate: </strong>{{category.validaty_period}} ani</p>
-        <p><strong>Numarul de sportivi: </strong><a :href="`/runners?category=${category.id}`">{{runners.length}}</a></p>
-        <p><strong>Numarul de rezultate: </strong><a :href="`/results?category=${category.id}`">{{results.length}}</a></p>
-    </div>
-    <p class="d-inline-flex gap-1">
-        <a class="btn btn-primary" data-bs-toggle="collapse" href="#runnersTable" role="button" aria-expanded="false" aria-controls="runnersTable">
-            Sportivi
-        </a>
-    </p>
-    <div class="collapse" id="runnersTable">
-        <div class="card card-body">
-            <RunnersTable :elements="runners" @order="orderRunnerTable"></RunnersTable>
+    <div class="show-page">
+        <div class="hero">
+            <TopoBackdrop />
+            <div class="hero-inner">
+                <div class="hero-top">
+                    <div>
+                        <div class="eyebrow">🎖 Categorie</div>
+                        <h1 class="title">{{ category.full_name }}</h1>
+                        <div class="subtitle">
+                            <span>Denumirea: {{ category.category_name }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <br>
-    <p class="d-inline-flex gap-1">
-        <a class="btn btn-primary" data-bs-toggle="collapse" href="#resultsTable" role="button" aria-expanded="false" aria-controls="resultsTable">
-            Rezultate
-        </a>
-    </p>
-    <div class="collapse" id="resultsTable">
-        <div class="card card-body">
-            <ResultsTable :elements="results" @order="orderResultTable"></ResultsTable>
+
+        <div class="stat-cards">
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-label">Puncte</div>
+                <div class="stat-value">{{ category.points }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-label">Validitate</div>
+                <div class="stat-value">{{ category.validaty_period }} ani</div>
+            </div>
+            <div class="stat-card accent">
+                <div class="stat-icon">🏃</div>
+                <div class="stat-label">Sportivi</div>
+                <div class="stat-value"><a :href="`/runners?category=${category.id}`">{{ runners.length }}</a></div>
+            </div>
+            <div class="stat-card accent">
+                <div class="stat-icon">🏅</div>
+                <div class="stat-label">Rezultate</div>
+                <div class="stat-value"><a :href="`/results?category=${category.id}`">{{ results.length }}</a></div>
+            </div>
         </div>
+
+        <div class="section">
+            <button class="section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#runnersTable" aria-expanded="false" aria-controls="runnersTable">
+                <span class="section-icon">👥</span>
+                <span class="section-title">Sportivi</span>
+                <span class="section-meta">{{ runners.length }}</span>
+                <span class="section-caret">▾</span>
+            </button>
+            <div class="collapse" id="runnersTable">
+                <div class="section-body">
+                    <RunnersTable :elements="runners" @order="orderRunnerTable"></RunnersTable>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <button class="section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#resultsTable" aria-expanded="false" aria-controls="resultsTable">
+                <span class="section-icon">🏅</span>
+                <span class="section-title">Rezultate</span>
+                <span class="section-meta">{{ results.length }}</span>
+                <span class="section-caret">▾</span>
+            </button>
+            <div class="collapse" id="resultsTable">
+                <div class="section-body">
+                    <ResultsTable :elements="results" :hidden-columns="['result_category_name']" @order="orderResultTable"></ResultsTable>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-actions">
+            <button class="btn btn-outline-secondary" @click="goBack">← Înapoi</button>
+            <div class="action-group">
+                <button class="btn btn-success btn-sm" @click="editElement(category)">Editează</button>
+                <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Șterge</button>
+            </div>
+        </div>
+
+        <Modal ref="modal" :category="modalElement" :isNew="false" @save="updateElement" />
     </div>
-    <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editElement(category)">Editeaza</button>
-        <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Sterge</button>
-        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
-    </p>
-    <Modal ref="modal" :category="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -42,6 +83,7 @@ import axios from '@/axios'
 import Modal from './Modal.vue'
 import RunnersTable from '../Runner/Table.vue'
 import ResultsTable from '../Result/Table.vue'
+import TopoBackdrop from '../shared/TopoBackdrop.vue'
 
 const category = ref({})
 const modalElement = ref({})
@@ -116,20 +158,14 @@ function updateElement(categoryData, done) {
 function deleteCategory(id) {
     if (confirm('Esti sigur ca vrei sa stergi această categorie?')) {
         axios.delete(`/categories/${id}`).then(() => {
-            if (document.referrer) {
-                window.location = document.referrer;
-            } else {
-                window.location = "/categories";
-            }
+            window.location = document.referrer || "/categories"
         })
     }
 }
 
 function goBack() {
-    if (document.referrer) {
-        window.location = document.referrer;
-    } else {
-        window.location = "/categories";
-    }
+    window.location = document.referrer || "/categories"
 }
 </script>
+
+<style scoped src="../shared/show.css"></style>

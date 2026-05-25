@@ -1,41 +1,50 @@
 <template>
-    <table class="table table-striped table-bordered table-hover">
-        <thead class="table-primary">
+    <table class="forest-table">
+        <thead>
             <tr>
-                <td @click="orderTable('id')">FOS ID</td>
-                <td @click="orderTable('full_name')">Nume</td>
-                <td @click="orderTable('category_id')">Categoria actuală</td>
-                <td @click="orderTable('category_valid')">Valabilitate</td>
-                <td @click="orderTable('gender')">Genul</td>
-                <td @click="orderTable('yob')">Anul Nașterii</td>
-                <td @click="orderTable('club_name')">Club</td>
-                <td @click="orderTable('best_category_id')">Titlul Sportiv</td>
-                <td @click="orderTable('wre_id')">WRE ID</td>
-                <td @click="orderTable('sprint_wre_place')">Sprint WRE</td>
-                <td @click="orderTable('forest_wre_place')">Padure WRE</td>
-                <th colspan="3">Actiuni</th>
+                <th class="sortable" @click="orderTable('id')">FOS ID</th>
+                <th class="sortable" @click="orderTable('full_name')">Nume</th>
+                <th class="sortable" @click="orderTable('category_id')">Categoria actuală</th>
+                <th class="sortable" @click="orderTable('category_valid')">Valabilitate</th>
+                <th class="sortable" @click="orderTable('gender')">Genul</th>
+                <th class="sortable" @click="orderTable('yob')">Anul nașterii</th>
+                <th class="sortable" @click="orderTable('club_name')">Club</th>
+                <th class="sortable" @click="orderTable('best_category_id')">Titlu sportiv</th>
+                <th class="sortable" @click="orderTable('wre_id')">WRE</th>
+                <th class="sortable" @click="orderTable('sprint_wre_place')">Sprint WRE</th>
+                <th class="sortable" @click="orderTable('forest_wre_place')">Pădure WRE</th>
+                <th>Acțiuni</th>
             </tr>
         </thead>
         <tbody>
             <tr v-for="element in elements" :key="element.id">
-                <td><a :href="`/runners/${element.id}`">{{element.id}}</a></td>
-                <td><a :href="`/runners/${element.id}`">{{element.full_name}}</a></td>
-                <td><a :href="`/categories/${element.category_id}`">{{element.category_name}}</a></td>
-                <td>{{element.category_valid}}</td>
-                <td>{{element.gender}}</td>
-                <td>{{element.yob}}</td>
-                <td><a :href="`/clubs/${element.club_id}`">{{element.club_name}}</a></td>
-                <td><a :href="`/categories/${element.best_category_id}`">{{element.best_category_name}}</a></td>
-                <td>{{element.wre_id}}</td>
+                <td><a :href="`/runners/${element.id}`">{{ element.id }}</a></td>
+                <td><a :href="`/runners/${element.id}`">{{ element.full_name }}</a></td>
+                <td><a :href="`/categories/${element.category_id}`">{{ element.category_name }}</a></td>
+                <td>{{ element.category_valid }}</td>
+                <td>{{ element.gender }}</td>
+                <td>{{ element.yob }}</td>
+                <td><a :href="`/clubs/${element.club_id}`">{{ element.club_name }}</a></td>
+                <td><a :href="`/categories/${element.best_category_id}`">{{ element.best_category_name }}</a></td>
                 <td>
-                    <p v-if="element.sprint_wre_place">{{element.sprint_wre_place}}/{{element.sprint_wre_rang}}</p>
+                    <span v-if="element.wre_id" class="cell-badge wre">#{{ element.wre_id }}</span>
+                    <span v-else class="cell-no">—</span>
                 </td>
                 <td>
-                    <p v-if="element.forest_wre_place">{{element.forest_wre_place}}/{{element.forest_wre_rang}}</p>
+                    <span v-if="element.sprint_wre_place">{{ element.sprint_wre_place }}/{{ element.sprint_wre_rang }}</span>
+                    <span v-else class="cell-no">—</span>
                 </td>
-                <td><a class="btn btn-sm btn-warning" :href="`/runners/${element.id}`">Arată</a></td>
-                <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
-                <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
+                <td>
+                    <span v-if="element.forest_wre_place">{{ element.forest_wre_place }}/{{ element.forest_wre_rang }}</span>
+                    <span v-else class="cell-no">—</span>
+                </td>
+                <td>
+                    <div class="row-actions">
+                        <a class="row-action-btn show" :href="`/runners/${element.id}`">Arată</a>
+                        <button class="row-action-btn edit" @click="editElement(element)">Editează</button>
+                        <button class="row-action-btn delete" @click="deleteElement(element.id)">Șterge</button>
+                    </div>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -79,3 +88,5 @@ function orderTable(sortKey) {
     emit('order', sortKey)
 }
 </script>
+
+<style scoped src="../shared/index.css"></style>

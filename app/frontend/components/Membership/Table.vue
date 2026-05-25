@@ -1,23 +1,27 @@
 <template>
-    <table class="table table-striped table-bordered table-hover">
-        <thead class="table-primary">
+    <table class="forest-table">
+        <thead>
             <tr>
-                <th @click="orderTable('id')">ID</th>
-                <th @click="orderTable('club_name')">Club</th>
-                <th @click="orderTable('full_name')">Sportiv</th>
-                <th @click="orderTable('results_count')">Rezultate</th>
-                <th colspan="3">Acțiuni</th>
+                <th class="sortable" @click="orderTable('id')">ID</th>
+                <th class="sortable" @click="orderTable('club_name')">Club</th>
+                <th class="sortable" @click="orderTable('full_name')">Sportiv</th>
+                <th class="sortable" @click="orderTable('results_count')">Rezultate</th>
+                <th>Acțiuni</th>
             </tr>
         </thead>
         <tbody>
             <tr v-for="element in elements" :key="element.id">
-                <td><a :href="`/memberships/${element.id}`">{{element.id}}</a></td>
-                <td><a :href="`/clubs/${element.club_id}`">{{element.club_name}}</a></td>
-                <td><a :href="`/runners/${element.runner_id}`">{{element.full_name}}</a></td>
-                <td><a :href="`/results?membership_id=${element.id}`">{{element.results_count}}</a></td>
-                <td><a class="btn btn-sm btn-warning" :href="`/memberships/${element.id}`"> Arată </a></td>
-                <td><button class="btn btn-sm btn-success" @click="editElement(element)">Editează</button></td>
-                <td><button class="btn btn-sm btn-danger" @click="deleteElement(element.id)">Șterge</button></td>
+                <td><a :href="`/memberships/${element.id}`">{{ element.id }}</a></td>
+                <td><a :href="`/clubs/${element.club_id}`">{{ element.club_name }}</a></td>
+                <td><a :href="`/runners/${element.runner_id}`">{{ element.full_name }}</a></td>
+                <td><a :href="`/results?membership_id=${element.id}`">{{ element.results_count }}</a></td>
+                <td>
+                    <div class="row-actions">
+                        <a class="row-action-btn show" :href="`/memberships/${element.id}`">Arată</a>
+                        <button class="row-action-btn edit" @click="editElement(element)">Editează</button>
+                        <button class="row-action-btn delete" @click="deleteElement(element.id)">Șterge</button>
+                    </div>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -61,3 +65,5 @@ function orderTable(sortKey) {
     emit('order', sortKey)
 }
 </script>
+
+<style scoped src="../shared/index.css"></style>

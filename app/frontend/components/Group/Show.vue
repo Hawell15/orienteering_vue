@@ -1,52 +1,91 @@
 <template>
-    <div class="mt-4 p-5 bg-light text-black rounded --bs-gray-500">
-        <h1>{{group.group_name}}</h1>
-        <p><strong>Data: </strong>{{group.competition?.date}}</p>
-        <p><strong>Competiția: </strong>{{group.competition?.competition_name}}</p>
-        <hr class="my-4">
-        <p><strong>Tipul Distanței: </strong>{{group.competition?.distance_type}}</p>
-        <p v-if="group.competition?.ecn"><strong>Coeficient ECN: </strong>{{group.ecn_coeficient}}</p>
-        <hr class="my-4">
-        <ResultsTable :elements="results" @order="orderResultTable"></ResultsTable>
-        <div class="half-width-table">
-            <table class="table table-striped table-bordered table-hover">
-                <thead class="table-warning">
-                    <tr>
-                        <th scope="col"> Categoria
-                        </th>
-                        <th> Procente
-                        </th>
-                        <th> Timpul
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
-                        <td>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <div class="show-page">
+        <div class="hero">
+            <TopoBackdrop />
+            <div class="hero-inner">
+                <div class="hero-top">
+                    <div>
+                        <div class="eyebrow">🏃 Grupă</div>
+                        <h1 class="title">{{ group.group_name }}</h1>
+                        <div class="subtitle">
+                            <span v-if="group.competition">
+                                <a :href="`/competitions/${group.competition.id}`">{{ group.competition.competition_name }}</a>
+                            </span>
+                            <template v-if="group.competition?.date">
+                                <span class="dot">·</span>
+                                <span>{{ group.competition.date }}</span>
+                            </template>
+                            <template v-if="group.competition?.distance_type">
+                                <span class="dot">·</span>
+                                <span>{{ group.competition.distance_type }}</span>
+                            </template>
+                        </div>
+                        <div class="badges" v-if="group.competition?.ecn">
+                            <span class="badge-pill ecn">● ECN</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div>Rang: {{group.rang }} </div>
-        <div>Clasa: {{group.category_name}} </div>
+
+        <div class="stat-cards">
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-label">Data</div>
+                <div class="stat-value">{{ group.competition?.date }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏃</div>
+                <div class="stat-label">Tipul distanței</div>
+                <div class="stat-value">{{ group.competition?.distance_type }}</div>
+            </div>
+            <div class="stat-card accent" v-if="group.competition?.ecn">
+                <div class="stat-icon">⚖️</div>
+                <div class="stat-label">Coeficient ECN</div>
+                <div class="stat-value">{{ group.ecn_coeficient }}</div>
+            </div>
+            <div class="stat-card accent">
+                <div class="stat-icon">🏅</div>
+                <div class="stat-label">Rezultate</div>
+                <div class="stat-value">{{ results.length }}</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="group-meta">
+                <div>
+                    <div class="group-title">Rezultate</div>
+                    <div class="group-sub">
+                        <span>Rang: <b>{{ group.rang || '—' }}</b></span>
+                        <span class="dot">·</span>
+                        <span>Clasa: <b>{{ group.category_name || '—' }}</b></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-card">
+                <ResultsTable :elements="results" :hidden-columns="['group_name']" @order="orderResultTable"></ResultsTable>
+            </div>
+        </div>
+
+        <div class="footer-actions">
+            <button class="btn btn-outline-secondary" @click="goBack">← Înapoi</button>
+            <div class="action-group">
+                <button class="btn btn-success btn-sm" @click="editElement(group)">Editează</button>
+                <button class="btn btn-danger btn-sm" @click="deleteGroup(group.id)">Șterge</button>
+            </div>
+        </div>
+
+        <Modal ref="modal" :group="modalElement" :isNew="false" @save="updateElement" />
     </div>
-    <p class="lead">
-        <button class="btn btn-sm btn-success" @click="editElement(group)">Editeaza</button>
-        <button class="btn btn-danger btn-sm" @click="deleteGroup(group.id)">Sterge</button>
-        <button class="btn btn-secondary btn-sm" @click="goBack()">Înapoi</button>
-    </p>
-    <Modal ref="modal" :group="modalElement" :isNew="false" @save="updateElement" />
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from '@/axios'
 import Modal from './Modal.vue'
 import ResultsTable from '../Result/Table.vue'
+import TopoBackdrop from '../shared/TopoBackdrop.vue'
+
 const group = ref({})
 const groupId = ref("")
 const results = ref([])
@@ -75,18 +114,6 @@ async function getResults() {
     results.value = res.data;
 }
 
-function formatResultTime(seconds) {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-
-    return (
-        String(h).padStart(2, '0') + ':' +
-        String(m).padStart(2, '0') + ':' +
-        String(s).padStart(2, '0')
-    );
-}
-
 function orderResultTable(sortKey) {
     orderTable(sortKey, resultSorting)
     getResults()
@@ -100,18 +127,13 @@ function orderTable(sortKey, filters) {
     filters.value["sorting[sort_by]"] = sortKey;
 }
 
-function formatStatus(status) {
-    const map = { confirmed: "Îndeplinit", pending: "În așteptare", unconfirmed: "Fără îndeplinire", capped: "Plafonat" }
-    return map[status]
-}
-
 function editElement(group) {
     modalElement.value = { ...group }
     modal.value.show()
 }
 
 function updateElement(groupData, done) {
-    axios.patch(`/groups/${groupData.id}.json`, { group: groupData }).then(res => {
+    axios.patch(`/groups/${groupData.id}.json`, { group: groupData }).then(() => {
         getData();
         done()
     })
@@ -120,37 +142,14 @@ function updateElement(groupData, done) {
 function deleteGroup(id) {
     if (confirm('Esti sigur ca vrei sa stergi această grupă?')) {
         axios.delete(`/groups/${id}`).then(() => {
-            if (document.referrer) {
-                window.location = document.referrer;
-            } else {
-                window.location = "/groups";
-            }
+            window.location = document.referrer || "/groups"
         })
     }
 }
 
 function goBack() {
-    if (document.referrer) {
-        window.location = document.referrer;
-    } else {
-        window.location = "/groups";
-    }
+    window.location = document.referrer || "/groups"
 }
 </script>
-<style scoped>
-.confirmed {
-    background-color: #d4edda;
-}
 
-.pending {
-    background-color: #ADD8E6;
-}
-
-.unconfirmed {
-    background-color: #f8d7da;
-}
-
-.capped {
-    background-color: #fff3cd;
-}
-</style>
+<style scoped src="../shared/show.css"></style>

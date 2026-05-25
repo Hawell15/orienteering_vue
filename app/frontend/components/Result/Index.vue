@@ -1,73 +1,108 @@
 <template>
-    <h1 style="text-align:center; color:green">Rezultate</h1>
-    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
-    <hr>
-    <div class="filter-item">
-        <label for="runner" class="label-filter">Sportiv</label>
-        <select id="runner" v-model="filters.runner" class="custom-select">
-            <option value="all">Toți</option>
-            <option v-for="runner in filterData.runners" :key="runner.id" :value="runner.id">{{ runner.full_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="club" class="label-filter">Club</label>
-        <select id="club" v-model="filters.club" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="competition" class="label-filter">Competiția</label>
-        <select id="competition" v-model="filters.competition" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="competition in filterData.competitions" :key="competition.id" :value="competition.id">{{ competition.competition_name}} </option>
-        </select>
-    </div>
-    <div v-if="filterData.groups" class="filter-item">
-        <label for="groups" class="label-filter">Grupe</label>
-        <select id="group" v-model="filters.group_data" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="group in filterData.groups" :key="group.id" :value="group.id">{{ group.group_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="category" class="label-filter">Categoria Indeplinita</label>
-        <select id="category" v-model="filters.category" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="category in filterData.categories" :key="category.id" :value="category.id">{{ category.category_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="wre" class="label-filter">WRE</label>
-        <input type="checkbox" name="wre" id="wre" class="custom-select" v-model="filters.wre">
-    </div>
-    <div class="filter-item">
-        <label for="ecn" class="label-filter">ECN</label>
-        <input type="checkbox" name="ecn" id="ecn" class="custom-select" v-model="filters.ecn">
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Îndeplinire</label>
-        <label for="confirmed">Confirmat</label>
-        <input type="checkbox" id="confirmed" value="confirmed" v-model="filters.status" />
-        <label for="pending">În așteptare</label>
-        <input type="checkbox" id="pending" value="pending" v-model="filters.status" />
-        <label for="unconfirmed">Fără îndeplinire</label>
-        <input type="checkbox" id="unconfirmed" value="unconfirmed" v-model="filters.status" />
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Data</label>
-        <div class="range-wrapper">
-            <input type="date" v-model="filters['date[from]']" min="0" class="custom-input" />
-            <span class="range-separator">—</span>
-            <input type="date" v-model="filters['date[to]']" min="0" class="custom-input" placeholder="Până la" />
+    <div class="index-page">
+        <div class="index-hero">
+            <div class="index-hero-inner">
+                <div class="index-title-block">
+                    <span class="index-eyebrow">🏅 Listă</span>
+                    <h1 class="index-title">Rezultate</h1>
+                </div>
+                <span class="index-count">{{ data.length }}</span>
+                <div class="search-box">
+                    <input type="text" v-model="filters.search" placeholder="Caută rezultate…" class="search-input" />
+                </div>
+                <button class="add-btn" @click="createNew">＋ Adaugă rezultat</button>
+            </div>
         </div>
+
+        <div class="filter-panel">
+            <div class="filter-panel-head">
+                <span class="filter-panel-title">⚙ Filtre</span>
+                <button class="reset-btn" @click="resetFilters">Resetează</button>
+            </div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label for="runner" class="label-filter">Sportiv</label>
+                    <select id="runner" v-model="filters.runner" class="custom-select">
+                        <option value="all">Toți</option>
+                        <option v-for="r in filterData.runners" :key="r.id" :value="r.id">{{ r.full_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="club" class="label-filter">Club</label>
+                    <select id="club" v-model="filters.club" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="competition" class="label-filter">Competiția</label>
+                    <select id="competition" v-model="filters.competition" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="c in filterData.competitions" :key="c.id" :value="c.id">{{ c.competition_name }}</option>
+                    </select>
+                </div>
+                <div v-if="filterData.groups" class="filter-item">
+                    <label for="group" class="label-filter">Grupe</label>
+                    <select id="group" v-model="filters.group_data" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="g in filterData.groups" :key="g.id" :value="g.id">{{ g.group_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="category" class="label-filter">Categoria îndeplinită</label>
+                    <select id="category" v-model="filters.category" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="cat in filterData.categories" :key="cat.id" :value="cat.id">{{ cat.category_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Data</label>
+                    <div class="range-wrapper">
+                        <input type="date" v-model="filters['date[from]']" class="custom-input" />
+                        <span class="range-separator">—</span>
+                        <input type="date" v-model="filters['date[to]']" class="custom-input" />
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Indicatori</label>
+                    <div class="checkbox-row">
+                        <label class="checkbox-pill" :class="{ checked: filters.wre === true || filters.wre === 'true' }">
+                            <input type="checkbox" v-model="filters.wre" /> WRE
+                        </label>
+                        <label class="checkbox-pill" :class="{ checked: filters.ecn === true || filters.ecn === 'true' }">
+                            <input type="checkbox" v-model="filters.ecn" /> ECN
+                        </label>
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Îndeplinire</label>
+                    <div class="checkbox-row">
+                        <label class="checkbox-pill" :class="{ checked: filters.status.includes('confirmed') }">
+                            <input type="checkbox" value="confirmed" v-model="filters.status" /> Îndeplinit
+                        </label>
+                        <label class="checkbox-pill" :class="{ checked: filters.status.includes('pending') }">
+                            <input type="checkbox" value="pending" v-model="filters.status" /> În așteptare
+                        </label>
+                        <label class="checkbox-pill" :class="{ checked: filters.status.includes('unconfirmed') }">
+                            <input type="checkbox" value="unconfirmed" v-model="filters.status" /> Fără îndeplinire
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <Table :elements="data" @order="orderTable" @refresh="() => window.location.reload()"></Table>
+            </div>
+            <div v-if="data.length === 0" class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div>Nu s-au găsit rezultate.</div>
+            </div>
+        </div>
+
+        <Create ref="modal" @save="saveResult" />
     </div>
-    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-    <hr>
-    <button class="btn btn-info mb-2" @click="createNew">Adauga Rezultat</button>
-    <hr>
-    <Table :elements="data" @order="orderTable" @refresh="() => window.location.reload()"></Table>
-    <Create ref="modal" @save="saveResult" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
@@ -101,7 +136,7 @@ let debounceTimeout = null;
 
 watch(
     filters,
-    (newVal) => {
+    () => {
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => {
             getData();
@@ -140,7 +175,7 @@ async function getData() {
 
         if (keysToSkip.has(key)) return;
         if (value === "all") return;
-        if (value === []) return;
+        if (value === "false" || value === false) return;
         if (key === 'status' && value.length === 0) return;
         if (key !== 'search' && (value === "" || value === null)) {
             value = DEFAULT_FILTERS[key];
@@ -208,7 +243,7 @@ async function getFiltersGroupData() {
 }
 
 function resetFilters() {
-    Object.assign(filters, DEFAULT_FILTERS)
+    Object.assign(filters, { ...DEFAULT_FILTERS, status: [] })
     getData();
 }
 
@@ -220,5 +255,6 @@ function saveResult() {
     filters["sorting[sort_by]"] = "created_at"
     filters["sorting[direction]"] = "desc"
 }
-
 </script>
+
+<style scoped src="../shared/index.css"></style>

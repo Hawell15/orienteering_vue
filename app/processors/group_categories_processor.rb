@@ -84,7 +84,7 @@ class GroupCategoriesProcessor
     clasa = @group.clasa.to_i
     return {} if main_results.size < min_results_size
 
-    get_rang_percents(@group.rang).map do |k, v|
+    get_rang_percents(@group.rang.to_i).map do |k, v|
       [ k, v ] if k >= clasa
     end.compact.to_h
   end

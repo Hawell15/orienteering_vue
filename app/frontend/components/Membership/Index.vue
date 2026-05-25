@@ -1,35 +1,62 @@
 <template>
-    <h1 style="text-align:center; color:green">Afilieri(Club/Sportiv)</h1>
-    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
-    <hr>
-    <div class="filter-item">
-        <label for="club" class="label-filter">Club</label>
-        <select id="club" v-model="filters.club" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="runner" class="label-filter">Sportiv</label>
-        <select id="runner" v-model="filters.runner" class="custom-select">
-            <option value="all">Toți</option>
-            <option v-for="runner in filterData.runners" :key="runner.id" :value="runner.id">{{ runner.full_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Numar Rezultate</label>
-        <div class="range-wrapper">
-            <input type="number" v-model="filters['results_count[from]']" min="0" class="custom-input" placeholder="De la" />
-            <span class="range-separator">—</span>
-            <input type="number" v-model="filters['results_count[to]']" min="0" class="custom-input" placeholder="Până la" />
+    <div class="index-page">
+        <div class="index-hero">
+            <div class="index-hero-inner">
+                <div class="index-title-block">
+                    <span class="index-eyebrow">🪪 Listă</span>
+                    <h1 class="index-title">Afilieri</h1>
+                </div>
+                <span class="index-count">{{ data.length }}</span>
+                <div class="search-box">
+                    <input type="text" v-model="filters.search" placeholder="Caută afilieri…" class="search-input" />
+                </div>
+                <button class="add-btn" @click="createNew">＋ Adaugă afiliere</button>
+            </div>
         </div>
+
+        <div class="filter-panel">
+            <div class="filter-panel-head">
+                <span class="filter-panel-title">⚙ Filtre</span>
+                <button class="reset-btn" @click="resetFilters">Resetează</button>
+            </div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label for="club" class="label-filter">Club</label>
+                    <select id="club" v-model="filters.club" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="runner" class="label-filter">Sportiv</label>
+                    <select id="runner" v-model="filters.runner" class="custom-select">
+                        <option value="all">Toți</option>
+                        <option v-for="r in filterData.runners" :key="r.id" :value="r.id">{{ r.full_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Număr rezultate</label>
+                    <div class="range-wrapper">
+                        <input type="number" v-model="filters['results_count[from]']" min="0" class="custom-input" placeholder="De la" />
+                        <span class="range-separator">—</span>
+                        <input type="number" v-model="filters['results_count[to]']" min="0" class="custom-input" placeholder="Până la" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <Table :elements="data" @order="orderTable"></Table>
+            </div>
+            <div v-if="data.length === 0" class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div>Nu s-au găsit afilieri.</div>
+            </div>
+        </div>
+
+        <Create ref="modal" @save="saveMembership" />
     </div>
-    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-    <hr>
-    <button class="btn btn-info mb-2" @click="createNew">Adauga Afilierea</button>
-    <hr>
-    <Table :elements="data" @order="orderTable"></Table>
-    <Create ref="modal" @save="saveMembership" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
@@ -55,9 +82,8 @@ let debounceTimeout = null;
 
 watch(
     filters,
-    (newVal) => {
+    () => {
         clearTimeout(debounceTimeout);
-
         debounceTimeout = setTimeout(() => {
             getData();
         }, 400);
@@ -154,5 +180,6 @@ function saveMembership() {
     filters["sorting[sort_by]"] = "created_at"
     filters["sorting[direction]"] = "desc"
 }
-
 </script>
+
+<style scoped src="../shared/index.css"></style>

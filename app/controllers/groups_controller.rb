@@ -1,5 +1,5 @@
 class GroupsController < ApplicationController
-  before_action :set_group, only: %i[ show edit update destroy ]
+  before_action :set_group, only: %i[ show edit update destroy]
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :competition
@@ -18,10 +18,16 @@ class GroupsController < ApplicationController
   # GET /groups/1 or /groups/1.json
   def show
     category_name = Category.find_by(id: @group.clasa)&.category_name
+    category_percentages = GroupCategoriesProcessor.new(@group).get_percent_and_times
 
     respond_to do |format|
       format.html # renders index.html.erb
-      format.json { render json: @group.as_json(include: :competition).merge("category_name" => category_name) }
+      format.json do
+        render json: @group.as_json(include: :competition).merge(
+          "category_name" => category_name,
+          "category_percentages" => category_percentages
+        )
+      end
     end
   end
 

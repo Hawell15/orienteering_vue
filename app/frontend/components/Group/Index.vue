@@ -1,43 +1,70 @@
 <template>
-    <h1 style="text-align:center; color:green">Grupe</h1>
-    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
-    <hr>
-    <div class="filter-item">
-        <label for="competition" class="label-filter">Competitia</label>
-        <select id="competition" v-model="filters.competition" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="competition in filterData.competitions" :key="competition.id" :value="competition.id">{{ competition.competition_display}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="clasa" class="label-filter">Clasa</label>
-        <select id="clasa" v-model="filters.clasa" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="clasa in filterData.clase" :key="clasa.id" :value="clasa.id">{{ clasa.category_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Data</label>
-        <div class="range-wrapper">
-            <input type="date" v-model="filters['date[from]']" min="0" class="custom-input" placeholder="De la" />
-            <span class="range-separator">—</span>
-            <input type="date" v-model="filters['date[to]']" min="0" class="custom-input" placeholder="Până la" />
+    <div class="index-page">
+        <div class="index-hero">
+            <div class="index-hero-inner">
+                <div class="index-title-block">
+                    <span class="index-eyebrow">🏃 Listă</span>
+                    <h1 class="index-title">Grupe</h1>
+                </div>
+                <span class="index-count">{{ data.length }}</span>
+                <div class="search-box">
+                    <input type="text" v-model="filters.search" placeholder="Caută grupe…" class="search-input" />
+                </div>
+                <button class="add-btn" @click="createNew">＋ Adaugă grupă</button>
+            </div>
         </div>
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Numar Rezultate</label>
-        <div class="range-wrapper">
-            <input type="number" v-model="filters['results_count[from]']" min="0" class="custom-input" placeholder="De la" />
-            <span class="range-separator">—</span>
-            <input type="number" v-model="filters['results_count[to]']" min="0" class="custom-input" placeholder="Până la" />
+
+        <div class="filter-panel">
+            <div class="filter-panel-head">
+                <span class="filter-panel-title">⚙ Filtre</span>
+                <button class="reset-btn" @click="resetFilters">Resetează</button>
+            </div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label for="competition" class="label-filter">Competiția</label>
+                    <select id="competition" v-model="filters.competition" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="c in filterData.competitions" :key="c.id" :value="c.id">{{ c.competition_display }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="clasa" class="label-filter">Clasa</label>
+                    <select id="clasa" v-model="filters.clasa" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="cl in filterData.clase" :key="cl.id" :value="cl.id">{{ cl.category_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Data</label>
+                    <div class="range-wrapper">
+                        <input type="date" v-model="filters['date[from]']" class="custom-input" />
+                        <span class="range-separator">—</span>
+                        <input type="date" v-model="filters['date[to]']" class="custom-input" />
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Număr rezultate</label>
+                    <div class="range-wrapper">
+                        <input type="number" v-model="filters['results_count[from]']" min="0" class="custom-input" placeholder="De la" />
+                        <span class="range-separator">—</span>
+                        <input type="number" v-model="filters['results_count[to]']" min="0" class="custom-input" placeholder="Până la" />
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <Table :elements="data" @order="orderTable"></Table>
+            </div>
+            <div v-if="data.length === 0" class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div>Nu s-au găsit grupe.</div>
+            </div>
+        </div>
+
+        <Create ref="modal" @save="saveGroup" />
     </div>
-    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-    <hr>
-    <button class="btn btn-info mb-2" @click="createNew">Adauga Grupă</button>
-    <hr>
-    <Table :elements="data" @order="orderTable"></Table>
-    <Create ref="modal" @save="saveGroup" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
@@ -65,9 +92,8 @@ let debounceTimeout = null;
 
 watch(
     filters,
-    (newVal) => {
+    () => {
         clearTimeout(debounceTimeout);
-
         debounceTimeout = setTimeout(() => {
             getData();
         }, 400);
@@ -104,7 +130,6 @@ async function getData() {
         let value = filters[key];
 
         if (keysToSkip.has(key)) return;
-
         if (value === "all") return;
 
         if (key !== 'search' && (value === "" || value === null)) {
@@ -168,3 +193,5 @@ function saveGroup() {
     filters["sorting[direction]"] = "desc"
 }
 </script>
+
+<style scoped src="../shared/index.css"></style>

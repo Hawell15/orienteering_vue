@@ -1,21 +1,48 @@
 <template>
-    <h1 style="text-align:center; color:green">Cluburi</h1>
-    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
-    <hr>
-    <div class="filter-item">
-        <label class="label-filter">Numar Sportivi</label>
-        <div class="range-wrapper">
-            <input type="number" v-model="filters['runners_count[from]']" min="0" class="custom-input" placeholder="De la" />
-            <span class="range-separator">—</span>
-            <input type="number" v-model="filters['runners_count[to]']" min="0" class="custom-input" placeholder="Până la" />
+    <div class="index-page">
+        <div class="index-hero">
+            <div class="index-hero-inner">
+                <div class="index-title-block">
+                    <span class="index-eyebrow">🏛 Listă</span>
+                    <h1 class="index-title">Cluburi</h1>
+                </div>
+                <span class="index-count">{{ data.length }}</span>
+                <div class="search-box">
+                    <input type="text" v-model="filters.search" placeholder="Caută cluburi…" class="search-input" />
+                </div>
+                <button class="add-btn" @click="createNew">＋ Adaugă club</button>
+            </div>
         </div>
+
+        <div class="filter-panel">
+            <div class="filter-panel-head">
+                <span class="filter-panel-title">⚙ Filtre</span>
+                <button class="reset-btn" @click="resetFilters">Resetează</button>
+            </div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label class="label-filter">Număr sportivi</label>
+                    <div class="range-wrapper">
+                        <input type="number" v-model="filters['runners_count[from]']" min="0" class="custom-input" placeholder="De la" />
+                        <span class="range-separator">—</span>
+                        <input type="number" v-model="filters['runners_count[to]']" min="0" class="custom-input" placeholder="Până la" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <Table :elements="data" @order="orderTable"></Table>
+            </div>
+            <div v-if="data.length === 0" class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div>Nu s-au găsit cluburi.</div>
+            </div>
+        </div>
+
+        <Create ref="modal" @save="saveClub" />
     </div>
-    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-    <hr>
-    <button class="btn btn-info mb-2" @click="createNew">Adauga Club</button>
-    <hr>
-    <Table :elements="data" @order="orderTable"></Table>
-    <Create ref="modal" @save="saveClub" />
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
@@ -40,9 +67,8 @@ let debounceTimeout = null;
 
 watch(
     filters,
-    (newVal) => {
+    () => {
         clearTimeout(debounceTimeout);
-
         debounceTimeout = setTimeout(() => {
             getData();
         }, 400);
@@ -110,7 +136,6 @@ onMounted(() => {
     });
 
     getData();
-
 })
 
 function orderTable(sortKey) {
@@ -135,3 +160,5 @@ function saveClub() {
     filters["sorting[direction]"] = "desc"
 }
 </script>
+
+<style scoped src="../shared/index.css"></style>

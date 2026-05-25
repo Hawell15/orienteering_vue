@@ -1,61 +1,91 @@
 <template>
-    <h1 style="text-align:center; color:green">Sportivi</h1>
-    <input type="text" v-model="filters.search" placeholder="Cautare" class="form-control" />
-    <hr>
-    <div class="filter-item">
-        <label for="club" class="label-filter">Club</label>
-        <select id="club" v-model="filters.club" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="membership" class="label-filter">Afiliere</label>
-        <select id="membership" v-model="filters.membership" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="category" class="label-filter">Categoria Actuală</label>
-        <select id="category" v-model="filters.category" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="category in filterData.categories" :key="category.id" :value="category.id">{{ category.category_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="best_category" class="label-filter">Titlul Sportiv</label>
-        <select id="best_category" v-model="filters.best_category" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="category in filterData.categories" :key="category.id" :value="category.id">{{ category.category_name}} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="gender" class="label-filter">Genul</label>
-        <select id="gender" v-model="filters.gender" class="custom-select">
-            <option value="all">Toate</option>
-            <option v-for="gender in filterData.genders" :key="gender" :value="gender">{{ gender }} </option>
-        </select>
-    </div>
-    <div class="filter-item">
-        <label for="wre" class="label-filter">WRE ID</label>
-        <input type="checkbox" name="wre" id="wre" class="custom-select" v-model="filters.wre">
-    </div>
-    <div class="filter-item">
-        <label class="label-filter">Anul Nașterii</label>
-        <div class="range-wrapper">
-            <input type="number" v-model="filters['yob[from]']" min="0" class="custom-input" />
-            <span class="range-separator">—</span>
-            <input type="number" v-model="filters['yob[to]']" min="0" class="custom-input" placeholder="Până la" />
+    <div class="index-page">
+        <div class="index-hero">
+            <div class="index-hero-inner">
+                <div class="index-title-block">
+                    <span class="index-eyebrow">👤 Listă</span>
+                    <h1 class="index-title">Sportivi</h1>
+                </div>
+                <span class="index-count">{{ data.length }}</span>
+                <div class="search-box">
+                    <input type="text" v-model="filters.search" placeholder="Caută sportivi…" class="search-input" />
+                </div>
+                <button class="add-btn" @click="createNew">＋ Adaugă sportiv</button>
+            </div>
         </div>
-    </div>
-    <button class="btn btn-sm btn-danger" @click="resetFilters">Reseteaza Filtrele</button>
-    <hr>
-    <button class="btn btn-info mb-2" @click="createNew">Adauga Sportiv</button>
-    <hr>
 
-    <Table :elements="data" @order="orderTable"></Table>
-    <Create ref="modal" @save="saveRunner" />
+        <div class="filter-panel">
+            <div class="filter-panel-head">
+                <span class="filter-panel-title">⚙ Filtre</span>
+                <button class="reset-btn" @click="resetFilters">Resetează</button>
+            </div>
+            <div class="filter-grid">
+                <div class="filter-item">
+                    <label for="club" class="label-filter">Club</label>
+                    <select id="club" v-model="filters.club" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="membership" class="label-filter">Afiliere</label>
+                    <select id="membership" v-model="filters.membership" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="club in filterData.clubs" :key="club.id" :value="club.id">{{ club.club_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="category" class="label-filter">Categoria actuală</label>
+                    <select id="category" v-model="filters.category" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="cat in filterData.categories" :key="cat.id" :value="cat.id">{{ cat.category_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="best_category" class="label-filter">Titlu sportiv</label>
+                    <select id="best_category" v-model="filters.best_category" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="cat in filterData.categories" :key="cat.id" :value="cat.id">{{ cat.category_name }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="gender" class="label-filter">Genul</label>
+                    <select id="gender" v-model="filters.gender" class="custom-select">
+                        <option value="all">Toate</option>
+                        <option v-for="g in filterData.genders" :key="g" :value="g">{{ g }}</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Anul nașterii</label>
+                    <div class="range-wrapper">
+                        <input type="number" v-model="filters['yob[from]']" min="0" class="custom-input" placeholder="De la" />
+                        <span class="range-separator">—</span>
+                        <input type="number" v-model="filters['yob[to]']" min="0" class="custom-input" placeholder="Până la" />
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="label-filter">Indicatori</label>
+                    <div class="checkbox-row">
+                        <label class="checkbox-pill" :class="{ checked: filters.wre === true || filters.wre === 'true' }">
+                            <input type="checkbox" v-model="filters.wre" /> WRE
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-scroll">
+                <Table :elements="data" @order="orderTable"></Table>
+            </div>
+            <div v-if="data.length === 0" class="empty-state">
+                <div class="empty-state-icon">🔍</div>
+                <div>Nu s-au găsit sportivi.</div>
+            </div>
+        </div>
+
+        <Create ref="modal" @save="saveRunner" />
+    </div>
 </template>
 <script setup>
 import { reactive, ref, onMounted, watch } from 'vue'
@@ -64,7 +94,6 @@ import Create from './Create.vue'
 import Table from './Table.vue'
 const data = ref([])
 const filterData = ref({})
-const competitionValue = ref("")
 
 const DEFAULT_FILTERS = {
     "sorting[sort_by]": "id",
@@ -77,8 +106,7 @@ const DEFAULT_FILTERS = {
     "category": "all",
     "best_category": "all",
     "wre": "false",
-    "gender": "all",
-
+    "gender": "all"
 }
 
 const filters = reactive({ ...DEFAULT_FILTERS });
@@ -89,7 +117,7 @@ const modal = ref(null)
 
 watch(
     filters,
-    (newVal) => {
+    () => {
         clearTimeout(debounceTimeout);
         debounceTimeout = setTimeout(() => {
             getData();
@@ -127,6 +155,7 @@ async function getData() {
 
         if (keysToSkip.has(key)) return;
         if (value === "all") return;
+        if (value === "false" || value === false) return;
         if (key !== 'search' && (value === "" || value === null)) {
             value = DEFAULT_FILTERS[key];
         }
@@ -191,5 +220,6 @@ function saveRunner() {
     filters["sorting[sort_by]"] = "created_at"
     filters["sorting[direction]"] = "desc"
 }
-
 </script>
+
+<style scoped src="../shared/index.css"></style>
