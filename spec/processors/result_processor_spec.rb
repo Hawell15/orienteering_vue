@@ -87,10 +87,10 @@ RSpec.describe ResultProcessor do
     context "when result already exists for the same membership and group" do
       let!(:existing) { Result.create!(group: group, membership: membership, category: no_category, date: Date.new(2025, 6, 1), status: Result::UNCONFIRMED) }
 
-      it "updates the existing result instead of creating a new one" do
-        processor = ResultProcessor.new(build_params(category_id: cat5.id))
+      it "updates the existing result via update_result" do
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat5.id }, existing)
         expect {
-          processor.add_result
+          processor.update_result
         }.not_to change(Result, :count)
         expect(existing.reload.category_id).to eq(cat5.id)
       end
@@ -132,12 +132,11 @@ RSpec.describe ResultProcessor do
         expect(existing.category_id).to eq(cat5.id)
       end
 
-      it "add_result routes to handle_update_result when a result is preset, without re-running membership lookup" do
-        existing.update!(category_id: cat5.id, status: Result::UNCONFIRMED)
-        processor = ResultProcessor.new({ runner_id: runner.id, status: Result::CONFIRMED }, existing)
+      it "update_result does not call add_membership_id" do
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat5.id }, existing)
         expect(processor).not_to receive(:add_membership_id)
-        processor.add_result
-        expect(existing.reload.status).to eq(Result::CONFIRMED)
+        processor.update_result
+        expect(existing.reload.category_id).to eq(cat5.id)
       end
     end
 
@@ -169,11 +168,10 @@ RSpec.describe ResultProcessor do
       end
 
       it "creates a pending result for title categories (cat_id < 4) when better than best" do
-        processor = ResultProcessor.new(build_params(category_id: cat2.id))
-        allow(processor).to receive(:add_membership_id).and_return(membership.id)
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing)
         expect {
-          processor.add_result
-        }.to change(Result, :count).by(1) # only the pending row; existing main is updated in place
+          processor.update_result
+        }.to change(Result, :count).by(1)
         pending = Result.find_by(group_id: title_group.id)
         expect(pending).to be_present
         expect(pending.status).to eq(Result::PENDING)
@@ -181,77 +179,68 @@ RSpec.describe ResultProcessor do
       end
 
       it "caps the main result category_id to min(best_category, 4)" do
-        processor = ResultProcessor.new(build_params(category_id: cat2.id))
-        allow(processor).to receive(:add_membership_id).and_return(membership.id)
-        processor.add_result
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing)
+        processor.update_result
         expect(existing.reload.category_id).to be <= [ runner.best_category_id, 4 ].min
       end
 
       it "marks the capped main result with status CAPPED" do
-        processor = ResultProcessor.new(build_params(category_id: cat2.id))
-        allow(processor).to receive(:add_membership_id).and_return(membership.id)
-        processor.add_result
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing)
+        processor.update_result
         expect(existing.reload.status).to eq(Result::CAPPED)
       end
 
       it "links the pending row to the main result via parent_result_id" do
-        processor = ResultProcessor.new(build_params(category_id: cat2.id))
-        allow(processor).to receive(:add_membership_id).and_return(membership.id)
-        processor.add_result
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing)
+        processor.update_result
         pending = Result.find_by(group_id: title_group.id)
         expect(pending.parent_result_id).to eq(existing.id)
       end
 
       it "destroys the pending child when the main result is destroyed" do
-        processor = ResultProcessor.new(build_params(category_id: cat2.id))
-        allow(processor).to receive(:add_membership_id).and_return(membership.id)
-        processor.add_result
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing)
+        processor.update_result
         expect { existing.destroy! }.to change(Result, :count).by(-2) # main + linked pending
       end
 
       it "cascades at the DB level when the main result is deleted via raw SQL" do
-        processor = ResultProcessor.new(build_params(category_id: cat2.id))
-        allow(processor).to receive(:add_membership_id).and_return(membership.id)
-        processor.add_result
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing)
+        processor.update_result
         expect {
           Result.where(id: existing.id).delete_all # bypasses dependent: :destroy
         }.to change(Result, :count).by(-2)
       end
 
       it "clears stale child rows when the main result is updated to a different category" do
-        processor = ResultProcessor.new(build_params(category_id: cat2.id))
-        allow(processor).to receive(:add_membership_id).and_return(membership.id)
-        processor.add_result
+        ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing).update_result
         expect(existing.reload.child_results.count).to eq(1)
 
         # Second update bumps category to cat3 — old pending (cat2) should be replaced
-        processor2 = ResultProcessor.new(build_params(category_id: cat3.id))
-        allow(processor2).to receive(:add_membership_id).and_return(membership.id)
-        processor2.add_result
+        ResultProcessor.new({ runner_id: runner.id, category_id: cat3.id }, existing).update_result
         existing.reload
         expect(existing.child_results.count).to eq(1)
         expect(existing.child_results.first.category_id).to eq(cat3.id)
       end
 
       it "marks the main result CONFIRMED (not CAPPED) when no pending is created" do
-        processor = ResultProcessor.new(build_params(category_id: cat4.id))
-        processor.add_result
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat4.id }, existing)
+        processor.update_result
         expect(existing.reload.status).to eq(Result::CONFIRMED)
       end
 
       it "does not create pending for cat_id >= 4" do
-        processor = ResultProcessor.new(build_params(category_id: cat4.id))
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat4.id }, existing)
         expect {
-          processor.add_result
-        }.not_to change(Result, :count) # existing main is updated in place, no pending created
+          processor.update_result
+        }.not_to change(Result, :count)
         expect(existing.reload.category_id).to eq(cat4.id)
       end
 
       it "does not create pending when category is not better than best_category" do
         runner.update!(best_category_id: cat1.id)
-        processor = ResultProcessor.new(build_params(category_id: cat2.id))
+        processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing)
         expect {
-          processor.add_result
+          processor.update_result
         }.not_to change(Result, :count)
         expect(existing.reload.category_id).to eq(cat2.id)
       end

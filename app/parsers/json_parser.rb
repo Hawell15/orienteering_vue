@@ -1,5 +1,5 @@
 class JsonParser < BaseParser
-  attr_accessor :file, :hash
+  attr_accessor :hash
 
   def initialize(path)
     @path          = path

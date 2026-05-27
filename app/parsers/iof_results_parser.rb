@@ -40,7 +40,7 @@ class IofResultsParser < BaseParser
 
   def extract_results(json, date)
     json.map do |result|
-      next if result["rank"].zero?
+      next if result["rank"].to_i.zero?
 
       {
         place:       result["rank"],

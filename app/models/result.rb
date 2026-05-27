@@ -6,7 +6,12 @@ class Result < ApplicationRecord
   has_many :child_results, class_name: "Result", foreign_key: :parent_result_id, dependent: :destroy
   has_one :runner, through: :membership
 
+  attr_accessor :skip_processing
+
   before_validation :add_date
+  before_validation :set_default_status, on: :create
+  before_save       :run_categorizer_before_save
+  after_save        :run_categorizer_after_save
 
   scope :search, ->(search) {
     where("LOWER(competitions.competition_name) LIKE :search OR LOWER(CONCAT(runners.runner_name, \' \', runners.surname)) LIKE :search OR LOWER(CONCAT(runners.surname, \' \', runners.runner_name)) LIKE :search OR LOWER(clubs.club_name) LIKE :search", search: "%#{search.downcase}%")
@@ -124,9 +129,25 @@ class Result < ApplicationRecord
 
   private
 
+  def categorizer
+    @categorizer ||= ResultCategorizer.new(self)
+  end
+
+  def run_categorizer_before_save
+    categorizer.before_save
+  end
+
+  def run_categorizer_after_save
+    categorizer.after_save
+  end
+
   def add_date
     return if date
 
     self.date = group&.competition&.date
+  end
+
+  def set_default_status
+    self.status ||= UNCONFIRMED
   end
 end
