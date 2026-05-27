@@ -42,7 +42,7 @@ class IofRunnersParser < BaseParser
       surname:          runner["First Name"],
       yob:              runner["yob"],
       gender:           extract_gender(runner["Gender"]),
-      club_id:          1,
+      club_id:          Club::DEFAULT_CLUB_ID,
       sprint_wre_rang:  runner["Sprint WRS points"],
       forest_wre_rang:  runner["WRS points"],
       sprint_wre_place: runner["Sprint WRS Position"],
@@ -98,9 +98,10 @@ class IofRunnersParser < BaseParser
 
   def request_age(id)
     response = Nokogiri::HTML(Net::HTTP.get(URI("https://ranking.orienteering.org/PersonView?person=#{id}")))
+    age_div = response.css("div.align-items-start div").find { |div| div.text.strip.match?(/^Age: \d+$/) }
+    return nil unless age_div
 
-    response.css("div.align-items-start div")
-                  .find { |div| div.text.strip.match?(/^Age: \d+$/) }.text[/\d+/].to_i
+    age_div.text[/\d+/].to_i
   end
 
   def merge_data(forest_data, sprint_data)

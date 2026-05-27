@@ -90,7 +90,8 @@ RSpec.describe ResultsController, type: :controller do
           date: Date.new(2024, 6, 1),
           status: "confirmed",
           place: 1,
-          time: 3500
+          time: 3500,
+          skip_processing: true
         )
       end
 
@@ -118,7 +119,8 @@ RSpec.describe ResultsController, type: :controller do
           date: Date.new(2023, 6, 1),
           status: "pending",
           place: 1,
-          time: 3500
+          time: 3500,
+          skip_processing: true
         )
         prior_result.update!(status: "pending")
 

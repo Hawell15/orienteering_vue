@@ -139,7 +139,7 @@ RSpec.describe Result, type: :model do
     end
 
     describe ".status" do
-      let!(:pending_result) { Result.create!(group: group, membership: membership, category: category, date: Date.today, status: "pending") }
+      let!(:pending_result) { Result.create!(group: group, membership: membership, category: category, date: Date.today, status: "pending", skip_processing: true) }
 
       it "filters by status" do
         expect(Result.status("confirmed")).to include(result1)

@@ -114,75 +114,126 @@ Migration `20260523094611_add_parent_result_to_results.rb` adds
 - Deleting the main result removes the children both via Rails callback
   (`destroy`) and DB cascade (raw `DELETE` / `delete_all`).
 
-## ResultProcessor flow
+## Architecture: who owns what
+
+Domain logic moved out of `ResultProcessor` and into a new
+`ResultCategorizer` class invoked by callbacks on `Result`. The
+processor is now a thin shim for parsers; the model+categorizer is the
+single chokepoint for cap / pending / IIIю logic regardless of how a
+row is created or updated.
+
+```
+Parser → BaseParser#add_result → ResultProcessor#add_result
+                                        ↓
+                                 Result.create! / find_by
+                                        ↓
+                            Result before_save → ResultCategorizer#before_save
+                            Result after_save  → ResultCategorizer#after_save
+```
+
+Any direct caller (`Result.create!`, `result.update!`, admin UI, console)
+goes through the same callback path. The processor is no longer
+gatekeeping — callers can bypass it entirely and the domain rules still
+apply.
+
+## ResultProcessor (slim)
 
 File: `app/processors/result_processor.rb`.
 
-### Two entry points
+- `ResultProcessor.new(params).add_result` — **insert-only**. Resolves
+  membership, runs `find_by(membership_id, group_id, date)`, returns the
+  existing row unchanged if found, or `Result.create!`s a new one.
+  Never updates existing rows. The IOF parser re-run downgrade bug is
+  structurally impossible here.
+- `ResultProcessor.new(params, result).update_result` — sparse update
+  against a preset row. Slices params to `category_id` / `status`,
+  no-ops when nothing differs from the current values.
 
-- `ResultProcessor.new(params).add_result` — for inserts; idempotent
-  upsert keyed on `(membership_id, group_id, date)`.
-- `ResultProcessor.new(params, result).update_result` — for sparse
-  updates against a known row. `add_result` also routes to the update
-  path when a result is preset.
+The processor doesn't make cap / pending / IIIю decisions anymore —
+those happen inside the model callback.
 
-### params fallback helpers
+## ResultCategorizer (domain logic)
 
-`current_date`, `current_category_id`, `current_group_id` prefer
-`params[...]` and fall back to `result.<field>` when the result is
-preset. All flow helpers (`better_category?`, `check_three_results?`,
-`create_pending_result`, `add_tree_results_category`) use these so the
-processor handles a sparse params hash on the update path.
+File: `app/processors/result_categorizer.rb`. Invoked from `Result`'s
+`before_save` and `after_save` callbacks, delegated via thin private
+methods on the model (`run_categorizer_before_save`,
+`run_categorizer_after_save`). State (`@achieved_category_id`,
+`@processed`) lives on a memoized categorizer instance so it persists
+between the two callback phases.
 
-### add_result high-level
+### Two phases
 
-1. If `@result` preset → `handle_update_result` (skip membership lookup).
-2. Resolve `membership_id` via `add_membership_id`.
-3. `find_by(membership_id, group_id, date)` to detect existing →
-   if found, `handle_update_result`; otherwise continue.
-4. `apply_pending_cap_if_needed` may rewrite `params["category_id"]` to
-   `min(best, 4)` and set `params["status"] = CAPPED`; returns the
-   originally-achieved category if a pending child should be created.
-5. `Result.create!` the main row.
-6. If a pending was warranted → `create_pending_result(achieved)` linked
-   via `parent_result_id`.
-7. `add_tree_results_category` — if the runner is a junior on the race
-   date AND has ≥3 finishes since 2024-03-25 AND no current category
-   better than IIIю, create a CONFIRMED IIIю row linked via
-   `parent_result_id`.
+**`before_save`** — guards → `destroy_all` stale children → `apply_cap`:
+1. Bail if `skip_processing` or `parent_result_id.present?` (recursion
+   guard — children created by the cap never re-enter).
+2. Bail if `should_reprocess?` returns false.
+3. Set `@processed = true`.
+4. `child_results.destroy_all` unless this is a new record.
+5. `apply_cap` — runs `better_category?`; if eligible, either rewrites
+   `category_id` to `min(best_category_id, 4)` and sets status to
+   CAPPED (stashing the original in `@achieved_category_id`), or sets
+   status to CONFIRMED.
 
-### handle_update_result
+**`after_save`** — same guards → create derivatives:
+1. Bail unless `@processed`.
+2. Create PENDING child if `@achieved_category_id` was stashed.
+3. Create IIIю child if `check_three_results?`.
+4. Reset `@achieved_category_id` and `@processed`.
 
-- `category_changed`: `params["category_id"].present? && result.category_id != params["category_id"]`
-- `status_changed`: same shape for status.
-- Early-return if neither.
-- If category changed: re-evaluate pending cap, **destroy stale
-  `result.child_results`** (cascade also removes their DB rows), update
-  main, re-create derivatives.
-- Status-only changes apply without touching children.
+### Reprocess triggers (`should_reprocess?`)
 
-### better_category?
+- `new_record?`, OR
+- `will_save_change_to_category_id?`, OR
+- `will_save_change_to_status?`, OR
+- `will_save_change_to_date?`, OR
+- `membership_runner_changing?` (membership swap to a **different runner**).
 
-A new result is "better" (= eligible for `confirmed`/`capped`) if:
+The membership trigger compares the old membership's `runner_id` to the
+new one's. A same-runner swap (e.g., club change for the same person)
+is **not** a reprocess.
+
+### `skip_processing` escape hatch
+
+`attr_accessor :skip_processing` on `Result`. Set to `true` to bypass
+the entire callback. Used by:
+- Test fixtures that need to construct a row with explicit
+  category/status without triggering the cap (the controller spec's
+  `prior_result`, the model spec's `pending_result`).
+- Callers that want to set state without re-running domain rules.
+
+### `better_category?`
+
+A new/updated result is "better" (eligible for `confirmed`/`capped`) if:
 - The category isn't NO_CATEGORY, AND
 - Either the group is the REDUCTION sentinel, OR
 - The runner has no current confirmed category for the race date, OR
 - The category id is strictly lower than the current, OR
-- The category id equals the current AND this race is more recent
-  (counts as a confirmation/refresh).
+- The category id equals the current AND this race is more recent.
 
-### check_three_results?
+### `check_three_results?`
 
-- Returns true → triggers `add_tree_results_category`.
 - Gates: category is not NO_CATEGORY, date ≥ 2024-03-25, runner is a
   junior on the race date, runner has no category better than IIIю,
   runner has ≥3 results since 2024-03-25.
 - **Intentional**: the guard is `< 9` (not `<= 9`), so subsequent
   finishes after a junior already holds IIIю still create a new
-  IIIю row. This **refreshes the 2-year validity** per Classification
-  §1.7. Side effect: very active juniors accumulate one IIIю row per
-  finish after the third; `category_on_date` selects the most recent
-  via `ORDER BY category_id ASC, date DESC LIMIT 1`.
+  IIIю row. This refreshes the 2-year validity per Classification §1.7.
+- Side effect: very active juniors accumulate one IIIю row per finish
+  after the third; `category_on_date` selects the most recent via
+  `ORDER BY category_id ASC, date DESC LIMIT 1`.
+
+### Cap decomposition quirk
+
+Worth knowing: once a result is capped, `category_id` in the DB is the
+post-cap value (4), not the originally-achieved category. The original
+only lives in the PENDING child row. On any subsequent reprocess (date
+change, runner swap, etc.) the cap sees `category_id = 4` and computes
+`needs_pending? = (4 < 4) → false` — no new PENDING child gets created.
+
+In production this rarely matters because re-saving a capped result is
+itself rare. The categorizer spec uses `skip_processing: true` at
+creation to isolate the cap from this quirk when testing reprocess
+triggers (`date change`, `different-runner swap`).
 
 ## Frontend wiring
 
@@ -214,11 +265,13 @@ work doesn't relitigate or accidentally regress.
 | 1 | `junior_runner?` ignoring the race date      | **Fixed.** Takes a date arg, defaults to today; SQL siblings already correct.                                                       |
 | 2 | `< 9` guard in `check_three_results?`        | **Intentional.** Re-creating IIIю rows refreshes the 2-year validity. Accepted duplicate rows.                                       |
 | 3 | Counting non-finishes in the 3-race rule     | **N/A by data invariant.** DNF/DSQ never inserted. Hardcoded 2024-03-25 is the federation rule effective date.                       |
-| 4 | `best_category_id` nil safety                | **N/A.** Schema default is 10; processor never receives nil. (No model-level defaulter — shoulda matcher conflict.)                |
+| 4 | `best_category_id` nil safety                | **N/A.** Schema default is 10; processor never receives nil.                                                                        |
 | 5 | Param string vs int coercion                 | **Fixed** in `ResultProcessor#initialize`.                                                                                          |
-| 6 | Stale PENDING on update-to-worse-category    | **Resolved by cascade.** `child_results.destroy_all` in `handle_update_result` on category change.                                  |
-| 7 | Status-only update swallowed by early return | **Fixed.** Gate is `unless category_changed || status_changed`; pending logic only fires on category change.                         |
-| 8 | Auxiliary row counts on heavy-junior history | Documented above; works correctly via `category_on_date` ordering. Optional future change: `find_or_initialize` to dedupe.            |
+| 6 | Stale PENDING on update-to-worse-category    | **Resolved by callback.** `child_results.destroy_all` runs in `ResultCategorizer#before_save` on any reprocess trigger.              |
+| 7 | Status-only update swallowed by early return | **N/A.** Old `handle_update_result` removed; the callback handles status changes directly.                                          |
+| 8 | Auxiliary row counts on heavy-junior history | Documented above; works correctly via `category_on_date` ordering.                                                                  |
+| 9 | IOF parser re-run downgrading existing rows  | **Structurally fixed.** `add_result` is insert-only; existing rows are returned unchanged. The old `params["status"] ||= UNCONFIRMED` is gone. |
+| 10 | Cap decomposition on reprocess              | **Documented quirk.** Re-saving a capped row sees the post-cap `category_id` and doesn't recreate the PENDING child. Use `skip_processing: true` if isolation is needed. |
 
 ## Migrations added during this work
 
@@ -230,16 +283,22 @@ work doesn't relitigate or accidentally regress.
 - `spec/models/runner_spec.rb` — `junior_runner?` with date arg / string date.
 - `spec/processors/result_processor_spec.rb`
   - String → int coercion of `category_id` / `group_id`.
-  - Sparse update path (preset result, missing params).
-  - `update_result` with status-only param.
-  - `add_result` with preset result routes to update without `add_membership_id`.
-  - CAPPED vs CONFIRMED status decision.
+  - `add_result` insert-only behavior (returns existing without update).
+  - `update_result` with category change, status-only change, sparse params, no-op when unchanged.
+  - CAPPED vs CONFIRMED status decision via callback through `update_result`.
   - `parent_result_id` linkage on both PENDING and IIIю rows.
   - Cascade on `destroy` and on raw `delete_all` (DB FK).
-  - Stale child cleanup on category-change update.
+  - Stale child cleanup on category-change via `update_result`.
+- `spec/processors/result_categorizer_spec.rb` — categorizer-specific behaviors:
+  - `skip_processing: true` bypasses the callback entirely.
+  - `parent_result_id` recursion guard (children created by the cap don't re-enter).
+  - Date change as a reprocess trigger.
+  - Same-runner membership swap = no reprocess; different-runner swap = reprocess.
 - `spec/controllers/results_controller_spec.rb` — `pending_result_id`
-  and `pending_category_name` exposed in the index JSON.
+  and `pending_category_name` exposed in the index JSON. Fixtures that
+  need explicit state use `skip_processing: true` to bypass the cap.
 
 After any backend change to `app/models/result.rb`,
-`app/models/runner.rb`, or `app/processors/result_processor.rb`, run
-`bundle exec rspec` per `CLAUDE.md`.
+`app/models/runner.rb`, `app/processors/result_processor.rb`, or
+`app/processors/result_categorizer.rb`, run `bundle exec rspec` per
+`CLAUDE.md`.
