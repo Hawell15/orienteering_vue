@@ -2,6 +2,7 @@
 
 class CategoriesController < ApplicationController
   before_action :set_category, only: %i[show edit update destroy]
+  before_action :require_admin!, only: %i[new create edit update destroy]
 
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search

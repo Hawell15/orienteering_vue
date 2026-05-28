@@ -1,6 +1,9 @@
 require "rails_helper"
 
 RSpec.describe ClubsController, type: :controller do
+  let(:admin_user) { FactoryBot.create(:user, :admin) }
+  before { sign_in admin_user }
+
   let!(:club) { Club.create!(club_name: "Alpha Club", territory: "North", representative: "John", email: "alpha@test.com", phone: "123") }
   let(:valid_attributes) { { club_name: "Beta Club", territory: "South" } }
   let(:invalid_attributes) { { club_name: nil } }
@@ -129,6 +132,33 @@ RSpec.describe ClubsController, type: :controller do
     it "destroys the merged club" do
       post :merge_clubs, params: { id: club.id, merged_club_id: other_club.id }
       expect { other_club.reload }.to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe "authorization on write actions" do
+    let(:non_admin) { FactoryBot.create(:user) }
+
+    context "when signed out" do
+      before { sign_out admin_user }
+
+      it "redirects HTML POST #create to root" do
+        post :create, params: { club: valid_attributes }
+        expect(response).to redirect_to(root_path)
+      end
+
+      it "returns 403 for JSON POST #create" do
+        post :create, params: { club: valid_attributes }, format: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when signed in as non-admin" do
+      before { sign_in non_admin }
+
+      it "returns 403 for JSON DELETE #destroy" do
+        delete :destroy, params: { id: club.id }, format: :json
+        expect(response).to have_http_status(:forbidden)
+      end
     end
   end
 

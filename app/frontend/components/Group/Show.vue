@@ -67,7 +67,7 @@
                 <ResultsTable :elements="results" :hidden-columns="['group_name']" @order="orderResultTable"></ResultsTable>
             </div>
 
-            <div class="results-toolbar">
+            <div v-if="isAdmin" class="results-toolbar">
                 <button class="btn btn-sm btn-outline-success" :disabled="countingRang" @click="countRang">
                     {{ countingRang ? '⏳ Se recalculează…' : '🔄 Recalculează rangul' }}
                 </button>
@@ -87,7 +87,7 @@
 
         <div class="footer-actions">
             <button class="btn btn-outline-secondary" @click="goBack">← Înapoi</button>
-            <div class="action-group">
+            <div v-if="isAdmin" class="action-group">
                 <button class="btn btn-success btn-sm" @click="editElement(group)">Editează</button>
                 <button class="btn btn-danger btn-sm" @click="deleteGroup(group.id)">Șterge</button>
             </div>
@@ -102,6 +102,7 @@ import axios from '@/axios'
 import Modal from './Modal.vue'
 import ResultsTable from '../Result/Table.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
+import { isAdmin } from '@/currentUser'
 
 const group = ref({})
 const groupId = ref("")

@@ -23,7 +23,7 @@
                     </div>
                     <div class="hero-actions">
                         <a class="btn btn-light" :href="`/competitions/${competitionId}.pdf`">PDF</a>
-                        <div class="dropdown">
+                        <div v-if="isAdmin" class="dropdown">
                             <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">Acțiuni</button>
                             <ul class="dropdown-menu">
                                 <li><button class="dropdown-item" @click="toggleEcn">{{ competition.ecn ? 'Exclude din ECN' : 'Adauga la ECN' }}</button></li>
@@ -97,7 +97,7 @@
                 <ResultsTable :elements="activeGroup.results" :hidden-columns="['competition_name', 'group_name']" @refresh="getResults"></ResultsTable>
             </div>
 
-            <div class="results-toolbar">
+            <div v-if="isAdmin" class="results-toolbar">
                 <button class="btn btn-sm btn-outline-success" :disabled="countingRang" @click="countRang(activeGroup)">
                     {{ countingRang ? '⏳ Se recalculează…' : '🔄 Recalculează rangul' }}
                 </button>
@@ -133,6 +133,7 @@ import EcnCoeficients from './EcnCoeficients.vue'
 import GroupClasa from './GroupClasa.vue'
 import ResultsTable from '../Result/Table.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
+import { isAdmin } from '@/currentUser'
 
 const competition = ref({})
 const competitionId = ref("")

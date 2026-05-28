@@ -1,6 +1,9 @@
 require "rails_helper"
 
 RSpec.describe GroupsController, type: :controller do
+  let(:admin_user) { FactoryBot.create(:user, :admin) }
+  before { sign_in admin_user }
+
   let!(:competition) { Competition.create!(competition_name: "Test Comp", date: Date.new(2025, 6, 1), distance_type: "Sprint") }
   let!(:group) { Group.create!(competition: competition, group_name: "M21", rang: 1, clasa: "3") }
   let(:valid_attributes) { { group_name: "W18", competition_id: competition.id, rang: 2 } }
@@ -136,6 +139,33 @@ RSpec.describe GroupsController, type: :controller do
         allow_any_instance_of(Group).to receive(:update).and_return(false)
         patch :update, params: { id: group.id, group: { rang: nil } }, format: :json
         expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+  end
+
+  describe "authorization on write actions" do
+    let(:non_admin) { FactoryBot.create(:user) }
+
+    context "when signed out" do
+      before { sign_out admin_user }
+
+      it "redirects HTML POST #create to root" do
+        post :create, params: { group: valid_attributes }
+        expect(response).to redirect_to(root_path)
+      end
+
+      it "returns 403 for JSON POST #create" do
+        post :create, params: { group: valid_attributes }, format: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when signed in as non-admin" do
+      before { sign_in non_admin }
+
+      it "returns 403 for JSON DELETE #destroy" do
+        delete :destroy, params: { id: group.id }, format: :json
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end

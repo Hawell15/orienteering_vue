@@ -10,7 +10,7 @@
                 <div class="search-box">
                     <input type="text" v-model="filters.search" placeholder="Caută rezultate…" class="search-input" />
                 </div>
-                <button class="add-btn" @click="createNew">＋ Adaugă rezultat</button>
+                <button v-if="isAdmin" class="add-btn" @click="createNew">＋ Adaugă rezultat</button>
             </div>
         </div>
 
@@ -109,6 +109,7 @@ import { reactive, ref, onMounted, watch } from 'vue'
 import axios from '@/axios'
 import Create from './Create.vue'
 import Table from './Table.vue'
+import { isAdmin } from '@/currentUser'
 const data = ref([])
 const filterData = ref({})
 const competitionValue = ref("")

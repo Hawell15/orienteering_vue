@@ -68,7 +68,7 @@
 
         <div class="footer-actions">
             <button class="btn btn-outline-secondary" @click="goBack">← Înapoi</button>
-            <div class="action-group">
+            <div v-if="isAdmin" class="action-group">
                 <button class="btn btn-success btn-sm" @click="editElement(category)">Editează</button>
                 <button class="btn btn-danger btn-sm" @click="deleteCategory(category.id)">Șterge</button>
             </div>
@@ -84,6 +84,7 @@ import Modal from './Modal.vue'
 import RunnersTable from '../Runner/Table.vue'
 import ResultsTable from '../Result/Table.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
+import { isAdmin } from '@/currentUser'
 
 const category = ref({})
 const modalElement = ref({})

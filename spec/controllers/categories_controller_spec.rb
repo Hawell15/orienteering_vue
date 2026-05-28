@@ -2,6 +2,9 @@
 require 'rails_helper'
 
 RSpec.describe CategoriesController, type: :controller do
+  let(:admin_user) { FactoryBot.create(:user, :admin) }
+  before { sign_in admin_user }
+
   let!(:category) { Category.create!(category_name: "Pro", full_name: "Professional", points: 100, validaty_period: 12) }
   let(:valid_attributes) { { category_name: "Amateur", full_name: "Amateur League", points: 50, validaty_period: 6 } }
   let(:invalid_attributes) { { category_name: nil } }
@@ -176,6 +179,33 @@ RSpec.describe CategoriesController, type: :controller do
         allow_any_instance_of(Category).to receive(:update).and_return(false)
         patch :update, params: { id: category.id, category: invalid_attributes }, format: :json
         expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+  end
+
+  describe "authorization on write actions" do
+    let(:non_admin) { FactoryBot.create(:user) }
+
+    context "when signed out" do
+      before { sign_out admin_user }
+
+      it "redirects HTML POST #create to root" do
+        post :create, params: { category: valid_attributes }
+        expect(response).to redirect_to(root_path)
+      end
+
+      it "returns 403 for JSON POST #create" do
+        post :create, params: { category: valid_attributes }, format: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when signed in as non-admin" do
+      before { sign_in non_admin }
+
+      it "returns 403 for JSON DELETE #destroy" do
+        delete :destroy, params: { id: category.id }, format: :json
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end

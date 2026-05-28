@@ -1,5 +1,6 @@
 class GroupsController < ApplicationController
   before_action :set_group, only: %i[ show edit update destroy count_rang]
+  before_action :require_admin!, only: %i[new create edit update destroy count_rang]
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :competition

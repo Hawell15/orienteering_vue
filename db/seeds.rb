@@ -73,3 +73,11 @@ Competition.create("competition_name": 'Diminuare Categorie', "date": '2021-08-0
 Group.create("group_name": 'No Group', "competition_id": 1)
 Group.create("group_name": 'Diminuare Categorie', "competition_id": 2)
 Club.create("club_name": 'Individual')
+
+admin_email = ENV.fetch("ADMIN_EMAIL", "admin@example.com")
+admin_password = ENV.fetch("ADMIN_PASSWORD", "password")
+User.find_or_create_by!(email: admin_email) do |user|
+  user.password = admin_password
+  user.password_confirmation = admin_password
+  user.admin = true
+end

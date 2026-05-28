@@ -1,6 +1,9 @@
 require "rails_helper"
 
 RSpec.describe ResultsController, type: :controller do
+  let(:admin_user) { FactoryBot.create(:user, :admin) }
+  before { sign_in admin_user }
+
   let!(:category) { Category.create!(category_name: "Pro", points: 100, validaty_period: 2) }
   let!(:no_category) { Category.find_or_create_by!(id: Category::NO_CATEGORY_ID) { |c| c.category_name = "No Category" } }
   let!(:club) { Club.create!(club_name: "Test Club") }
@@ -207,6 +210,33 @@ RSpec.describe ResultsController, type: :controller do
         allow_any_instance_of(Result).to receive(:update).and_return(false)
         patch :update, params: { id: result.id, result: valid_attributes }, format: :json
         expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+  end
+
+  describe "authorization on write actions" do
+    let(:non_admin) { FactoryBot.create(:user) }
+
+    context "when signed out" do
+      before { sign_out admin_user }
+
+      it "redirects HTML POST #create to root" do
+        post :create, params: { result: valid_attributes }
+        expect(response).to redirect_to(root_path)
+      end
+
+      it "returns 403 for JSON POST #create" do
+        post :create, params: { result: valid_attributes }, format: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when signed in as non-admin" do
+      before { sign_in non_admin }
+
+      it "returns 403 for JSON DELETE #destroy" do
+        delete :destroy, params: { id: result.id }, format: :json
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end

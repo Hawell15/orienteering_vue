@@ -1,0 +1,44 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h2 class="auth-title">Autentificare</h2>
+
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="auth-field">
+        <%= f.label :email, "Email", class: "auth-label" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "auth-input" %>
+      </div>
+
+      <div class="auth-field">
+        <%= f.label :password, "Parolă", class: "auth-label" %>
+        <%= f.password_field :password, autocomplete: "current-password", class: "auth-input" %>
+      </div>
+
+      <% if devise_mapping.rememberable? %>
+        <div class="auth-field">
+          <label class="auth-check">
+            <%= f.check_box :remember_me %>
+            <span>Ține-mă minte</span>
+          </label>
+        </div>
+      <% end %>
+
+      <%= f.submit "Intră în cont", class: "auth-submit" %>
+    <% end %>
+
+    <div class="auth-footer">
+      <% if devise_mapping.recoverable? %>
+        <p>
+          <%= link_to "Ai uitat parola?", new_password_path(resource_name), class: "auth-link" %>
+        </p>
+      <% end %>
+      <% if devise_mapping.registerable? %>
+        <p>
+          Nu ai cont încă?
+          <%= link_to "Înregistrează-te", new_registration_path(resource_name), class: "auth-link" %>
+        </p>
+      <% end %>
+    </div>
+  </div>
+</div>

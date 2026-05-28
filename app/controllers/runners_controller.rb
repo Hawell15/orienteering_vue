@@ -1,5 +1,6 @@
 class RunnersController < ApplicationController
   before_action :set_runner, only: %i[ show edit update destroy merge_runners]
+  before_action :require_admin!, only: %i[new create edit update destroy merge_runners]
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :club
