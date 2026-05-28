@@ -22,25 +22,26 @@ RSpec.describe Category, type: :model do
   describe ".sorting" do
     let!(:cat1) { Category.create!(category_name: "A", points: 10, validaty_period: 5) }
     let!(:cat2) { Category.create!(category_name: "B", points: 20, validaty_period: 3) }
+    let(:ids)  { [ cat1.id, cat2.id ] }
 
     it "sorts by allowed column asc" do
-      expect(Category.sorting("points", "asc")).to eq([ cat1, cat2 ])
+      expect(Category.sorting("points", "asc").where(id: ids)).to eq([ cat1, cat2 ])
     end
 
     it "sorts by allowed column desc" do
-      expect(Category.sorting("points", "desc")).to eq([ cat2, cat1 ])
+      expect(Category.sorting("points", "desc").where(id: ids)).to eq([ cat2, cat1 ])
     end
 
     it "sorts by category_name" do
-      expect(Category.sorting("category_name", "asc")).to eq([ cat1, cat2 ])
+      expect(Category.sorting("category_name", "asc").where(id: ids)).to eq([ cat1, cat2 ])
     end
 
     it "sorts by validaty_period" do
-      expect(Category.sorting("validaty_period", "asc")).to eq([ cat2, cat1 ])
+      expect(Category.sorting("validaty_period", "asc").where(id: ids)).to eq([ cat2, cat1 ])
     end
 
     it "sorts by created_at" do
-      expect(Category.sorting("created_at", "asc").to_a).to eq([ cat1, cat2 ])
+      expect(Category.sorting("created_at", "asc").where(id: ids).to_a).to eq([ cat1, cat2 ])
     end
 
     it "falls back to id for invalid column" do
@@ -48,11 +49,11 @@ RSpec.describe Category, type: :model do
     end
 
     it "falls back to asc for invalid direction" do
-      expect(Category.sorting("points", "hack")).to eq([ cat1, cat2 ])
+      expect(Category.sorting("points", "hack").where(id: ids)).to eq([ cat1, cat2 ])
     end
 
     it "is case-insensitive for direction" do
-      expect(Category.sorting("points", "DESC")).to eq([ cat2, cat1 ])
+      expect(Category.sorting("points", "DESC").where(id: ids)).to eq([ cat2, cat1 ])
     end
   end
 

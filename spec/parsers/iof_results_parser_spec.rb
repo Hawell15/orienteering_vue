@@ -13,35 +13,33 @@ RSpec.describe IofResultsParser do
     end
   end
 
-  describe "#get_wre_category" do
-    let(:parser) { IofResultsParser.new }
-
+  describe ".get_wre_category" do
     it "returns 4 for 700-900 points" do
-      expect(parser.get_wre_category(700)).to eq(4)
-      expect(parser.get_wre_category(900)).to eq(4)
+      expect(IofResultsParser.get_wre_category(700)).to eq(4)
+      expect(IofResultsParser.get_wre_category(900)).to eq(4)
     end
 
     it "returns 3 for 901-1050 points" do
-      expect(parser.get_wre_category(901)).to eq(3)
-      expect(parser.get_wre_category(1050)).to eq(3)
+      expect(IofResultsParser.get_wre_category(901)).to eq(3)
+      expect(IofResultsParser.get_wre_category(1050)).to eq(3)
     end
 
     it "returns 2 for 1051-1250 points" do
-      expect(parser.get_wre_category(1051)).to eq(2)
-      expect(parser.get_wre_category(1250)).to eq(2)
+      expect(IofResultsParser.get_wre_category(1051)).to eq(2)
+      expect(IofResultsParser.get_wre_category(1250)).to eq(2)
     end
 
     it "returns 1 for 1251-1500 points" do
-      expect(parser.get_wre_category(1251)).to eq(1)
-      expect(parser.get_wre_category(1500)).to eq(1)
+      expect(IofResultsParser.get_wre_category(1251)).to eq(1)
+      expect(IofResultsParser.get_wre_category(1500)).to eq(1)
     end
 
     it "returns 10 for points below 700" do
-      expect(parser.get_wre_category(500)).to eq(10)
+      expect(IofResultsParser.get_wre_category(500)).to eq(10)
     end
 
     it "returns 10 for points above 1500" do
-      expect(parser.get_wre_category(1600)).to eq(10)
+      expect(IofResultsParser.get_wre_category(1600)).to eq(10)
     end
   end
 

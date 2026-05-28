@@ -10,6 +10,8 @@ class ResultCategorizer
     return if @result.parent_result_id.present?
     return unless should_reprocess?
 
+    @result.association(:runner).reset if @result.persisted?
+
     @processed = true
     @result.child_results.destroy_all unless @result.new_record?
     apply_cap
@@ -22,6 +24,8 @@ class ResultCategorizer
 
     create_pending_child         if @achieved_category_id
     create_three_results_child   if check_three_results?
+
+    runner.update_runner_category
 
     @achieved_category_id = nil
     @processed            = false

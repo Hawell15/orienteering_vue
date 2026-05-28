@@ -23,6 +23,7 @@
                     </div>
                     <div class="hero-actions">
                         <a class="btn btn-light" :href="`/competitions/${competitionId}.pdf`">PDF</a>
+                        <button v-if="isAdmin" class="btn btn-success" @click="openResultModal">+ Rezultat</button>
                         <div v-if="isAdmin" class="dropdown">
                             <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">Acțiuni</button>
                             <ul class="dropdown-menu">
@@ -122,6 +123,7 @@
         <Modal ref="modal" :competition="modalElement" :isNew="false" @save="updateElement" />
         <EcnCoeficients ref="ecnModal" :competitionId="competitionId" @save="getResults" />
         <GroupClasa ref="clasaModal" :competitionId="competitionId" @save="" />
+        <ResultCreate ref="resultCreate" @save="getResults" />
     </div>
 </template>
 
@@ -131,6 +133,7 @@ import axios from '@/axios'
 import Modal from './Modal.vue'
 import EcnCoeficients from './EcnCoeficients.vue'
 import GroupClasa from './GroupClasa.vue'
+import ResultCreate from '../Result/Create.vue'
 import ResultsTable from '../Result/Table.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
 import { isAdmin } from '@/currentUser'
@@ -141,6 +144,7 @@ const modalElement = ref({})
 const modal = ref(null)
 const ecnModal = ref(null)
 const clasaModal = ref(null)
+const resultCreate = ref(null)
 
 const groups = ref([])
 const activeGroup = ref(null)
@@ -253,6 +257,12 @@ function formatResultTime(seconds) {
 
 function openEcnModal() { ecnModal.value.show() }
 function openClasaModal() { clasaModal.value.show() }
+function openResultModal() {
+    resultCreate.value.createNew({
+        competition_id: Number(competitionId.value),
+        group_id: activeGroup.value?.id
+    })
+}
 
 function editElement(comp) {
     modalElement.value = { ...comp }

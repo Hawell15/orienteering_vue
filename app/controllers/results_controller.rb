@@ -60,6 +60,7 @@ class ResultsController < ApplicationController
 
     respond_to do |format|
       if @result.save
+        GroupPlaceReorderer.new(@result.group).call
         format.json { render json: index_base_query.find(@result.id), status: :ok }
       else
         format.json { render json: @result.errors, status: :unprocessable_content }

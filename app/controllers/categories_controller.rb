@@ -2,7 +2,7 @@
 
 class CategoriesController < ApplicationController
   before_action :set_category, only: %i[show edit update destroy]
-  before_action :require_admin!, only: %i[new create edit update destroy]
+  before_action :require_admin!, only: %i[new create edit update destroy expired]
 
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
@@ -67,6 +67,14 @@ class CategoriesController < ApplicationController
     respond_to do |format|
       format.html { redirect_to categories_path, status: :see_other, notice: "Category was successfully destroyed." }
       format.json { head :no_content }
+    end
+  end
+
+  def expired
+    respond_to do |format|
+      ExpiredCategoryJob.perform_now
+
+      format.html { redirect_to runners_url, notice: "Categories were successfully updated." }
     end
   end
 

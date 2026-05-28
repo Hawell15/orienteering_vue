@@ -11,13 +11,13 @@ const modalElement = ref({})
 const emit = defineEmits(['save'])
 defineExpose({ createNew })
 
-function createNew() {
-    modalElement.value = {}
+function createNew(initial = {}) {
+    modalElement.value = { ...initial }
     modal.value.show()
 }
 
-function saveElement(elementData, done) {
-    axios.post('/results.json', { result: elementData })
+async function saveElement(elementData, done) {
+    await axios.post('/results.json', { result: elementData })
     done()
     emit('save')
 }

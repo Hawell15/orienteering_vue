@@ -68,6 +68,7 @@
             </div>
 
             <div v-if="isAdmin" class="results-toolbar">
+                <button class="btn btn-sm btn-success" @click="openResultModal">+ Rezultat</button>
                 <button class="btn btn-sm btn-outline-success" :disabled="countingRang" @click="countRang">
                     {{ countingRang ? '⏳ Se recalculează…' : '🔄 Recalculează rangul' }}
                 </button>
@@ -94,12 +95,14 @@
         </div>
 
         <Modal ref="modal" :group="modalElement" :isNew="false" @save="updateElement" />
+        <ResultCreate ref="resultCreate" @save="getResults" />
     </div>
 </template>
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from '@/axios'
 import Modal from './Modal.vue'
+import ResultCreate from '../Result/Create.vue'
 import ResultsTable from '../Result/Table.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
 import { isAdmin } from '@/currentUser'
@@ -114,6 +117,7 @@ const resultSorting = ref({
 
 const modalElement = ref({})
 const modal = ref(null)
+const resultCreate = ref(null)
 const countingRang = ref(false)
 
 onMounted(() => {
@@ -167,6 +171,15 @@ function updateElement(groupData, done) {
     axios.patch(`/groups/${groupData.id}.json`, { group: groupData }).then(() => {
         getData();
         done()
+    })
+}
+
+function openResultModal() {
+    const competitionId = group.value.competition?.id
+    if (!competitionId) return
+    resultCreate.value.createNew({
+        competition_id: competitionId,
+        group_id: Number(groupId.value)
     })
 }
 

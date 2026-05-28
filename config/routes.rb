@@ -24,10 +24,12 @@ Rails.application.routes.draw do
       get "new_runners"
       post "group_ecn_coeficients"
       post "update_group_clasa"
+      post "reimport_wre_points"
     end
   end
   resources :runners do
      get :filters, on: :collection
+     get :category_check, on: :collection
      member do
        post "merge_runners"
      end
@@ -38,7 +40,9 @@ Rails.application.routes.draw do
   resources :clubs do
   end
 
-  resources :categories
+  resources :categories do
+    get :expired, on: :collection
+  end
 
   root "home#index"
   get "home/index"
