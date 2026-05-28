@@ -265,4 +265,41 @@ RSpec.describe CompetitionsController, type: :controller do
       expect(json).to have_key("wre")
     end
   end
+
+  describe "POST #reimport_wre_points" do
+    context "when competition has no wre_id" do
+      it "returns unprocessable_content" do
+        post :reimport_wre_points, params: { id: competition.id }, format: :json
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+
+    context "when competition has a wre_id" do
+      let!(:wre_competition) do
+        Competition.create!(
+          competition_name: "WRE Race",
+          date:             Date.new(2025, 6, 1),
+          distance_type:    "Lungă",
+          wre_id:           9999
+        )
+      end
+
+      it "delegates to WreRaceReimporter and returns the updated count" do
+        reimporter = instance_double(WreRaceReimporter, call: 7)
+        expect(WreRaceReimporter).to receive(:new).with(wre_competition).and_return(reimporter)
+
+        post :reimport_wre_points, params: { id: wre_competition.id }, format: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)).to eq("updated" => 7)
+      end
+
+      it "is forbidden for non-admin users" do
+        sign_out admin_user
+        sign_in FactoryBot.create(:user)
+        post :reimport_wre_points, params: { id: wre_competition.id }, format: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
 end

@@ -47,7 +47,7 @@ class IofResultsParser < BaseParser
         time:        convert_time(result["result"]),
         wre_points:  result["points"].to_i,
         runner_id:   result["runner_id"],
-        category_id: get_wre_category(result["points"].to_i),
+        category_id: self.class.get_wre_category(result["points"].to_i),
         membership:  "Moldova WRE",
         date:         date.as_json
       }
@@ -77,7 +77,7 @@ class IofResultsParser < BaseParser
     JSON.parse(Net::HTTP.get(URI("https://ranking.orienteering.org/api/person/#{wre_id}/results/#{distance_type}")))
   end
 
-  def get_wre_category(points)
+  def self.get_wre_category(points)
     case points
     when 700..900   then 4
     when 901..1050  then 3

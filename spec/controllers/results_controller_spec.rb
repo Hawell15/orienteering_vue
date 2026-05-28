@@ -180,6 +180,20 @@ RSpec.describe ResultsController, type: :controller do
         expect(new_result.membership.runner_id).to eq(runner.id)
         expect(new_result.membership.club_id).to eq(club.id)
       end
+
+      it "reorders places in the group by ascending time after save" do
+        other_runner = Runner.create!(club: club, category: category, best_category: category, runner_name: "Jane", surname: "Smith", gender: "W", yob: 2001)
+        other_membership = Membership.create!(runner: other_runner, club: club)
+
+        # `result` has time 3600 and is placed 1 — adding a faster result should bump it to 2.
+        post :create, params: {
+          result: valid_attributes.merge(runner_id: other_runner.id, time: 1500, place: 99)
+        }, format: :json
+
+        new_result = Result.find(JSON.parse(response.body)["id"])
+        expect(new_result.place).to eq(1)
+        expect(result.reload.place).to eq(2)
+      end
     end
 
     context "with invalid params" do
@@ -187,6 +201,12 @@ RSpec.describe ResultsController, type: :controller do
         allow_any_instance_of(Result).to receive(:save).and_return(false)
         post :create, params: { result: valid_attributes }, format: :json
         expect(response).to have_http_status(:unprocessable_content)
+      end
+
+      it "does not reorder when save fails" do
+        allow_any_instance_of(Result).to receive(:save).and_return(false)
+        expect(GroupPlaceReorderer).not_to receive(:new)
+        post :create, params: { result: valid_attributes }, format: :json
       end
     end
   end
