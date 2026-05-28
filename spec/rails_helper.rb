@@ -60,6 +60,13 @@ RSpec.configure do |config|
         cat.points          = 0.0
       end
     end
+
+    # Explicit-ID inserts don't bump the PG sequence — without this, the
+    # first auto-ID insert (e.g. `Category.create!(...)`) asks nextval,
+    # gets 1, and collides with the seeded row. Fresh CI DBs always hit
+    # this; long-running local DBs hide it because their sequence has
+    # already advanced past 10.
+    ActiveRecord::Base.connection.reset_pk_sequence!("categories")
   end
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
