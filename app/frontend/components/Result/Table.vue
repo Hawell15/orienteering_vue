@@ -39,8 +39,8 @@
                 <td>
                     <div class="row-actions">
                         <a class="row-action-btn show" :href="`/results/${element.id}`">Arată</a>
-                        <button class="row-action-btn edit" @click="editElement(element)">Editează</button>
-                        <button class="row-action-btn delete" @click="deleteElement(element.id)">Șterge</button>
+                        <button v-if="isAdmin" class="row-action-btn edit" @click="editElement(element)">Editează</button>
+                        <button v-if="isAdmin" class="row-action-btn delete" @click="deleteElement(element.id)">Șterge</button>
                     </div>
                 </td>
             </tr>
@@ -52,6 +52,7 @@
 import { ref } from 'vue'
 import axios from '@/axios'
 import Modal from './Modal.vue'
+import { isAdmin } from '@/currentUser'
 const props = defineProps({
     elements: Object,
     hiddenColumns: { type: Array, default: () => [] }

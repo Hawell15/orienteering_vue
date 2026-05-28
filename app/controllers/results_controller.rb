@@ -1,6 +1,7 @@
 class ResultsController < ApplicationController
   before_action :set_result, only: %i[ show edit update destroy ]
   before_action :set_membership, only: %i[ create update ]
+  before_action :require_admin!, only: %i[new create edit update destroy]
 
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search

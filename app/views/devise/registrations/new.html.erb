@@ -1,0 +1,36 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h2 class="auth-title">Înregistrare</h2>
+
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="auth-field">
+        <%= f.label :email, "Email", class: "auth-label" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "auth-input" %>
+      </div>
+
+      <div class="auth-field">
+        <%= f.label :password, "Parolă", class: "auth-label" %>
+        <% if @minimum_password_length %>
+          <p class="auth-hint">(minim <%= @minimum_password_length %> caractere)</p>
+        <% end %>
+        <%= f.password_field :password, autocomplete: "new-password", class: "auth-input" %>
+      </div>
+
+      <div class="auth-field last">
+        <%= f.label :password_confirmation, "Confirmă parola", class: "auth-label" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "auth-input" %>
+      </div>
+
+      <%= f.submit "Creează cont", class: "auth-submit" %>
+    <% end %>
+
+    <div class="auth-footer">
+      <p>
+        Ai deja un cont?
+        <%= link_to "Autentifică-te", new_session_path(resource_name), class: "auth-link" %>
+      </p>
+    </div>
+  </div>
+</div>

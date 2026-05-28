@@ -61,7 +61,7 @@
 
         <div class="footer-actions">
             <button class="btn btn-outline-secondary" @click="goBack">← Înapoi</button>
-            <div class="action-group">
+            <div v-if="isAdmin" class="action-group">
                 <button class="btn btn-success btn-sm" @click="editElement(membership)">Editează</button>
                 <button class="btn btn-danger btn-sm" @click="deleteMembership(membership.id)">Șterge</button>
             </div>
@@ -76,6 +76,7 @@ import axios from '@/axios'
 import Modal from './Modal.vue'
 import ResultsTable from '../Result/Table.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
+import { isAdmin } from '@/currentUser'
 
 const membership = ref({})
 const membershipId = ref("")

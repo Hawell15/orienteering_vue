@@ -1,5 +1,6 @@
 class CompetitionsController < ApplicationController
   before_action :set_competition, only: %i[ show edit update destroy group_filters group_ecn_coeficients update_group_clasa new_runners]
+  before_action :require_admin!, only: %i[new create edit update destroy group_ecn_coeficients update_group_clasa new_runners]
   has_scope :search
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :country

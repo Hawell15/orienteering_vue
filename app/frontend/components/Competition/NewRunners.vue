@@ -33,7 +33,7 @@
                         </select>
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-success" :disabled="!mergeTargets[runner.id]" @click="openMergeModal(runner)">
+                        <button v-if="isAdmin" class="btn btn-sm btn-success" :disabled="!mergeTargets[runner.id]" @click="openMergeModal(runner)">
                             Uneste
                         </button>
                     </td>
@@ -48,6 +48,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import axios from '@/axios'
 import MergeModal from '../Runner/MergeModal.vue'
+import { isAdmin } from '@/currentUser'
 
 const competitionId = ref("")
 const runners = ref([])

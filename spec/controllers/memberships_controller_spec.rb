@@ -1,6 +1,9 @@
 require "rails_helper"
 
 RSpec.describe MembershipsController, type: :controller do
+  let(:admin_user) { FactoryBot.create(:user, :admin) }
+  before { sign_in admin_user }
+
   let!(:category) { Category.create!(category_name: "Test") }
   let!(:club) { Club.create!(club_name: "Test Club") }
   let!(:runner) { Runner.create!(club: club, category: category, best_category: category, runner_name: "John", surname: "Doe", gender: "M", yob: 2000) }
@@ -114,6 +117,33 @@ RSpec.describe MembershipsController, type: :controller do
         allow_any_instance_of(Membership).to receive(:update).and_return(false)
         patch :update, params: { id: membership.id, membership: { club_id: nil } }, format: :json
         expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+  end
+
+  describe "authorization on write actions" do
+    let(:non_admin) { FactoryBot.create(:user) }
+
+    context "when signed out" do
+      before { sign_out admin_user }
+
+      it "redirects HTML POST #create to root" do
+        post :create, params: { membership: valid_attributes }
+        expect(response).to redirect_to(root_path)
+      end
+
+      it "returns 403 for JSON POST #create" do
+        post :create, params: { membership: valid_attributes }, format: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when signed in as non-admin" do
+      before { sign_in non_admin }
+
+      it "returns 403 for JSON DELETE #destroy" do
+        delete :destroy, params: { id: membership.id }, format: :json
+        expect(response).to have_http_status(:forbidden)
       end
     end
   end

@@ -77,7 +77,7 @@
 
         <div class="footer-actions">
             <button class="btn btn-outline-secondary" @click="goBack">← Înapoi</button>
-            <div class="action-group">
+            <div v-if="isAdmin" class="action-group">
                 <button class="btn btn-success btn-sm" @click="editElement(result)">Editează</button>
                 <button class="btn btn-danger btn-sm" @click="deleteResult(result.id)">Șterge</button>
             </div>
@@ -91,6 +91,7 @@ import { ref, onMounted } from 'vue'
 import axios from '@/axios'
 import Modal from './Modal.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
+import { isAdmin } from '@/currentUser'
 
 const result = ref({})
 const resultId = ref("")

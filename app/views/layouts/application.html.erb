@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    <meta name="user-signed-in" content="<%= user_signed_in? %>">
+    <meta name="user-is-admin" content="<%= current_user_admin? %>">
+    <meta name="user-email" content="<%= user_signed_in? ? current_user.email : "" %>">
+    <meta name="sign-in-path" content="<%= new_user_session_path %>">
+    <meta name="sign-out-path" content="<%= destroy_user_session_path %>">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -26,11 +31,15 @@
 </head>
 
 <body>
-    <div class="container">
-        <div id="app"></div>
-        <br>
-        <%= yield %>
-    </div>
+    <div id="app"></div>
+    <main class="app-main">
+        <div id="admin-bar"></div>
+        <div class="container">
+            <% if notice %><p class="notice"><%= notice %></p><% end %>
+            <% if alert %><p class="alert"><%= alert %></p><% end %>
+            <%= yield %>
+        </div>
+    </main>
 </body>
 
 </html>

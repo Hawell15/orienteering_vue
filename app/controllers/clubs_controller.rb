@@ -1,5 +1,6 @@
 class ClubsController < ApplicationController
   before_action :set_club, only: %i[ show edit update destroy merge_clubs]
+  before_action :require_admin!, only: %i[new create edit update destroy merge_clubs]
 
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
