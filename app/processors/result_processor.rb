@@ -3,14 +3,14 @@ class ResultProcessor
 
   def initialize(params = nil, result = nil)
     @params = params.with_indifferent_access
-   @params["category_id"] = @params["category_id"].to_i if @params["category_id"].present?
+    @params["category_id"] = @params["category_id"].to_i if @params["category_id"].present?
     @params["group_id"]   = @params["group_id"].to_i    if @params["group_id"].present?
     @result = result
     @runner = Runner.find(params[:runner_id])
   end
 
   def add_result
-    params["membership_id"] = add_membership_id
+    params["membership_id"] ||= add_membership_id
 
     check_params = { membership_id: params["membership_id"], group_id: params["group_id"] }
     check_params.merge!(date: params["date"]) if params["date"]
@@ -18,8 +18,11 @@ class ResultProcessor
     result = Result.find_by(check_params)
 
     return result if result
-
-    @result = Result.create!(params.except("runner_id", "membership"))
+    begin
+      @result = Result.create!(params.except("runner_id", "membership"))
+    rescue
+      binding.pry
+    end
 
     @result
   end

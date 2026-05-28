@@ -49,6 +49,17 @@ RSpec.configure do |config|
   # (removes any leftover seed data or data from previous runs)
   config.before(:suite) do
     ActiveRecord::Tasks::DatabaseTasks.truncate_all
+
+    # Reference categories — Runner validates belongs_to :category and
+    # update_runner_category falls back to Category::NO_CATEGORY_ID (=10).
+    (1..10).each do |id|
+      Category.find_or_create_by!(id: id) do |cat|
+        cat.category_name   = "Cat#{id}"
+        cat.full_name       = "Category #{id}"
+        cat.validaty_period = case id when 1 then 4 when 2, 3 then 3 else 2 end
+        cat.points          = 0.0
+      end
+    end
   end
 
   # You can uncomment this line to turn off ActiveRecord support entirely.

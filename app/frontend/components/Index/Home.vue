@@ -3,8 +3,7 @@
         <div class="home-hero">
             <TopoBackdrop />
             <div class="home-hero-inner">
-                <span class="home-eyebrow">🧭 Federația Sportului de Orientare</span>
-                <h1 class="home-title">Baza de date a orientării sportive</h1>
+                <span class="home-eyebrow">🧭 Baza de date a Federației de orientare Sportivă a Republicii Moldova</span>
                 <p class="home-subtitle">Sportivi, cluburi, competiții și rezultate — toate într-un singur loc.</p>
             </div>
         </div>

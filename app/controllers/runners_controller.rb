@@ -1,6 +1,6 @@
 class RunnersController < ApplicationController
   before_action :set_runner, only: %i[ show edit update destroy merge_runners]
-  before_action :require_admin!, only: %i[new create edit update destroy merge_runners]
+  before_action :require_admin!, only: %i[new create edit update destroy merge_runners category_check]
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :club
@@ -88,6 +88,14 @@ class RunnersController < ApplicationController
     @runner.merge_from!(merged_runner, attrs)
 
     head :ok
+  end
+
+  def category_check
+    respond_to do |format|
+      RunnersCategoryCheck.perform_now
+
+      format.html { redirect_to runners_url, notice: "Runners were successfully updated." }
+    end
   end
 
   private

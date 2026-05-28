@@ -236,7 +236,7 @@ RSpec.describe ResultProcessor do
         expect(existing.reload.category_id).to eq(cat4.id)
       end
 
-      it "does not create pending when category is not better than best_category" do
+      it "does not create   pending when category is not better than best_category" do
         runner.update!(best_category_id: cat1.id)
         processor = ResultProcessor.new({ runner_id: runner.id, category_id: cat2.id }, existing)
         expect {

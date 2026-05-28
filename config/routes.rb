@@ -28,6 +28,7 @@ Rails.application.routes.draw do
   end
   resources :runners do
      get :filters, on: :collection
+     get :category_check, on: :collection
      member do
        post "merge_runners"
      end
@@ -38,7 +39,9 @@ Rails.application.routes.draw do
   resources :clubs do
   end
 
-  resources :categories
+  resources :categories do
+    get :expired, on: :collection
+  end
 
   root "home#index"
   get "home/index"

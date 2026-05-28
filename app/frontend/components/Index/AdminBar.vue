@@ -5,23 +5,40 @@
 
             <div class="admin-bar-spacer"></div>
 
-            <div class="admin-menu-wrapper" ref="menuWrapper">
-                <button type="button" class="admin-menu-trigger" :class="{ open: menuOpen }"
-                    :aria-expanded="menuOpen" aria-haspopup="true" @click="menuOpen = !menuOpen">
+            <div class="admin-menu-wrapper" ref="updateMenuWrapper">
+                <button type="button" class="admin-menu-trigger" :class="{ open: openMenu === 'update' }"
+                    :aria-expanded="openMenu === 'update'" aria-haspopup="true" @click="toggle('update')">
+                    <span class="admin-menu-plus">↻</span>
+                    <span class="admin-menu-label">Actualizează date</span>
+                    <span class="admin-menu-caret">▾</span>
+                </button>
+
+                <div v-if="openMenu === 'update'" class="admin-dropdown" role="menu">
+                    <a v-for="item in updateItems" :key="item.href" :href="item.href" role="menuitem"
+                        class="admin-dropdown-item" @click="openMenu = null">
+                        <span class="admin-dropdown-icon">{{ item.icon }}</span>
+                        <span>{{ item.label }}</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="admin-menu-wrapper" ref="addMenuWrapper">
+                <button type="button" class="admin-menu-trigger" :class="{ open: openMenu === 'add' }"
+                    :aria-expanded="openMenu === 'add'" aria-haspopup="true" @click="toggle('add')">
                     <span class="admin-menu-plus">＋</span>
                     <span class="admin-menu-label">Adaugă</span>
                     <span class="admin-menu-caret">▾</span>
                 </button>
 
-                <div v-if="menuOpen" class="admin-dropdown" role="menu">
-                    <a v-for="item in items" :key="item.href" :href="item.href" role="menuitem"
-                        class="admin-dropdown-item" @click="menuOpen = false">
+                <div v-if="openMenu === 'add'" class="admin-dropdown" role="menu">
+                    <a v-for="item in addItems" :key="item.href" :href="item.href" role="menuitem"
+                        class="admin-dropdown-item" @click="openMenu = null">
                         <span class="admin-dropdown-icon">{{ item.icon }}</span>
                         <span>{{ item.label }}</span>
                     </a>
                     <div class="admin-dropdown-divider"></div>
                     <a :href="fileImportPath" role="menuitem" class="admin-dropdown-item file"
-                        @click="menuOpen = false">
+                        @click="openMenu = null">
                         <span class="admin-dropdown-icon">📂</span>
                         <span>Adaugă din Fișier</span>
                     </a>
@@ -35,11 +52,12 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { isAdmin } from '@/currentUser'
 
-const menuOpen = ref(false)
-const menuWrapper = ref(null)
+const openMenu = ref(null)
+const addMenuWrapper = ref(null)
+const updateMenuWrapper = ref(null)
 const fileImportPath = '/parser/file_results'
 
-const items = [
+const addItems = [
     { href: '/competitions/new', label: 'Adaugă competiție', icon: '🏆' },
     { href: '/runners/new',      label: 'Adaugă sportiv',    icon: '👤' },
     { href: '/clubs/new',        label: 'Adaugă club',       icon: '🏛' },
@@ -48,15 +66,27 @@ const items = [
     { href: '/memberships/new',  label: 'Adaugă afiliere',   icon: '🪪' }
 ]
 
+const updateItems = [
+    { href: '/categories/expired',     label: 'Reducere categorii expirate', icon: '⏬' },
+    { href: '/runners/category_check', label: 'Verificare categorii sportivi', icon: '🔍' },
+    { href: '/parser/iof_results',     label: 'Import rezultate WRE',        icon: '🏅' },
+    { href: '/parser/iof_runners',     label: 'Import sportivi WRE',         icon: '👤' }
+]
+
+function toggle(menu) {
+    openMenu.value = openMenu.value === menu ? null : menu
+}
+
 function handleDocumentClick(event) {
-    if (!menuOpen.value) return
-    if (menuWrapper.value && !menuWrapper.value.contains(event.target)) {
-        menuOpen.value = false
+    if (!openMenu.value) return
+    const wrappers = [ addMenuWrapper.value, updateMenuWrapper.value ]
+    if (wrappers.every(w => !w || !w.contains(event.target))) {
+        openMenu.value = null
     }
 }
 
 function handleEscape(event) {
-    if (event.key === 'Escape') menuOpen.value = false
+    if (event.key === 'Escape') openMenu.value = null
 }
 
 onMounted(() => {

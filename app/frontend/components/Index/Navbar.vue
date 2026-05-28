@@ -12,8 +12,7 @@
             <a class="brand" href="/" @click="mobileOpen = false">
                 <img class="brand-logo" :src="logo" alt="FOS" />
                 <span class="brand-text">
-                    <span class="brand-name">FOS</span>
-                    <span class="brand-sub">Orientare sportivă</span>
+                    <span class="brand-name">FOSRM</span>
                 </span>
             </a>
 

@@ -2,6 +2,7 @@ require "rails_helper"
 
 RSpec.describe ResultCategorizer do
   let!(:no_category) { Category.find_or_create_by!(id: Category::NO_CATEGORY_ID) { |c| c.category_name = "No Category"; c.points = 0; c.validaty_period = 2 } }
+  let!(:cat1)        { Category.find_or_create_by!(id: 1) { |c| c.category_name = "МСМК";  c.points = 500; c.validaty_period = 4 } }
   let!(:cat2)        { Category.find_or_create_by!(id: 2) { |c| c.category_name = "Cat II"; c.points = 200; c.validaty_period = 4 } }
   let!(:cat4)        { Category.find_or_create_by!(id: 4) { |c| c.category_name = "Cat IV"; c.points = 100; c.validaty_period = 2 } }
   let!(:cat5)        { Category.find_or_create_by!(id: 5) { |c| c.category_name = "Cat V"; c.points = 50;  c.validaty_period = 2 } }
@@ -93,6 +94,51 @@ RSpec.describe ResultCategorizer do
       pending = result.reload.child_results.find_by(group_id: title_group.id)
       expect(pending).to be_present
       expect(pending.category_id).to eq(cat2.id)
+    end
+  end
+
+  describe "runner state refresh in after_save" do
+    it "updates runner.category_id and category_valid from the saved result" do
+      result = Result.create!(
+        group: group, membership: membership_a1, category: cat4,
+        date: Date.new(2025, 6, 1)
+      )
+
+      runner_a.reload
+      expect(runner_a.category_id).to eq(cat4.id)
+      expect(runner_a.category_valid).to eq(result.date + cat4.validaty_period.years)
+    end
+
+    it "monotonically improves runner.best_category_id" do
+      Result.create!(group: group, membership: membership_a1, category: cat5, date: Date.new(2025, 5, 1))
+      expect(runner_a.reload.best_category_id).to eq(cat5.id)
+
+      Result.create!(group: group, membership: membership_a1, category: cat4, date: Date.new(2025, 6, 1))
+      expect(runner_a.reload.best_category_id).to eq(cat4.id)
+    end
+
+    it "reads fresh runner.best_category_id when the runner is updated externally between saves" do
+      # Normal-flow create populates and caches @result.runner via the
+      # update_runner_category call in after_save.
+      existing = Result.create!(
+        group: group, membership: membership_a1, category: no_category,
+        date: Date.new(2025, 6, 1), status: Result::UNCONFIRMED
+      )
+
+      # External bump via a different in-memory Runner instance — the
+      # cached @result.runner would now disagree with the DB.
+      runner_a.update!(best_category_id: cat1.id)
+
+      # cat2 is a title category. Without the before_save cache reset,
+      # apply_cap would read stale best=10 and create a PENDING child
+      # (2 < 4 && 2 < 10). With the reset it reads fresh best=1 (2 < 1
+      # false) and creates none.
+      expect {
+        existing.update!(category_id: cat2.id)
+      }.not_to change(Result, :count)
+
+      expect(existing.reload.status).to eq(Result::CONFIRMED)
+      expect(existing.reload.category_id).to eq(cat2.id)
     end
   end
 end
