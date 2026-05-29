@@ -1,6 +1,8 @@
 require "rails_helper"
 
 RSpec.describe ExpiredCategoryJob, type: :job do
+  before { allow(TelegramNotifier).to receive(:notify).and_return(true) }
+
   let!(:no_category) { Category.find_or_create_by!(id: Category::NO_CATEGORY_ID) { |c| c.category_name = "No Category"; c.points = 0; c.validaty_period = 2 } }
   let!(:cat3)        { Category.find_or_create_by!(id: 3) { |c| c.category_name = "КМС";  c.points = 200; c.validaty_period = 3 } }
   let!(:cat4)        { Category.find_or_create_by!(id: 4) { |c| c.category_name = "I";    c.points = 100; c.validaty_period = 2 } }
@@ -34,7 +36,7 @@ RSpec.describe ExpiredCategoryJob, type: :job do
 
       reduction = Result.find_by(group_id: reduction_group.id)
       expect(reduction.category_id).to eq(cat6.id)
-      expect(reduction.date).to eq(Date.today - 1)
+      expect(reduction.date).to eq(Date.today)
       expect(reduction.status).to eq(Result::CONFIRMED)
     end
 
@@ -110,6 +112,55 @@ RSpec.describe ExpiredCategoryJob, type: :job do
       runner.reload
       expect(runner.category_id).to eq(cat6.id)
       expect(runner.category_valid).to be > Date.today
+    end
+  end
+
+  describe "#perform Telegram notification" do
+    it "notifies Telegram with the runners whose category actually changed" do
+      runner = build_runner(category: cat5, category_valid: Date.today - 1)
+
+      captured = nil
+      expect(TelegramExpiredCategoryNotifier).to receive(:notify) { |changes| captured = changes; 1 }
+
+      described_class.new.perform
+
+      expect(captured.size).to eq(1)
+      change = captured.first
+      expect(change[:runner].id).to eq(runner.id)
+      expect(change[:old_category_id]).to eq(cat5.id)
+      expect(change[:new_category_id]).to eq(cat6.id)
+    end
+
+    it "does not notify when nothing changed" do
+      build_runner(category: cat5, category_valid: Date.today + 30)
+
+      expect(TelegramExpiredCategoryNotifier).not_to receive(:notify)
+
+      described_class.new.perform
+    end
+
+    it "still notifies for runners demoted to NO_CATEGORY (adult III holders)" do
+      runner = build_runner(category: cat6, category_valid: Date.today - 1, yob: 1990)
+
+      captured = nil
+      expect(TelegramExpiredCategoryNotifier).to receive(:notify) { |changes| captured = changes; 1 }
+
+      described_class.new.perform
+
+      change = captured.find { |c| c[:runner].id == runner.id }
+      expect(change).to be_present
+      expect(change[:old_category_id]).to eq(cat6.id)
+      expect(change[:new_category_id]).to eq(Category::NO_CATEGORY_ID)
+    end
+
+    it "swallows Telegram errors so the job still completes" do
+      runner = build_runner(category: cat5, category_valid: Date.today - 1)
+
+      expect(TelegramExpiredCategoryNotifier).to receive(:notify).and_raise(StandardError, "network down")
+      expect(Rails.logger).to receive(:error).with(/Telegram notification failed/)
+
+      expect { described_class.new.perform }.not_to raise_error
+      expect(runner.reload.category_id).to eq(cat6.id)
     end
   end
 end

@@ -18,11 +18,8 @@ class ResultProcessor
     result = Result.find_by(check_params)
 
     return result if result
-    begin
-      @result = Result.create!(params.except("runner_id", "membership"))
-    rescue
-      binding.pry
-    end
+
+    @result = Result.create!(params.except("runner_id", "membership"))
 
     @result
   end
