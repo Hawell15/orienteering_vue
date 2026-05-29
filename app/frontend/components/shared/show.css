@@ -14,10 +14,9 @@
     padding: 2.5rem 2rem;
     margin-top: 1rem;
     box-shadow: 0 20px 50px -20px rgba(20, 83, 45, 0.55);
-    overflow: hidden;
 }
 
-.hero-inner { position: relative; z-index: 1; }
+.hero-inner { position: relative; z-index: 3; }
 
 .hero-top {
     display: flex;

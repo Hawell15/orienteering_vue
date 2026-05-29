@@ -266,6 +266,35 @@ RSpec.describe CompetitionsController, type: :controller do
     end
   end
 
+  describe "POST #telegram_results" do
+    it "delegates to TelegramCompetitionNotifier with request.base_url and returns the message count" do
+      expect(TelegramCompetitionNotifier).to receive(:notify).with(competition, host: instance_of(String)).and_return(3)
+      post :telegram_results, params: { id: competition.id }, format: :json
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq("sent" => 3)
+    end
+
+    it "returns sent=0 when no reportable results exist" do
+      expect(TelegramCompetitionNotifier).to receive(:notify).and_return(0)
+      post :telegram_results, params: { id: competition.id }, format: :json
+      expect(JSON.parse(response.body)).to eq("sent" => 0)
+    end
+
+    it "returns 503 with a structured error when the token is missing" do
+      expect(TelegramCompetitionNotifier).to receive(:notify).and_raise(TelegramNotifier::TokenMissingError, "Telegram bot token not configured")
+      post :telegram_results, params: { id: competition.id }, format: :json
+      expect(response).to have_http_status(:service_unavailable)
+      expect(JSON.parse(response.body)).to eq("sent" => 0, "error" => "Telegram bot token not configured")
+    end
+
+    it "is forbidden for non-admin users" do
+      sign_out admin_user
+      sign_in FactoryBot.create(:user)
+      post :telegram_results, params: { id: competition.id }, format: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe "POST #reimport_wre_points" do
     context "when competition has no wre_id" do
       it "returns unprocessable_content" do

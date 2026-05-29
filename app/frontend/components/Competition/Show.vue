@@ -31,6 +31,7 @@
                                 <li v-if="competition.ecn"><button class="dropdown-item" @click="openEcnModal">Seteaza Coeficientii Grupelor</button></li>
                                 <li><button class="dropdown-item" @click="openClasaModal">Seteaza Clasele Grupelor</button></li>
                                 <li v-if="competition.ecn"><a class="dropdown-item" :href="`/competitions/${competitionId}/new_runners`">Sportivi noi</a></li>
+                                <li><button class="dropdown-item" :disabled="sendingTelegram" @click="sendTelegramResults">{{ sendingTelegram ? '⏳ Se trimite…' : '📨 Trimite rezultate pe Telegram' }}</button></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><button class="dropdown-item" @click="editElement(competition)">Editeaza</button></li>
                                 <li><button class="dropdown-item text-danger" @click="deleteCompetition(competition.id)">Sterge</button></li>
@@ -150,6 +151,7 @@ const groups = ref([])
 const activeGroup = ref(null)
 const groupDetailsCache = new Map()
 const countingRang = ref(false)
+const sendingTelegram = ref(false)
 
 const podium = computed(() => (activeGroup.value?.results || []).slice(0, 3))
 
@@ -262,6 +264,25 @@ function openResultModal() {
         competition_id: Number(competitionId.value),
         group_id: activeGroup.value?.id
     })
+}
+
+async function sendTelegramResults() {
+    if (!confirm('Trimite rezultatele confirmate și limitate pe canalul Telegram?')) return
+    sendingTelegram.value = true
+    try {
+        const res = await axios.post(`/competitions/${competitionId.value}/telegram_results.json`)
+        if (res.data.sent > 0) {
+            alert(`S-au trimis ${res.data.sent} mesaje pe Telegram.`)
+        } else if (res.data.error) {
+            alert(`Trimiterea a eșuat: ${res.data.error}`)
+        } else {
+            alert('Nu există rezultate confirmate sau limitate pentru această competiție.')
+        }
+    } catch (e) {
+        alert(`Trimiterea a eșuat: ${e.response?.data?.error || e.message}`)
+    } finally {
+        sendingTelegram.value = false
+    }
 }
 
 function editElement(comp) {
