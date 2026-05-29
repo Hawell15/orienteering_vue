@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_27_184823) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_29_174633) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -69,11 +69,26 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_184823) do
     t.index [ "runner_id" ], name: "index_memberships_on_runner_id"
   end
 
+  create_table "relay_results", force: :cascade do |t|
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.date "date"
+    t.bigint "group_id", null: false
+    t.integer "place"
+    t.bigint "results_id", default: [], array: true
+    t.string "team"
+    t.integer "time"
+    t.datetime "updated_at", null: false
+    t.index [ "category_id" ], name: "index_relay_results_on_category_id"
+    t.index [ "group_id" ], name: "index_relay_results_on_group_id"
+    t.index [ "results_id" ], name: "index_relay_results_on_results_id", using: :gin
+  end
+
   create_table "results", force: :cascade do |t|
     t.bigint "category_id", default: 10, null: false
     t.datetime "created_at", null: false
     t.date "date"
-    t.integer "ecn_points"
+    t.float "ecn_points"
     t.bigint "group_id", default: 1, null: false
     t.bigint "membership_id", null: false
     t.bigint "parent_result_id"
@@ -127,6 +142,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_184823) do
   add_foreign_key "groups", "competitions"
   add_foreign_key "memberships", "clubs"
   add_foreign_key "memberships", "runners"
+  add_foreign_key "relay_results", "categories"
+  add_foreign_key "relay_results", "groups"
   add_foreign_key "results", "categories"
   add_foreign_key "results", "groups"
   add_foreign_key "results", "memberships"
