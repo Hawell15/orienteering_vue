@@ -64,11 +64,20 @@
             </div>
 
             <div class="results-card">
-                <ResultsTable :elements="results" :hidden-columns="['group_name']" @order="orderResultTable"></ResultsTable>
+                <RelayResultsTable v-if="group.relay"
+                                   :elements="relayResults"
+                                   @edit="editRelayResult"
+                                   @delete="deleteRelayResult"
+                                   @reorder="reorderRelayLegs" />
+                <ResultsTable v-else
+                              :elements="results"
+                              :hidden-columns="['group_name']"
+                              @order="orderResultTable" />
             </div>
 
             <div v-if="isAdmin" class="results-toolbar">
-                <button class="btn btn-sm btn-success" @click="openResultModal">+ Rezultat</button>
+                <button v-if="group.relay" class="btn btn-sm btn-success" @click="openRelayCreate">+ Ștafetă</button>
+                <button v-else class="btn btn-sm btn-success" @click="openResultModal">+ Rezultat</button>
                 <button class="btn btn-sm btn-outline-success" :disabled="countingRang" @click="countRang">
                     {{ countingRang ? '⏳ Se recalculează…' : '🔄 Recalculează rangul' }}
                 </button>
@@ -96,6 +105,7 @@
 
         <Modal ref="modal" :group="modalElement" :isNew="false" @save="updateElement" />
         <ResultCreate ref="resultCreate" @save="getResults" />
+        <RelayResultCreate ref="relayCreate" @save="getResults" />
     </div>
 </template>
 <script setup>
@@ -104,12 +114,15 @@ import axios from '@/axios'
 import Modal from './Modal.vue'
 import ResultCreate from '../Result/Create.vue'
 import ResultsTable from '../Result/Table.vue'
+import RelayResultCreate from '../RelayResult/Create.vue'
+import RelayResultsTable from '../RelayResult/Table.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
 import { isAdmin } from '@/currentUser'
 
 const group = ref({})
 const groupId = ref("")
 const results = ref([])
+const relayResults = ref([])
 const resultSorting = ref({
     "sorting[sort_by]": "place",
     "sorting[direction]": "asc"
@@ -118,11 +131,12 @@ const resultSorting = ref({
 const modalElement = ref({})
 const modal = ref(null)
 const resultCreate = ref(null)
+const relayCreate = ref(null)
 const countingRang = ref(false)
 
-onMounted(() => {
+onMounted(async () => {
     groupId.value = window.location.pathname.split('/').pop();
-    getData();
+    await getData();
     getResults();
 })
 
@@ -144,9 +158,14 @@ async function getData() {
 }
 
 async function getResults() {
-    resultSorting.value["group_data"] = groupId.value
-    const res = await axios.get('/results.json', { params: resultSorting.value })
-    results.value = res.data;
+    if (group.value.relay) {
+        const res = await axios.get('/relay_results.json', { params: { group_data: groupId.value, "sorting[sort_by]": "place", "sorting[direction]": "asc" } })
+        relayResults.value = res.data
+    } else {
+        resultSorting.value["group_data"] = groupId.value
+        const res = await axios.get('/results.json', { params: resultSorting.value })
+        results.value = res.data
+    }
 }
 
 function orderResultTable(sortKey) {
@@ -181,6 +200,31 @@ function openResultModal() {
         competition_id: competitionId,
         group_id: Number(groupId.value)
     })
+}
+
+function openRelayCreate() {
+    const competitionId = group.value.competition?.id
+    if (!competitionId) return
+    relayCreate.value.createNew({
+        competition_id: competitionId,
+        group_id: Number(groupId.value),
+        date: group.value.competition?.date
+    })
+}
+
+function editRelayResult(relay) {
+    relayCreate.value.editExisting(relay)
+}
+
+async function deleteRelayResult(relay) {
+    if (!confirm(`Ștergi ștafeta "${relay.team}"?`)) return
+    await axios.delete(`/relay_results/${relay.id}.json`)
+    await getResults()
+}
+
+async function reorderRelayLegs(relay, newResultsId) {
+    await axios.patch(`/relay_results/${relay.id}.json`, { relay_result: { results_id: newResultsId } })
+    await getResults()
 }
 
 function deleteGroup(id) {

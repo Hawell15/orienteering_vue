@@ -86,7 +86,7 @@
                 </div>
             </div>
 
-            <div v-if="podium.length" class="podium">
+            <div v-if="!competition.relay && podium.length" class="podium">
                 <div v-for="(p, i) in podium" :key="p.id" class="podium-card" :class="`place-${i + 1}`">
                     <div class="medal">{{ ['🥇', '🥈', '🥉'][i] }}</div>
                     <div class="podium-name"><a :href="`/runners/${p.runner_id}`">{{ p.full_name }}</a></div>
@@ -95,11 +95,29 @@
                 </div>
             </div>
 
+            <div v-if="competition.relay && relayPodium.length" class="podium">
+                <div v-for="(r, i) in relayPodium" :key="r.id" class="podium-card" :class="`place-${i + 1}`">
+                    <div class="medal">{{ ['🥇', '🥈', '🥉'][i] }}</div>
+                    <div class="podium-name">{{ r.team }}</div>
+                    <div class="podium-club">{{ r.category_name || 'f/c' }}</div>
+                    <div class="podium-time">{{ formatResultTime(r.time) }}</div>
+                </div>
+            </div>
+
             <div class="results-card">
-                <ResultsTable :elements="activeGroup.results" :hidden-columns="['competition_name', 'group_name']" @refresh="getResults"></ResultsTable>
+                <RelayResultsTable v-if="competition.relay"
+                                   :elements="activeGroup.relay_results || []"
+                                   @edit="editRelayResult"
+                                   @delete="deleteRelayResult"
+                                   @reorder="reorderRelayLegs" />
+                <ResultsTable v-else
+                              :elements="activeGroup.results"
+                              :hidden-columns="['competition_name', 'group_name']"
+                              @refresh="getResults" />
             </div>
 
             <div v-if="isAdmin" class="results-toolbar">
+                <button v-if="competition.relay" class="btn btn-sm btn-success" @click="openRelayCreate">+ Ștafetă</button>
                 <button class="btn btn-sm btn-outline-success" :disabled="countingRang" @click="countRang(activeGroup)">
                     {{ countingRang ? '⏳ Se recalculează…' : '🔄 Recalculează rangul' }}
                 </button>
@@ -125,6 +143,7 @@
         <EcnCoeficients ref="ecnModal" :competitionId="competitionId" @save="getResults" />
         <GroupClasa ref="clasaModal" :competitionId="competitionId" @save="" />
         <ResultCreate ref="resultCreate" @save="getResults" />
+        <RelayResultCreate ref="relayCreate" @save="getResults" />
     </div>
 </template>
 
@@ -136,6 +155,8 @@ import EcnCoeficients from './EcnCoeficients.vue'
 import GroupClasa from './GroupClasa.vue'
 import ResultCreate from '../Result/Create.vue'
 import ResultsTable from '../Result/Table.vue'
+import RelayResultCreate from '../RelayResult/Create.vue'
+import RelayResultsTable from '../RelayResult/Table.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
 import { isAdmin } from '@/currentUser'
 
@@ -146,6 +167,7 @@ const modal = ref(null)
 const ecnModal = ref(null)
 const clasaModal = ref(null)
 const resultCreate = ref(null)
+const relayCreate = ref(null)
 
 const groups = ref([])
 const activeGroup = ref(null)
@@ -154,10 +176,15 @@ const countingRang = ref(false)
 const sendingTelegram = ref(false)
 
 const podium = computed(() => (activeGroup.value?.results || []).slice(0, 3))
+const relayPodium = computed(() =>
+    (activeGroup.value?.relay_results || [])
+        .filter(r => r.place && r.place > 0)
+        .slice(0, 3)
+)
 
-onMounted(() => {
+onMounted(async () => {
     competitionId.value = window.location.pathname.split('/').pop()
-    getData()
+    await getData()
     getResults()
 })
 
@@ -174,6 +201,15 @@ async function toggleEcn() {
 }
 
 async function getResults() {
+    if (competition.value.relay) {
+        await getRelayResults()
+    } else {
+        await getRegularResults()
+    }
+    selectGroupFromHash()
+}
+
+async function getRegularResults() {
     const params = {
         "competition": competitionId.value,
         "sorting[sort_by]": "place",
@@ -182,7 +218,17 @@ async function getResults() {
     const res = await axios.get('/results.json', { params })
     groups.value = Object.values(convertResultsFormat(res.data))
         .sort((a, b) => a.group_name.localeCompare(b.group_name, undefined, { numeric: true, sensitivity: 'base' }))
-    selectGroupFromHash()
+}
+
+async function getRelayResults() {
+    const params = {
+        "competition": competitionId.value,
+        "sorting[sort_by]": "place",
+        "sorting[direction]": "asc"
+    }
+    const res = await axios.get('/relay_results.json', { params })
+    groups.value = Object.values(convertRelayResultsFormat(res.data))
+        .sort((a, b) => a.group_name.localeCompare(b.group_name, undefined, { numeric: true, sensitivity: 'base' }))
 }
 
 function convertResultsFormat(results) {
@@ -198,6 +244,21 @@ function convertResultsFormat(results) {
             }
         }
         groupsMap[r.group_id].results.push(r)
+    })
+    return groupsMap
+}
+
+function convertRelayResultsFormat(relays) {
+    const groupsMap = {}
+    relays.forEach(r => {
+        if (!groupsMap[r.group_id]) {
+            groupsMap[r.group_id] = {
+                id: r.group_id,
+                group_name: r.group_name,
+                relay_results: []
+            }
+        }
+        groupsMap[r.group_id].relay_results.push(r)
     })
     return groupsMap
 }
@@ -264,6 +325,29 @@ function openResultModal() {
         competition_id: Number(competitionId.value),
         group_id: activeGroup.value?.id
     })
+}
+
+function openRelayCreate() {
+    relayCreate.value.createNew({
+        competition_id: Number(competitionId.value),
+        group_id: activeGroup.value?.id,
+        date: competition.value.date
+    })
+}
+
+function editRelayResult(relay) {
+    relayCreate.value.editExisting(relay)
+}
+
+async function deleteRelayResult(relay) {
+    if (!confirm(`Ștergi ștafeta "${relay.team}"?`)) return
+    await axios.delete(`/relay_results/${relay.id}.json`)
+    await getResults()
+}
+
+async function reorderRelayLegs(relay, newResultsId) {
+    await axios.patch(`/relay_results/${relay.id}.json`, { relay_result: { results_id: newResultsId } })
+    await getResults()
 }
 
 async function sendTelegramResults() {

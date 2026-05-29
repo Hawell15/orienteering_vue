@@ -21,7 +21,7 @@ class CompetitionsController < ApplicationController
   def show
     respond_to do |format|
       format.html
-      format.json { render json: @competition }
+      format.json { render json: @competition.as_json.merge(relay: @competition.relay?) }
       format.pdf do
         load_pdf_data
 
@@ -139,7 +139,8 @@ class CompetitionsController < ApplicationController
     {
       groups: @competition.groups.select(:id, :group_name).order(:group_name).as_json,
       ecn: @competition.ecn.present?,
-      wre: @competition.wre_id.present?
+      wre: @competition.wre_id.present?,
+      relay: @competition.relay?
     }
   end
 
