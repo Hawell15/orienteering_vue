@@ -25,6 +25,7 @@ Rails.application.routes.draw do
       post "group_ecn_coeficients"
       post "update_group_clasa"
       post "reimport_wre_points"
+      post "telegram_results"
     end
   end
   resources :runners do

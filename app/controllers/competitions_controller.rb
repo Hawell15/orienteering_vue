@@ -1,6 +1,6 @@
 class CompetitionsController < ApplicationController
-  before_action :set_competition, only: %i[ show edit update destroy group_filters group_ecn_coeficients update_group_clasa new_runners reimport_wre_points]
-  before_action :require_admin!, only: %i[new create edit update destroy group_ecn_coeficients update_group_clasa new_runners reimport_wre_points]
+  before_action :set_competition, only: %i[ show edit update destroy group_filters group_ecn_coeficients update_group_clasa new_runners reimport_wre_points telegram_results]
+  before_action :require_admin!, only: %i[new create edit update destroy group_ecn_coeficients update_group_clasa new_runners reimport_wre_points telegram_results]
   has_scope :search
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :country
@@ -200,6 +200,13 @@ class CompetitionsController < ApplicationController
     updated = WreRaceReimporter.new(@competition).call
 
     render json: { updated: updated }
+  end
+
+  def telegram_results
+    sent = TelegramCompetitionNotifier.notify(@competition, host: request.base_url)
+    render json: { sent: sent }
+  rescue TelegramNotifier::TokenMissingError => e
+    render json: { sent: 0, error: e.message }, status: :service_unavailable
   end
 
   private
