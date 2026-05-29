@@ -26,7 +26,8 @@ class GroupsController < ApplicationController
       format.json do
         render json: @group.as_json(include: :competition).merge(
           "category_name" => category_name,
-          "category_percentages" => category_percentages
+          "category_percentages" => category_percentages,
+          "relay" => @group.competition.relay?
         )
       end
     end

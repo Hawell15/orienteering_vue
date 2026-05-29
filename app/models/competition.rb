@@ -3,7 +3,12 @@ class Competition < ApplicationRecord
   before_save :add_checksum
   after_update :clear_ecn_data, if: -> { saved_change_to_ecn? && !ecn }
 
-  DISTANCE_TYPES = [ "Sprint", "Medie", "Lungă", "Alegere", "Knock-out Sprint", "Labirint", "Alta" ].freeze
+  RELAY_DISTANCE_TYPES = [ "Ștafetă clasică", "Ștafetă sprint", "Stafeta" ].freeze
+  DISTANCE_TYPES       = ([ "Sprint", "Medie", "Lungă", "Alegere", "Knock-out Sprint", "Labirint" ] + RELAY_DISTANCE_TYPES + [ "Alta" ]).freeze
+
+  def relay?
+    distance_type.to_s.in?(RELAY_DISTANCE_TYPES)
+  end
 
   scope :search, ->(val) {
     sanitized = "%#{sanitize_sql_like(val.to_s.downcase)}%"

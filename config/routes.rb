@@ -8,6 +8,8 @@ Rails.application.routes.draw do
     get :filters, on: :collection
   end
 
+  resources :relay_results, except: %i[new edit]
+
   resources :groups do
     get :filters, on: :collection
     member do
