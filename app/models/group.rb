@@ -7,6 +7,7 @@ class Group < ApplicationRecord
 
   belongs_to :competition
   has_many :results, dependent: :destroy
+  has_many :relay_results, dependent: :destroy
 
   after_update :clear_ecn_points, if: -> { saved_change_to_ecn_coeficient? && ecn_coeficient.zero? }
 

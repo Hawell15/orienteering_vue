@@ -7,7 +7,7 @@ RSpec.describe JsonParser do
   let(:json_data) do
     {
       "title" => "Test Competition",
-      "date" => "2025-06-01",
+      "date" => "01.06.2025",
       "groups" => [
         {
           "name" => "M21",
@@ -61,7 +61,7 @@ RSpec.describe JsonParser do
   describe "#extract_groups_details" do
     it "extracts group names and results" do
       parser = JsonParser.new(json_path)
-      groups = parser.extract_groups_details(json_data["groups"], Date.new(2025, 6, 1))
+      groups = parser.extract_groups_details(json_data["groups"])
       expect(groups.first[:group_name]).to eq("M21")
       expect(groups.first[:results].length).to eq(2)
     end
@@ -70,7 +70,7 @@ RSpec.describe JsonParser do
   describe "#extract_results" do
     it "extracts result details" do
       parser = JsonParser.new(json_path)
-      results = parser.extract_results(json_data["groups"].first["results"], "M", Date.new(2025, 6, 1))
+      results = parser.extract_results(json_data["groups"].first["results"], "M")
       expect(results.first[:place]).to eq(1)
       expect(results.first[:time]).to eq(15 * 60 + 30)
       expect(results.first[:membership]).to eq("Club A")
@@ -80,7 +80,7 @@ RSpec.describe JsonParser do
     it "skips blank results" do
       results_data = [ nil, { "place" => 1, "time" => "10:00", "runner_name" => "A B", "club" => "C", "date_of_birth" => "2000-01-01" } ]
       parser = JsonParser.new(json_path)
-      results = parser.extract_results(results_data, "M", Date.new(2025, 6, 1))
+      results = parser.extract_results(results_data, "M")
       expect(results.compact.length).to eq(1)
     end
   end

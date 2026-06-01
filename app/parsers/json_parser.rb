@@ -16,25 +16,26 @@ class JsonParser < BaseParser
   end
 
   def extract_competition_details(json)
-    date = json["date"].to_date
     @hash = {
       competition_name: json["title"],
-      date:             date.as_json,
-      distance_type:    json["groups"].first["distance_type"],
-      groups:           extract_groups_details(json["groups"], date)
+      date:             Date.strptime(json["date"], "%d.%m.%Y"),
+      distance_type:    distance_type(json),
+      groups:           extract_groups_details(json["groups"])
     }
   end
 
-  def extract_groups_details(json, date)
+  def extract_groups_details(json)
     json.map do |group|
+      group_name = Group.normalize_group_name(group["name"])
+
       {
-        group_name: group["name"],
-        results:    extract_results(group["results"], extract_gender(group["name"].first), date)
+        group_name: group_name,
+        results:    extract_results(group["results"], extract_gender(group_name.first))
       }
     end
   end
 
-  def extract_results(json, gender, date)
+  def extract_results(json, gender)
     json.map do |result|
       next if result.blank?
 
@@ -64,5 +65,9 @@ class JsonParser < BaseParser
     return 0 if string == "Null"
 
     string.to_date.year
+  end
+
+  def distance_type(json)
+    json["groups"].first["distance_type"]
   end
 end

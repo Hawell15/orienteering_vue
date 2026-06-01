@@ -21,7 +21,7 @@ class BaseParser
       end
 
       @return_result = group if @return_data == "group"
-      add_result(group_hash[:results], group)
+      add_results(group_hash[:results], group)
     end
   end
 
@@ -36,37 +36,27 @@ class BaseParser
     runner
   end
 
-  def add_result(hash, group)
+  def add_results(hash, group)
     return unless hash
 
     hash.each do |result_hash|
       next unless result_hash
 
+      add_result(result_hash, group)
+    end
+  end
+
+  def add_result(result_hash, group)
       runner_id = result_hash[:runner_id] || add_runners(result_hash[:runner]).id
       if result_hash.except(:runner).present?
         result    = ResultProcessor.new(result_hash.merge({ runner_id: runner_id, group_id: group.id }).except(:runner)).add_result
       end
 
       @return_result = result if @return_data == "result"
-    end
-    add_relay_result(group)
+      result&.id
   end
-
-  def add_relay_result(_group); end
 
   private
-
-  def convert_group_class(string)
-    case string
-    when /juniori/          then 7
-    when /(c|с)ategoria II/ then 5
-    when /(c|с)ategoria I/  then 4
-    when /CMSRM/            then 3
-    when /MSRM/             then 2
-    when /MISRM/            then 1
-    else 10
-    end
-  end
 
   def convert_time(string)
     seconds, minutes, hours = string.split(/:|\.|,/).map(&:to_i).reverse
@@ -79,23 +69,6 @@ class BaseParser
     when "m", "men", "м"                   then "M"
     when "w", "women", "f", "feminin", "ж" then "W"
     end
-  end
-
-  def convert_category(string)
-    return unless string
-    string.gsub!("І", "I") # NOTE: from Ukranian I to English
-    string.gsub!("-u", " j")
-    string.gsub!("Ij", "I j")
-    string.gsub!(/MS$/, "MSRM")
-
-    string = case string
-    when "MIS", "MSMK" then "MISRM"
-    when "BR", "NONE"  then "f/c"
-    when "KMSRM"       then "CMSRM"
-    else string
-    end
-
-    Category.find_by(category_name: string)
   end
 
   def detect_gender(string)

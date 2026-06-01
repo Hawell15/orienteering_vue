@@ -43,40 +43,6 @@ RSpec.describe BaseParser do
     end
   end
 
-  describe "#convert_group_class" do
-    it "returns 7 for juniori" do
-      expect(parser.send(:convert_group_class, "juniori")).to eq(7)
-    end
-
-    it "returns 5 for categoria II" do
-      expect(parser.send(:convert_group_class, "categoria II")).to eq(5)
-    end
-
-    it "returns 4 for categoria I" do
-      expect(parser.send(:convert_group_class, "categoria I")).to eq(4)
-    end
-
-    it "returns 3 for CMSRM" do
-      expect(parser.send(:convert_group_class, "CMSRM")).to eq(3)
-    end
-
-    it "returns 2 for MSRM" do
-      expect(parser.send(:convert_group_class, "MSRM")).to eq(2)
-    end
-
-    it "returns 1 for MISRM" do
-      expect(parser.send(:convert_group_class, "MISRM")).to eq(1)
-    end
-
-    it "returns 10 for unknown" do
-      expect(parser.send(:convert_group_class, "something")).to eq(10)
-    end
-
-    it "handles Cyrillic с in сategoria" do
-      expect(parser.send(:convert_group_class, "\u0441ategoria II")).to eq(5)
-    end
-  end
-
   describe "#detect_gender" do
     it "returns M for known male names" do
       %w[Nichita Ilia Mircea Nikita Nicola].each do |name|
@@ -95,48 +61,6 @@ RSpec.describe BaseParser do
 
     it "defaults to M for unknown names not ending in a" do
       expect(parser.send(:detect_gender, "Ion")).to eq("M")
-    end
-  end
-
-  describe "#convert_category" do
-    before do
-      Category.find_or_create_by!(id: 1) { |c| c.category_name = "MISRM" }
-      Category.find_or_create_by!(id: 2) { |c| c.category_name = "MSRM" }
-      Category.find_or_create_by!(id: 3) { |c| c.category_name = "CMSRM" }
-      Category.find_or_create_by!(id: 10) { |c| c.category_name = "f/c" }
-    end
-
-    it "returns nil for nil input" do
-      expect(parser.send(:convert_category, nil)).to be_nil
-    end
-
-    it "converts MIS to MISRM" do
-      expect(parser.send(:convert_category, "MIS")).to eq(Category.find_by(category_name: "MISRM"))
-    end
-
-    it "converts MSMK to MISRM" do
-      expect(parser.send(:convert_category, "MSMK")).to eq(Category.find_by(category_name: "MISRM"))
-    end
-
-    it "converts BR to f/c" do
-      expect(parser.send(:convert_category, "BR")).to eq(Category.find_by(category_name: "f/c"))
-    end
-
-    it "converts NONE to f/c" do
-      expect(parser.send(:convert_category, "NONE")).to eq(Category.find_by(category_name: "f/c"))
-    end
-
-    it "converts KMSRM to CMSRM" do
-      expect(parser.send(:convert_category, "KMSRM")).to eq(Category.find_by(category_name: "CMSRM"))
-    end
-
-    it "appends RM to MS suffix" do
-      expect(parser.send(:convert_category, "MS")).to eq(Category.find_by(category_name: "MSRM"))
-    end
-
-    it "replaces Ukrainian I with English I" do
-      cat = Category.create!(category_name: "I")
-      expect(parser.send(:convert_category, "\u0406")).to eq(cat)
     end
   end
 
