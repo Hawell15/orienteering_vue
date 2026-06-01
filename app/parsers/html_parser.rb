@@ -29,28 +29,41 @@ class HtmlParser < BaseParser
 
   def extract_groups_details(json)
     json["groups"].map do |group|
+      group_name = Group.normalize_group_name(group["name"])
+
       {
-        group_name: group["name"],
-        results:    extract_results(json, extract_gender(group["name"].first), group)
+        group_name: group_name,
+        results:    extract_results(json, group)
       }
     end
   end
 
-  def extract_results(json, gender, group)
-    json["persons"].select { |pers| pers["group_id"] == group["id"] }.map do |runner|
-      result = json["results"].detect { |res| res["person_id"] == runner["id"] }
-      next if result.nil? || !check_result?(result["result"]) || result["place"].to_i < 1 || runner.blank?
+  def extract_results(json, group)
+    json["persons"]
+      .select { |person| person["group_id"] == group["id"] }
+      .filter_map do |person|
+        result = json["results"].detect { |r| r["person_id"] == person["id"] }
+        next unless result && check_result?(result["result"]) && result["place"].to_i.positive?
 
-      club = json["organizations"].detect { |org| org["id"] == runner["organization_id"] }&.fetch("name")
+        build_leg(person, result, json["organizations"])
+      end
+  end
 
-      {
-        place:      result["place"],
-        time:       result["result_msec"] / 1000,
-        runner:     extract_runner(runner, gender, club),
-        membership: club,
-        category_id: Category::NO_CATEGORY_ID
-      }
-    end
+  def build_leg(person, result, organizations)
+    gender = person["sex"].to_i.zero? ? "M" : "W"
+    club   = club_name_for(person, organizations)
+
+    {
+      place:       result["place"],
+      time:        result["result_msec"].to_i / 1000,
+      runner:      extract_runner(person, gender, club),
+      membership:  club,
+      category_id: Category::NO_CATEGORY_ID
+    }
+  end
+
+  def club_name_for(person, organizations)
+    organizations.find { |o| o["id"] == person["organization_id"] }&.fetch("name")&.strip
   end
 
   def extract_runner(runner, gender, club)

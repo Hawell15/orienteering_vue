@@ -60,6 +60,7 @@ Rails.application.routes.draw do
   get "parser/iof_results", as: "iof_results"
   get "parser/file_results", as: "file_results"
   post "parser/file_results"
+  post "parser/file_relay_results"
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest

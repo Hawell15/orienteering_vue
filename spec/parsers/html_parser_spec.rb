@@ -104,7 +104,7 @@ RSpec.describe HtmlParser do
         ]
       }
       group = { "id" => 10 }
-      results = parser.extract_results(json, "M", group)
+      results = parser.extract_results(json, group)
       expect(results.compact.length).to eq(1)
       expect(results.compact.first[:place]).to eq(1)
       expect(results.compact.first[:time]).to eq(930)
@@ -118,7 +118,7 @@ RSpec.describe HtmlParser do
         "organizations" => [ { "id" => 1, "name" => "C" } ]
       }
       group = { "id" => 10 }
-      results = parser.extract_results(json, "M", group)
+      results = parser.extract_results(json, group)
       expect(results.compact).to be_empty
     end
 
@@ -129,7 +129,7 @@ RSpec.describe HtmlParser do
         "organizations" => [ { "id" => 1, "name" => "C" } ]
       }
       group = { "id" => 10 }
-      results = parser.extract_results(json, "M", group)
+      results = parser.extract_results(json, group)
       expect(results.compact).to be_empty
     end
   end
