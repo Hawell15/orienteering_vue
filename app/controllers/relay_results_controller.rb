@@ -61,6 +61,8 @@ class RelayResultsController < ApplicationController
         relay_results.*,
         categories.category_name AS category_name,
         groups.group_name AS group_name,
+        groups.rang AS group_rang,
+        groups.clasa AS group_clasa,
         groups.competition_id AS competition_id,
         competitions.competition_name AS competition_name
       SQL
@@ -98,6 +100,8 @@ class RelayResultsController < ApplicationController
       results_id:       relay.results_id,
       category_name:    relay.try(:category_name)    || relay.category&.category_name,
       group_name:       relay.try(:group_name)       || relay.group&.group_name,
+      group_rang:       relay.try(:group_rang)       || relay.group&.rang,
+      group_clasa:      relay.try(:group_clasa)      || relay.group&.clasa,
       competition_id:   relay.try(:competition_id)   || relay.group&.competition_id,
       competition_name: relay.try(:competition_name) || relay.group&.competition&.competition_name,
       legs:             (relay.results_id || []).filter_map { |id| serialize_leg(legs[id]) }

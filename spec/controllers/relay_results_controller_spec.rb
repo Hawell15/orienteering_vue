@@ -84,6 +84,17 @@ RSpec.describe RelayResultsController, type: :controller do
       json = JSON.parse(response.body)
       expect(json.first["legs"].length).to eq(3)
     end
+
+    it "surfaces group_rang and group_clasa on each relay row" do
+      group.update!(rang: 480, clasa: "4")
+
+      get :index, params: { group_data: group.id }, format: :json
+      row = JSON.parse(response.body).first
+
+      expect(row["group_rang"]).to eq(480)
+      expect(row["group_clasa"]).to eq("4")
+      expect(row["group_name"]).to eq("M21S")
+    end
   end
 
   describe "PATCH #update" do

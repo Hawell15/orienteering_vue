@@ -19,7 +19,7 @@ class GroupsController < ApplicationController
   # GET /groups/1 or /groups/1.json
   def show
     category_name = Category.find_by(id: @group.clasa)&.category_name
-    category_percentages = GroupCategoriesProcessor.new(@group).get_percent_and_times
+    category_percentages = processor_for(@group).new(@group).get_percent_and_times
 
     respond_to do |format|
       format.html # renders index.html.erb
@@ -85,7 +85,7 @@ class GroupsController < ApplicationController
   end
 
   def count_rang
-    GroupCategoriesProcessor.new(@group).get_rang_and_categories
+    processor_for(@group).new(@group).get_rang_and_categories
     head :ok
   end
 
@@ -93,6 +93,10 @@ class GroupsController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_group
     @group = Group.find(params.expect(:id))
+  end
+
+  def processor_for(group)
+    group.competition.relay? ? RelayGroupCategoriesProcessor : GroupCategoriesProcessor
   end
 
   # Only allow a list of trusted parameters through.
