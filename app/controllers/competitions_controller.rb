@@ -25,16 +25,16 @@ class CompetitionsController < ApplicationController
       format.pdf do
         load_pdf_data
 
-        html = render_to_string(
-          template: "competitions/pdf",
-          layout:   "pdf",
-          formats:  [ :html ]
-        )
+        style    = %w[default modern minimal].include?(params[:style]) ? params[:style] : "default"
+        suffix   = style == "default" ? "" : "_#{style}"
+        template = "competitions/pdf#{suffix}"
+        layout   = "pdf#{suffix}"
 
-        pdf = Grover.new(html, display_url: request.base_url).to_pdf
+        html = render_to_string(template: template, layout: layout, formats: [ :html ])
+        pdf  = Grover.new(html, display_url: request.base_url).to_pdf
 
         send_data pdf,
-                  filename:    "#{@competition.competition_name.to_s.parameterize}-#{@competition.id}.pdf",
+                  filename:    "#{@competition.competition_name.to_s.parameterize}-#{@competition.id}#{suffix}.pdf",
                   type:        "application/pdf",
                   disposition: "inline"
       end
@@ -243,5 +243,25 @@ class CompetitionsController < ApplicationController
         else
           {}
         end
+
+      if @competition.relay?
+        relay_results = RelayResult
+                          .where(group_id: @pdf_groups.map(&:id))
+                          .order(:place)
+                          .to_a
+        @pdf_relay_results_by_group_id = relay_results.group_by(&:group_id)
+
+        leg_ids = relay_results.flat_map { |r| r.results_id || [] }.compact.uniq
+        @pdf_legs_by_id = if leg_ids.any?
+          Result.where(id: leg_ids)
+                .includes(:category, membership: [ :club, :runner ])
+                .index_by(&:id)
+        else
+          {}
+        end
+      else
+        @pdf_relay_results_by_group_id = {}
+        @pdf_legs_by_id                = {}
+      end
     end
 end

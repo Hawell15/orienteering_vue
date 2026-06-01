@@ -22,7 +22,14 @@
                         </div>
                     </div>
                     <div class="hero-actions">
-                        <a class="btn btn-light" :href="`/competitions/${competitionId}.pdf`">PDF</a>
+                        <div class="dropdown">
+                            <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">📄 PDF</button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" :href="`/competitions/${competitionId}.pdf`">Clasic</a></li>
+                                <li><a class="dropdown-item" :href="`/competitions/${competitionId}.pdf?style=modern`">Modern</a></li>
+                                <li><a class="dropdown-item" :href="`/competitions/${competitionId}.pdf?style=minimal`">Minimal</a></li>
+                            </ul>
+                        </div>
                         <button v-if="isAdmin" class="btn btn-success" @click="openResultModal">+ Rezultat</button>
                         <div v-if="isAdmin" class="dropdown">
                             <button class="btn btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">Acțiuni</button>
