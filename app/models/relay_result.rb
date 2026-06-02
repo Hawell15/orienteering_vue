@@ -8,6 +8,7 @@ class RelayResult < ApplicationRecord
   belongs_to :category
 
   validate :leg_count_matches_relay_type
+  validate :legs_in_same_group
 
   scope :competition, ->(val) {
     case val.to_s
@@ -53,5 +54,15 @@ class RelayResult < ApplicationRecord
     return if actual == expected
 
     errors.add(:results_id, "trebuie să conțină #{expected} sportivi pentru #{group.competition.distance_type}")
+  end
+
+  def legs_in_same_group
+    return if (results_id || []).empty?
+    return if group_id.blank?
+
+    foreign = Result.where(id: results_id).where.not(group_id: group_id).pluck(:id)
+    return if foreign.empty?
+
+    errors.add(:results_id, "conține rezultate din alte grupe: #{foreign.join(', ')}")
   end
 end
