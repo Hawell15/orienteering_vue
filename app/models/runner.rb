@@ -73,6 +73,14 @@ class Runner < ApplicationRecord
   scope :wre, -> { where.not(wre_id: nil) }
   scope :yob, ->(from, to) { where yob: from..to }
 
+  scope :license, ->(val) {
+    case val.to_s
+    when "true",  "1" then where(license: true)
+    when "false", "0" then where(license: false)
+    else all
+    end
+  }
+
   scope :matching_runner, lambda { |options|
     where("wre_id = :wre_id or id = :id or checksum = :checksum",
           wre_id: options[:wre_id],

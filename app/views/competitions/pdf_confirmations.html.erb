@@ -1,0 +1,99 @@
+<% default_category_name = Category.find_by(id: Category::NO_CATEGORY_ID)&.category_name %>
+
+<div class="hero">
+  <div class="eyebrow">📜 Confirmări categorii · <%= @competition.distance_type %></div>
+  <div class="title"><%= @competition.competition_name %></div>
+  <div class="meta">
+    <span><%= @competition.date&.strftime("%d.%m.%Y") %></span>
+    <% if @competition.location.present? %>
+      <span class="dot">·</span><span><%= @competition.location %></span>
+    <% end %>
+    <% if @competition.country.present? %>
+      <span class="dot">·</span><span><%= @competition.country %></span>
+    <% end %>
+  </div>
+</div>
+
+<% buckets = @pdf_confirmations.buckets %>
+<%
+  sections = [
+    {
+      key:       :capped,
+      title:     "📌 Categorii plafonate",
+      subtitle:  "Sportivul a îndeplinit o categorie superioară titlului curent. Necesită confirmare la Minister.",
+      rows:      buckets[:capped]
+    },
+    {
+      key:       :improved,
+      title:     "⬆️ Categorii îmbunătățite",
+      subtitle:  "Sportivul a obținut o categorie mai bună decât cea de pe ultima confirmare.",
+      rows:      buckets[:improved]
+    },
+    {
+      key:       :extended,
+      title:     "🔄 Categorii confirmate",
+      subtitle:  "Aceeași categorie a fost reconfirmată, valabilitatea s-a extins.",
+      rows:      buckets[:extended]
+    }
+  ]
+%>
+
+<% if sections.all? { |s| s[:rows].empty? } %>
+  <div class="group">
+    <div class="group-head">
+      <h2 class="name">Niciun rezultat confirmat</h2>
+      <div class="sub">Această competiție nu are rezultate cu status <i>confirmed</i> sau <i>capped</i>.</div>
+    </div>
+  </div>
+<% end %>
+
+<% sections.each do |sec| %>
+  <% next if sec[:rows].empty? %>
+  <div class="group">
+    <div class="group-head <%= sec[:key] == :capped ? "women" : "" %>">
+      <h2 class="name"><%= sec[:title] %></h2>
+      <div class="sub"><%= sec[:rows].size %> rezultate · <%= sec[:subtitle] %></div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Sportiv</th>
+          <th>An</th>
+          <th>Club</th>
+          <th>Grupa</th>
+          <th>Cat. anterioară</th>
+          <% if sec[:key] == :capped %>
+            <th>Cat. plafonată</th>
+            <th>Cat. îndeplinită *</th>
+          <% else %>
+            <th>Cat. îndeplinită</th>
+          <% end %>
+          <th>Timp</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% sec[:rows].each do |r| %>
+          <tr>
+            <td><%= r.full_name %></td>
+            <td><%= r.yob.to_i.positive? ? r.yob : "—" %></td>
+            <td><%= r.club_name %></td>
+            <td><%= r.group_name %></td>
+            <td><%= r.runner_category_name || default_category_name %></td>
+            <% if sec[:key] == :capped %>
+              <td><%= r.new_category_name %></td>
+              <td><%= @pdf_confirmations.achievement_by_parent_id[r.id] || "—" %></td>
+            <% else %>
+              <td><%= r.new_category_name %></td>
+            <% end %>
+            <td class="t"><%= Time.at(r.time.to_i).utc.strftime('%H:%M:%S') if r.time %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <% if sec[:key] == :capped %>
+      <p class="footnote">* Categoria îndeplinită trebuie confirmată la Ministerul Educației și Cercetării al Republicii Moldova.</p>
+    <% end %>
+  </div>
+<% end %>

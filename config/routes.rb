@@ -28,13 +28,19 @@ Rails.application.routes.draw do
       post "update_group_clasa"
       post "reimport_wre_points"
       post "telegram_results"
+      get  "confirmations"
     end
   end
   resources :runners do
      get :filters, on: :collection
      get :category_check, on: :collection
+     collection do
+       get   :license
+       patch :bulk_update_license
+     end
      member do
        post "merge_runners"
+       get  "relays"
      end
   end
 

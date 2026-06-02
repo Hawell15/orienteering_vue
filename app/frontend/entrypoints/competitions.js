@@ -4,6 +4,7 @@ import Show from '../components/Competition/Show.vue'
 import New from '../components/Competition/New.vue'
 import NewRunners from '../components/Competition/NewRunners.vue'
 import EcnRanking from '../components/Competition/EcnRanking.vue'
+import Confirmations from '../components/Competition/Confirmations.vue'
 
 
 function mountIfExists(id, component) {
@@ -17,4 +18,5 @@ document.addEventListener('DOMContentLoaded', () => {
   mountIfExists('new', New)
   mountIfExists('new_runners', NewRunners)
   mountIfExists('ecn_ranking', EcnRanking)
+  mountIfExists('confirmations', Confirmations)
 })

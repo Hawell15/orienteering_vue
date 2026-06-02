@@ -109,6 +109,12 @@ RSpec.describe CompetitionsController, type: :controller do
         get :show, params: { id: competition.id, style: "haxor" }, format: :pdf
         expect(response).to be_successful
       end
+
+      it "renders the confirmations template with the modern layout" do
+        expect(controller).to receive(:render_to_string).with(hash_including(template: "competitions/pdf_confirmations", layout: "pdf_modern")).and_call_original
+        get :show, params: { id: competition.id, style: "confirmations" }, format: :pdf
+        expect(response).to be_successful
+      end
     end
   end
 
@@ -281,6 +287,115 @@ RSpec.describe CompetitionsController, type: :controller do
       expect(json).to have_key("groups")
       expect(json).to have_key("ecn")
       expect(json).to have_key("wre")
+    end
+  end
+
+  describe "confirmations PDF bucketing" do
+    let!(:no_cat)   { Category.find(Category::NO_CATEGORY_ID) }
+    let!(:cat3)     { Category.find(3) }
+    let!(:cat4)     { Category.find(4) }
+    let!(:club)     { Club.find_or_create_by!(id: Club::DEFAULT_CLUB_ID) { |c| c.club_name = "Default" } }
+    let!(:group)    { Group.create!(competition: competition, group_name: "M21", clasa: "4") }
+    let!(:reduction_group)     { Group.find_or_create_by!(id: Group::REDUCTION_CATEGORY_GROUP_ID)         { |g| g.competition = competition; g.group_name = "REDUCTION" } }
+    let!(:title_group)         { Group.find_or_create_by!(id: Group::TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID) { |g| g.competition = competition; g.group_name = "TITLE" } }
+    let!(:three_results_group) { Group.find_or_create_by!(id: Group::THREE_RESULTS_GROUP_ID)              { |g| g.competition = competition; g.group_name = "THREE" } }
+
+    def make_runner(name:, best_category: cat4)
+      Runner.create!(club: club, runner_name: name, surname: "X", gender: "M", yob: 2000, category: best_category, best_category: best_category, category_valid: Date.new(2099, 1, 1))
+    end
+
+    def make_prior_result(runner, category:)
+      prior_comp  = Competition.create!(competition_name: "Prior", date: competition.date - 6.months, distance_type: "Sprint")
+      prior_group = Group.create!(competition: prior_comp, group_name: "P")
+      Result.create!(group: prior_group,
+                     membership: Membership.find_or_create_by!(runner: runner, club: club),
+                     category: category, date: prior_comp.date, time: 1000, place: 1,
+                     status: Result::CONFIRMED, skip_processing: true)
+    end
+
+    def make_result(runner, category:, status:)
+      Result.create!(group: group,
+                     membership: Membership.find_or_create_by!(runner: runner, club: club),
+                     category: category, date: competition.date, time: 1500, place: 1,
+                     status: status, skip_processing: true)
+    end
+
+    before do
+      allow_any_instance_of(Grover).to receive(:to_pdf).and_return("%PDF-stub")
+    end
+
+    it "buckets results into capped / improved / extended" do
+      capped_runner   = make_runner(name: "Capped")
+      improved_runner = make_runner(name: "Improved")
+      extended_runner = make_runner(name: "Extended")
+
+      make_prior_result(extended_runner, category: cat4)
+      make_prior_result(improved_runner, category: cat4)
+
+      make_result(capped_runner,   category: cat4, status: Result::CAPPED)
+      make_result(improved_runner, category: cat3, status: Result::CONFIRMED)
+      make_result(extended_runner, category: cat4, status: Result::CONFIRMED)
+
+      get :show, params: { id: competition.id, style: "confirmations" }, format: :pdf
+
+      data = controller.instance_variable_get(:@pdf_confirmations).buckets
+      expect(data[:capped].map(&:id)).to contain_exactly(Result.find_by(membership: Membership.find_by(runner: capped_runner)).id)
+      expect(data[:improved].map(&:id)).to contain_exactly(Result.find_by(membership: Membership.find_by(runner: improved_runner), group: group).id)
+      expect(data[:extended].map(&:id)).to contain_exactly(Result.find_by(membership: Membership.find_by(runner: extended_runner), group: group).id)
+    end
+
+    it "excludes unconfirmed / NO_CATEGORY / pending child results" do
+      runner = make_runner(name: "Skip")
+      make_result(runner, category: cat4, status: Result::UNCONFIRMED)
+      make_result(make_runner(name: "Empty"), category: no_cat, status: Result::CONFIRMED)
+
+      get :show, params: { id: competition.id, style: "confirmations" }, format: :pdf
+
+      data = controller.instance_variable_get(:@pdf_confirmations).buckets
+      expect(data[:capped]).to be_empty
+      expect(data[:improved]).to be_empty
+      expect(data[:extended]).to be_empty
+    end
+  end
+
+  describe "GET #confirmations" do
+    let!(:c_cat3)   { Category.find(3) }
+    let!(:c_cat4)   { Category.find(4) }
+    let!(:c_club)   { Club.find_or_create_by!(id: Club::DEFAULT_CLUB_ID) { |c| c.club_name = "Default" } }
+    let!(:c_group)  { Group.create!(competition: competition, group_name: "M21", clasa: "4") }
+    let!(:c_reduction) { Group.find_or_create_by!(id: Group::REDUCTION_CATEGORY_GROUP_ID)         { |g| g.competition = competition; g.group_name = "REDUCTION" } }
+    let!(:c_title)     { Group.find_or_create_by!(id: Group::TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID) { |g| g.competition = competition; g.group_name = "TITLE" } }
+    let!(:c_three)     { Group.find_or_create_by!(id: Group::THREE_RESULTS_GROUP_ID)              { |g| g.competition = competition; g.group_name = "THREE" } }
+
+    it "renders the HTML mount point" do
+      get :confirmations, params: { id: competition.id }
+      expect(response).to be_successful
+    end
+
+    it "returns JSON with competition + three buckets" do
+      runner = Runner.create!(club: c_club, runner_name: "Ion", surname: "Pop", gender: "M", yob: 2000,
+                              category: c_cat4, best_category: c_cat4, category_valid: Date.new(2099, 1, 1))
+      Result.create!(group: c_group,
+                     membership: Membership.create!(runner: runner, club: c_club),
+                     category: c_cat4, date: competition.date, time: 1500, place: 1,
+                     status: Result::CONFIRMED, skip_processing: true)
+
+      get :confirmations, params: { id: competition.id }, format: :json
+      json = JSON.parse(response.body)
+
+      expect(json.keys.sort).to eq(%w[capped competition extended improved])
+      expect(json["competition"]["id"]).to eq(competition.id)
+      expect(json["improved"].size + json["extended"].size).to eq(1)
+      row = (json["improved"] + json["extended"]).first
+      expect(row["full_name"]).to eq("Ion Pop")
+      expect(row["runner_id"]).to eq(runner.id)
+      expect(row["group_name"]).to eq("M21")
+    end
+
+    it "is accessible to non-admin / signed-out users" do
+      sign_out admin_user
+      get :confirmations, params: { id: competition.id }, format: :json
+      expect(response).to be_successful
     end
   end
 
