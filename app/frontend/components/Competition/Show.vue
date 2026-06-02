@@ -262,6 +262,8 @@ function convertRelayResultsFormat(relays) {
             groupsMap[r.group_id] = {
                 id: r.group_id,
                 group_name: r.group_name,
+                group_rang: r.group_rang,
+                group_clasa: r.group_clasa,
                 relay_results: []
             }
         }
@@ -275,6 +277,7 @@ async function selectGroup(group) {
     activeGroup.value = group
     window.location.hash = group.group_name
     await loadGroupDetails(group)
+    console.log(activeGroup.value.rang);
 }
 
 async function loadGroupDetails(group) {

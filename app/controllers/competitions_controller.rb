@@ -186,6 +186,8 @@ class CompetitionsController < ApplicationController
     Result.joins(:group).where("group.competition_id": @competition.id).update_all(category_id: Category::NO_CATEGORY_ID, status: Result::UNCONFIRMED)
     RelayResult.where(group_id: @competition.groups).update_all(category_id: Category::NO_CATEGORY_ID) if @competition.relay?
 
+    groups_params = params.require(:groups)
+
     params.require(:groups).each do |gp|
       group = @competition.groups.find(gp[:id])
       group.update!(clasa: gp[:clasa])
