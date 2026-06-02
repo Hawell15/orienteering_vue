@@ -35,6 +35,7 @@ Rails.application.routes.draw do
      get :category_check, on: :collection
      member do
        post "merge_runners"
+       get  "relays"
      end
   end
 

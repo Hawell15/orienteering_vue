@@ -150,6 +150,20 @@
             </div>
         </div>
 
+        <div class="section" v-if="relayParticipations.length">
+            <button class="section-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#relaysTable" aria-expanded="false" aria-controls="relaysTable">
+                <span class="section-icon">🔁</span>
+                <span class="section-title">Ștafete</span>
+                <span class="section-meta">{{ relayParticipations.length }}</span>
+                <span class="section-caret">▾</span>
+            </button>
+            <div class="collapse" id="relaysTable">
+                <div class="section-body">
+                    <RelayParticipationsTable :elements="relayParticipations" />
+                </div>
+            </div>
+        </div>
+
         <div class="footer-actions">
             <button class="btn btn-outline-secondary" @click="goBack">← Înapoi</button>
             <div v-if="isAdmin" class="action-group">
@@ -169,12 +183,14 @@ import Modal from './Modal.vue'
 import MergeModal from './MergeModal.vue'
 import MembershipsTable from '../Membership/Table.vue'
 import ResultsTable from '../Result/Table.vue'
+import RelayParticipationsTable from './RelayParticipationsTable.vue'
 import TopoBackdrop from '../shared/TopoBackdrop.vue'
 import { isAdmin } from '@/currentUser'
 
 const runner = ref({})
 const runnerId = ref("")
 const results = ref([])
+const relayParticipations = ref([])
 
 const resultSorting = ref({
     "sorting[sort_by]": "date",
@@ -205,7 +221,13 @@ onMounted(() => {
     getResults();
     getMemberships();
     getRunners();
+    getRelayParticipations();
 })
+
+async function getRelayParticipations() {
+    const res = await axios.get(`/runners/${runnerId.value}/relays.json`)
+    relayParticipations.value = res.data || []
+}
 
 async function getRunners() {
     const res = await axios.get('/runners.json', { params: { "sorting[sort_by]": "runner_name", "sorting[direction]": "asc" } })

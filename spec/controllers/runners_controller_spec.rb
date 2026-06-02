@@ -226,4 +226,87 @@ RSpec.describe RunnersController, type: :controller do
       expect { other_runner.reload }.to raise_error(ActiveRecord::RecordNotFound)
     end
   end
+
+  describe "GET #relays" do
+    let!(:relay_competition) do
+      Competition.create!(
+        competition_name: "Cupa Ștafetă",
+        date:             Date.new(2026, 5, 2),
+        distance_type:    "Ștafetă clasică",
+        country:          "Moldova"
+      )
+    end
+    let!(:relay_group) { Group.create!(competition: relay_competition, group_name: "M21S") }
+
+    def make_leg(r)
+      m = Membership.find_or_create_by!(runner: r, club: club)
+      Result.create!(
+        group: relay_group, membership: m, category_id: Category::NO_CATEGORY_ID,
+        date: relay_competition.date, time: 1800, place: 1, status: Result::CONFIRMED,
+        skip_processing: true
+      )
+    end
+
+    it "returns an empty array when the runner has no relay participation" do
+      get :relays, params: { id: runner.id }, format: :json
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).to eq([])
+    end
+
+    it "surfaces leg metadata (team, place, leg_index/count, times, competition info)" do
+      teammate1 = Runner.create!(club: club, category: category, best_category: category, runner_name: "T1", surname: "X", gender: "M", yob: 2000)
+      teammate2 = Runner.create!(club: club, category: category, best_category: category, runner_name: "T2", surname: "X", gender: "M", yob: 2000)
+
+      leg1 = make_leg(teammate1)
+      leg2 = make_leg(runner)
+      leg3 = make_leg(teammate2)
+
+      RelayResult.create!(
+        group: relay_group, category: category, place: 1, time: 5400,
+        team: "MDA-1", date: relay_competition.date,
+        results_id: [ leg1.id, leg2.id, leg3.id ]
+      )
+
+      get :relays, params: { id: runner.id }, format: :json
+
+      json = JSON.parse(response.body)
+      expect(json.length).to eq(1)
+      row = json.first
+      expect(row["team"]).to eq("MDA-1")
+      expect(row["place"]).to eq(1)
+      expect(row["leg_index"]).to eq(2)
+      expect(row["leg_count"]).to eq(3)
+      expect(row["leg_time"]).to eq(1800)
+      expect(row["relay_time"]).to eq(5400)
+      expect(row["group_name"]).to eq("M21S")
+      expect(row["competition_id"]).to eq(relay_competition.id)
+      expect(row["competition_name"]).to eq("Cupa Ștafetă")
+    end
+
+    it "lists multiple relays ordered by competition date (newest first)" do
+      older_competition = Competition.create!(competition_name: "Old", date: Date.new(2025, 4, 1), distance_type: "Ștafetă clasică")
+      older_group = Group.create!(competition: older_competition, group_name: "M21S")
+
+      newer_leg = make_leg(runner)
+      RelayResult.create!(group: relay_group, category: category, place: 2, time: 5400,
+                          team: "NEW", date: relay_competition.date,
+                          results_id: [ newer_leg.id, make_leg(Runner.create!(club: club, category: category, best_category: category, runner_name: "x1", surname: "x", gender: "M", yob: 2000)).id,
+                                        make_leg(Runner.create!(club: club, category: category, best_category: category, runner_name: "x2", surname: "x", gender: "M", yob: 2000)).id ])
+
+      m = Membership.find_or_create_by!(runner: runner, club: club)
+      older_leg = Result.create!(group: older_group, membership: m, category_id: Category::NO_CATEGORY_ID,
+                                 date: older_competition.date, time: 1800, place: 1, status: Result::CONFIRMED, skip_processing: true)
+      o1 = Result.create!(group: older_group, membership: Membership.create!(runner: Runner.create!(club: club, category: category, best_category: category, runner_name: "o1", surname: "x", gender: "M", yob: 2000), club: club),
+                          category_id: Category::NO_CATEGORY_ID, date: older_competition.date, time: 1800, place: 1, status: Result::CONFIRMED, skip_processing: true)
+      o2 = Result.create!(group: older_group, membership: Membership.create!(runner: Runner.create!(club: club, category: category, best_category: category, runner_name: "o2", surname: "x", gender: "M", yob: 2000), club: club),
+                          category_id: Category::NO_CATEGORY_ID, date: older_competition.date, time: 1800, place: 1, status: Result::CONFIRMED, skip_processing: true)
+      RelayResult.create!(group: older_group, category: category, place: 5, time: 5400,
+                          team: "OLD", date: older_competition.date,
+                          results_id: [ older_leg.id, o1.id, o2.id ])
+
+      get :relays, params: { id: runner.id }, format: :json
+      json = JSON.parse(response.body)
+      expect(json.map { |r| r["team"] }).to eq([ "NEW", "OLD" ])
+    end
+  end
 end
