@@ -183,15 +183,19 @@ class CompetitionsController < ApplicationController
   end
 
   def update_group_clasa
-    results = Result.joins(:group).where("group.competition_id": @competition.id).update_all(category_id: Category::NO_CATEGORY_ID, status: Result::UNCONFIRMED)
-    groups_params = params.require(:groups)
+    Result.joins(:group).where("group.competition_id": @competition.id).update_all(category_id: Category::NO_CATEGORY_ID, status: Result::UNCONFIRMED)
+    RelayResult.where(group_id: @competition.groups).update_all(category_id: Category::NO_CATEGORY_ID) if @competition.relay?
 
-    groups_params.each do |gp|
+    params.require(:groups).each do |gp|
       group = @competition.groups.find(gp[:id])
       group.update!(clasa: gp[:clasa])
-      next if group.results.blank?
 
-      GroupCategoriesProcessor.new(group).get_rang_and_categories
+      processor, scope = group.competition.relay? ?
+                          [ RelayGroupCategoriesProcessor, group.relay_results ] :
+                          [ GroupCategoriesProcessor,      group.results ]
+      next if scope.blank?
+
+      processor.new(group).get_rang_and_categories
     end
   end
 
