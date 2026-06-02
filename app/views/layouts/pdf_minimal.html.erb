@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title><%= @competition&.competition_name %> — Rezultate</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Helvetica Neue", "Inter", system-ui, sans-serif;
+      margin: 14mm 12mm;
+      background: #fff;
+      color: #111;
+      font-size: 9.5pt;
+      line-height: 1.4;
+    }
+    .mono { font-family: "SF Mono", "Menlo", "Consolas", monospace; }
+
+    .doc-header {
+      border-bottom: 2px solid #111;
+      padding-bottom: 4mm;
+      margin-bottom: 6mm;
+    }
+    .doc-header .kicker {
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-size: 8pt;
+      color: #666;
+      margin-bottom: 2mm;
+    }
+    .doc-header .title {
+      font-size: 18pt;
+      font-weight: 700;
+      margin: 0 0 1mm 0;
+      letter-spacing: -0.3px;
+    }
+    .doc-header .meta {
+      font-size: 9.5pt;
+      color: #444;
+    }
+    .doc-header .meta span + span::before {
+      content: "·";
+      margin: 0 8px;
+      color: #aaa;
+    }
+    .doc-header .tags { margin-top: 3mm; }
+    .doc-header .tag {
+      display: inline-block;
+      border: 1px solid #111;
+      padding: 1px 8px;
+      font-size: 8pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-right: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .group {
+      margin-bottom: 7mm;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .group-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid #111;
+      padding-bottom: 2mm;
+      margin-bottom: 3mm;
+    }
+    .group-head .name {
+      font-size: 13pt;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.2px;
+    }
+    .group-head .sub { font-size: 8.5pt; color: #555; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 3mm;
+    }
+    th {
+      font-size: 7.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #666;
+      font-weight: 700;
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid #111;
+    }
+    td {
+      padding: 3px 6px;
+      font-size: 9pt;
+      border-bottom: 1px solid #eee;
+    }
+    td.place {
+      font-weight: 700;
+      text-align: right;
+      width: 28px;
+      font-variant-numeric: tabular-nums;
+    }
+    td.t {
+      font-variant-numeric: tabular-nums;
+      font-family: "SF Mono", "Menlo", "Consolas", monospace;
+      font-size: 8.5pt;
+    }
+    .place.p1 { color: #000; }
+    .place.p2, .place.p3 { color: #333; }
+
+    .relay-section { margin-bottom: 5mm; }
+    .relay-bar {
+      display: grid;
+      grid-template-columns: 30px 1fr auto;
+      gap: 10px;
+      align-items: baseline;
+      border-bottom: 1px solid #111;
+      padding-bottom: 2mm;
+      margin-bottom: 2mm;
+      margin-top: 4mm;
+    }
+    .relay-bar .pl {
+      font-size: 14pt;
+      font-weight: 700;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .relay-bar .team { font-weight: 700; font-size: 11pt; }
+    .relay-bar .meta { font-size: 8pt; color: #555; }
+    .relay-bar .total {
+      font-family: "SF Mono", "Menlo", "Consolas", monospace;
+      font-weight: 700;
+      font-size: 11pt;
+    }
+    .relay-section table { margin-left: 4mm; width: calc(100% - 4mm); }
+    .relay-section td { font-size: 8.5pt; padding: 2px 6px; }
+
+    .stats {
+      margin-top: 3mm;
+      border-top: 1px dashed #ccc;
+      padding-top: 2mm;
+    }
+    .stats .title {
+      font-size: 8pt;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #666;
+      margin-bottom: 1mm;
+    }
+    .stats .line { font-size: 8.5pt; color: #444; margin-bottom: 1mm; }
+    .stats table { max-width: 60%; }
+    .stats th, .stats td { padding: 2px 6px; font-size: 8pt; }
+
+    .footnote {
+      font-size: 7.5pt;
+      color: #666;
+      font-style: italic;
+      margin: 2mm 0 0;
+    }
+
+    /* Two-column layout for dense groups */
+    .columns {
+      column-count: 2;
+      column-gap: 8mm;
+      column-rule: 1px solid #eee;
+    }
+    .columns .group {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    @page { margin: 0; }
+    @media print {
+      body { margin: 12mm 10mm; }
+    }
+  </style>
+</head>
+<body>
+  <%= yield %>
+</body>
+</html>

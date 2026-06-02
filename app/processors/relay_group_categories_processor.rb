@@ -1,6 +1,5 @@
 class RelayGroupCategoriesProcessor < GroupCategoriesProcessor
   # Top-N teams whose legs contribute their runners' category points to the
-  # group's rang. Mirrors the old project's `relay_team_count`.
   RANG_TOP_TEAMS = {
     "Ștafetă sprint"  => 3,
     "Ștafetă clasică" => 4

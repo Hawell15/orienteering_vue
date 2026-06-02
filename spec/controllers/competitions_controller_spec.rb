@@ -82,14 +82,32 @@ RSpec.describe CompetitionsController, type: :controller do
     end
 
     context "with pdf format" do
-      it "renders a PDF via Grover" do
-        allow_any_instance_of(Grover).to receive(:to_pdf).and_return("%PDF-stub")
+      before { allow_any_instance_of(Grover).to receive(:to_pdf).and_return("%PDF-stub") }
 
+      it "renders a PDF via Grover (default style)" do
         get :show, params: { id: competition.id }, format: :pdf
 
         expect(response).to be_successful
         expect(response.content_type).to start_with("application/pdf")
         expect(response.body).to eq("%PDF-stub")
+      end
+
+      it "renders the modern style template + layout when style=modern" do
+        expect(controller).to receive(:render_to_string).with(hash_including(template: "competitions/pdf_modern", layout: "pdf_modern")).and_call_original
+        get :show, params: { id: competition.id, style: "modern" }, format: :pdf
+        expect(response).to be_successful
+      end
+
+      it "renders the minimal style template + layout when style=minimal" do
+        expect(controller).to receive(:render_to_string).with(hash_including(template: "competitions/pdf_minimal", layout: "pdf_minimal")).and_call_original
+        get :show, params: { id: competition.id, style: "minimal" }, format: :pdf
+        expect(response).to be_successful
+      end
+
+      it "falls back to default for an unknown style param" do
+        expect(controller).to receive(:render_to_string).with(hash_including(template: "competitions/pdf", layout: "pdf")).and_call_original
+        get :show, params: { id: competition.id, style: "haxor" }, format: :pdf
+        expect(response).to be_successful
       end
     end
   end

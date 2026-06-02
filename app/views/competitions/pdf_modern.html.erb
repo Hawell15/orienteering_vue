@@ -1,0 +1,212 @@
+<% default_category_name = Category.find_by(id: Category::NO_CATEGORY_ID)&.category_name %>
+
+<div class="hero">
+  <div class="eyebrow">🧭 Rezultate · <%= @competition.distance_type %></div>
+  <div class="title"><%= @competition.competition_name %></div>
+  <div class="meta">
+    <span><%= @competition.date&.strftime("%d.%m.%Y") %></span>
+    <% if @competition.location.present? %>
+      <span class="dot">·</span><span><%= @competition.location %></span>
+    <% end %>
+    <% if @competition.country.present? %>
+      <span class="dot">·</span><span><%= @competition.country %></span>
+    <% end %>
+  </div>
+  <div class="badges">
+    <% if @competition.ecn %><span class="badge ecn">● ECN</span><% end %>
+    <% if @competition.wre_id %><span class="badge">● WRE #<%= @competition.wre_id %></span><% end %>
+  </div>
+</div>
+
+<% @pdf_groups.each do |group| %>
+  <% if @competition.relay? %>
+    <% relays = @pdf_relay_results_by_group_id[group.id] || [] %>
+    <% next if relays.empty? %>
+    <% first_leg = (@pdf_legs_by_id[relays.first.results_id&.first] if relays.first.results_id) %>
+    <% women     = first_leg&.membership&.runner&.gender == "W" %>
+    <div class="group">
+      <div class="group-head <%= women ? "women" : "" %>">
+        <h2 class="name"><%= group.group_name %></h2>
+        <div class="sub">Echipe: <%= relays.size %></div>
+      </div>
+
+      <% if (top3 = relays.first(3)).any? %>
+        <div class="podium">
+          <% top3.each_with_index do |relay, i| %>
+            <div class="podium-card place-<%= i + 1 %>">
+              <div class="medal"><%= [ '🥇', '🥈', '🥉' ][i] %></div>
+              <div class="who"><%= relay.team %></div>
+              <div class="club-line"><%= relay.category&.category_name || default_category_name %></div>
+              <div class="t"><%= Time.at(relay.time.to_i).utc.strftime('%H:%M:%S') if relay.time %></div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% relays.each do |relay| %>
+        <div class="relay-card">
+          <div class="relay-head">
+            <div class="pl"><%= relay.place %></div>
+            <div>
+              <div class="team"><%= relay.team %></div>
+              <div class="meta">Categoria îndeplinită: <b><%= relay.category&.category_name || default_category_name %></b></div>
+            </div>
+            <div class="total"><%= Time.at(relay.time.to_i).utc.strftime('%H:%M:%S') if relay.time %></div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Etapa</th>
+                <th>Sportiv</th>
+                <th>Club</th>
+                <th>An</th>
+                <th>Timp etapă</th>
+                <th>Cumulat</th>
+                <th>Cat. îndeplinită</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% cumulative = 0 %>
+              <% (relay.results_id || []).each_with_index do |leg_id, i| %>
+                <% leg = @pdf_legs_by_id[leg_id] %>
+                <% next unless leg %>
+                <% cumulative += leg.time.to_i %>
+                <tr>
+                  <td class="place"><%= i + 1 %></td>
+                  <td><%= "#{leg.membership&.runner&.runner_name} #{leg.membership&.runner&.surname}" %></td>
+                  <td><%= leg.membership&.club&.club_name %></td>
+                  <td><%= leg.membership&.runner&.yob %></td>
+                  <td class="t"><%= Time.at(leg.time.to_i).utc.strftime('%H:%M:%S') if leg.time %></td>
+                  <td class="t"><%= Time.at(cumulative).utc.strftime('%H:%M:%S') %></td>
+                  <td><%= leg.category&.category_name || default_category_name %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% end %>
+
+      <% if group.rang %>
+        <% percent_and_time_data = RelayGroupCategoriesProcessor.new(group).get_percent_and_times %>
+        <% if percent_and_time_data.any? %>
+          <div class="stats">
+            <div class="title">Procente pe categorii</div>
+            <div class="stats-line">
+              <span>Rang: <b><%= group.rang.to_i %></b></span>
+              <% if group.clasa.present? %>
+                <% clasa_match = group.clasa.to_s[/\d{1,2}/] %>
+                <span>Clasa: <b><%= clasa_match ? Category.find(group.clasa.to_i).category_name : group.clasa %></b></span>
+              <% end %>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Categoria</th><th>Procente</th><th>Timpul</th></tr>
+              </thead>
+              <tbody>
+                <% percent_and_time_data.each do |cat| %>
+                  <tr>
+                    <td><%= cat[:category] %></td>
+                    <td><%= "#{cat[:percent]} %" %></td>
+                    <td class="t"><%= cat[:time] %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <% results = group.results.sort_by { |r| r.place.to_i.zero? ? Float::INFINITY : r.place.to_i } %>
+    <% first_runner = results.first&.membership&.runner %>
+    <% women = first_runner&.gender == "W" %>
+    <div class="group">
+      <div class="group-head <%= women ? "women" : "" %>">
+        <h2 class="name"><%= group.group_name %></h2>
+        <div class="sub">
+          <% if group.rang %>Rang: <b><%= group.rang.to_i %></b><% end %>
+          <% if group.clasa.present? %>
+            · Clasa: <b><%= (Category.find_by(id: group.clasa.to_i)&.category_name if group.clasa.to_s[/\d{1,2}/]) || group.clasa %></b>
+          <% end %>
+          · <%= results.size %> sportivi
+        </div>
+      </div>
+
+      <% if (top3 = results.first(3)).any? %>
+        <div class="podium">
+          <% top3.each_with_index do |r, i| %>
+            <div class="podium-card place-<%= i + 1 %>">
+              <div class="medal"><%= [ '🥇', '🥈', '🥉' ][i] %></div>
+              <div class="who"><%= "#{r.membership&.runner&.runner_name} #{r.membership&.runner&.surname}" %></div>
+              <div class="club-line"><%= r.membership&.club&.club_name %></div>
+              <div class="t"><%= Time.at(r.time.to_i).utc.strftime('%H:%M:%S') if r.time %></div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Loc</th>
+            <th>Sportiv</th>
+            <th>Club</th>
+            <th>An</th>
+            <th>Cat. actuală</th>
+            <th>Timp</th>
+            <th>Cat. îndeplinită</th>
+            <% if @competition.ecn %><th>ECN</th><% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% results.each do |result| %>
+            <% runner = result.membership&.runner %>
+            <% actual = @runner_actual_category_name_by_result_id[result.id] || default_category_name %>
+            <% pclass = result.place == 1 ? "p1" : (result.place == 2 ? "p2" : (result.place == 3 ? "p3" : "")) %>
+            <tr>
+              <td class="place <%= pclass %>"><%= result.place %></td>
+              <td><%= "#{runner&.runner_name} #{runner&.surname}" %></td>
+              <td><%= result.membership&.club&.club_name %></td>
+              <td><%= runner&.yob %></td>
+              <% if result.status == Result::CAPPED %>
+                <td><%= actual %> (<%= result.child_results.first&.category&.category_name %>*)</td>
+              <% else %>
+                <td><%= actual %></td>
+              <% end %>
+              <td class="t"><%= Time.at(result.time.to_i).utc.strftime('%H:%M:%S') if result.time %></td>
+              <td><%= result.category&.category_name %></td>
+              <% if @competition.ecn %><td><%= result.ecn_points %></td><% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+
+      <% if results.any? { |r| r.status == Result::CAPPED } %>
+        <p class="footnote">* Categoria trebuie confirmată la Ministerul Educației și Cercetării al Republicii Moldova</p>
+      <% end %>
+
+      <% if group.rang %>
+        <% percent_and_time_data = GroupCategoriesProcessor.new(group).get_percent_and_times %>
+        <% if percent_and_time_data.any? %>
+          <div class="stats">
+            <div class="title">Procente pe categorii</div>
+            <table>
+              <thead>
+                <tr><th>Categoria</th><th>Procente</th><th>Timpul</th></tr>
+              </thead>
+              <tbody>
+                <% percent_and_time_data.each do |cat| %>
+                  <tr>
+                    <td><%= cat[:category] %></td>
+                    <td><%= "#{cat[:percent]} %" %></td>
+                    <td class="t"><%= cat[:time] %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
