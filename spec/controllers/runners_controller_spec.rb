@@ -227,6 +227,85 @@ RSpec.describe RunnersController, type: :controller do
     end
   end
 
+  describe "license bulk-edit" do
+    let!(:with_license)    { Runner.create!(club: club, category: category, best_category: category, runner_name: "Has", surname: "L", gender: "M", yob: 2000, license: true) }
+    let!(:without_license) { Runner.create!(club: club, category: category, best_category: category, runner_name: "No",  surname: "L", gender: "M", yob: 2000, license: false) }
+
+    describe "GET #license" do
+      it "returns all runners when license filter = all" do
+        get :license, format: :json
+        ids = JSON.parse(response.body).map { |r| r["id"] }
+        expect(ids).to include(runner.id, with_license.id, without_license.id)
+      end
+
+      it "filters by license=true" do
+        get :license, params: { license: "true" }, format: :json
+        ids = JSON.parse(response.body).map { |r| r["id"] }
+        expect(ids).to include(with_license.id)
+        expect(ids).not_to include(without_license.id)
+      end
+
+      it "filters by license=false" do
+        get :license, params: { license: "false" }, format: :json
+        ids = JSON.parse(response.body).map { |r| r["id"] }
+        expect(ids).to include(without_license.id)
+        expect(ids).not_to include(with_license.id)
+      end
+
+      it "is accessible to non-admin users (read-only)" do
+        sign_out admin_user
+        sign_in FactoryBot.create(:user)
+        get :license, format: :json
+        expect(response).to be_successful
+      end
+
+      it "is accessible when signed out" do
+        sign_out admin_user
+        get :license, format: :json
+        expect(response).to be_successful
+      end
+    end
+
+    describe "PATCH #bulk_update_license" do
+      it "applies the supplied license values to the named runners" do
+        patch :bulk_update_license,
+              params: { runners: [
+                { id: with_license.id,    license: false },
+                { id: without_license.id, license: true  }
+              ] },
+              format: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(with_license.reload.license).to be false
+        expect(without_license.reload.license).to be true
+      end
+
+      it "accepts string boolean values from the form" do
+        patch :bulk_update_license,
+              params: { runners: [ { id: with_license.id, license: "0" } ] },
+              format: :json
+        expect(with_license.reload.license).to be false
+      end
+
+      it "does not touch runners not present in the payload" do
+        patch :bulk_update_license,
+              params: { runners: [ { id: with_license.id, license: false } ] },
+              format: :json
+        expect(without_license.reload.license).to be false # unchanged from initial
+      end
+
+      it "is forbidden for non-admin users" do
+        sign_out admin_user
+        sign_in FactoryBot.create(:user)
+        patch :bulk_update_license,
+              params: { runners: [ { id: with_license.id, license: false } ] },
+              format: :json
+        expect(response).to have_http_status(:forbidden)
+        expect(with_license.reload.license).to be true # unchanged
+      end
+    end
+  end
+
   describe "GET #relays" do
     let!(:relay_competition) do
       Competition.create!(

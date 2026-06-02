@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import Index from '../components/Runner/Index.vue'
 import Show from '../components/Runner/Show.vue'
 import New from '../components/Runner/New.vue'
+import License from '../components/Runner/License.vue'
 
 function mountIfExists(id, component) {
   const el = document.getElementById("runners_" + id)
@@ -12,4 +13,5 @@ document.addEventListener('DOMContentLoaded', () => {
   mountIfExists('index', Index)
   mountIfExists('show', Show)
   mountIfExists('new', New)
+  mountIfExists('license', License)
 })

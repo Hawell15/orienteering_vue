@@ -1,6 +1,6 @@
 class RunnersController < ApplicationController
   before_action :set_runner, only: %i[ show edit update destroy merge_runners relays]
-  before_action :require_admin!, only: %i[new create edit update destroy merge_runners category_check]
+  before_action :require_admin!, only: %i[new create edit update destroy merge_runners category_check bulk_update_license]
   has_scope :sorting, using: %i[sort_by direction], type: :hash
   has_scope :search
   has_scope :club
@@ -9,6 +9,7 @@ class RunnersController < ApplicationController
   has_scope :best_category
   has_scope :gender
   has_scope :wre, type: :boolean
+  has_scope :license
   has_scope :yob, using: %i[from to], type: :hash
 
   # GET /runners or /runners.json
@@ -125,6 +126,21 @@ class RunnersController < ApplicationController
 
       format.html { redirect_to runners_url, notice: "Runners were successfully updated." }
     end
+  end
+
+  def license
+    respond_to do |format|
+      format.html
+      format.json { render json: apply_scopes(index_base_query) }
+    end
+  end
+
+  def bulk_update_license
+    bool = ActiveModel::Type::Boolean.new
+    params.require(:runners).each do |row|
+      Runner.where(id: row[:id]).update_all(license: bool.cast(row[:license]))
+    end
+    head :ok
   end
 
   private

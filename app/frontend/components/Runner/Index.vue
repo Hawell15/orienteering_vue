@@ -10,6 +10,7 @@
                 <div class="search-box">
                     <input type="text" v-model="filters.search" placeholder="Caută sportivi…" class="search-input" />
                 </div>
+                <a class="add-btn" href="/runners/license">🪪 Licențe</a>
                 <button v-if="isAdmin" class="add-btn" @click="createNew">＋ Adaugă sportiv</button>
             </div>
         </div>

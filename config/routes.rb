@@ -33,6 +33,10 @@ Rails.application.routes.draw do
   resources :runners do
      get :filters, on: :collection
      get :category_check, on: :collection
+     collection do
+       get   :license
+       patch :bulk_update_license
+     end
      member do
        post "merge_runners"
        get  "relays"
