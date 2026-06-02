@@ -143,5 +143,75 @@ RSpec.describe TelegramCompetitionNotifier do
         expect(captured.all? { |m| m.length <= TelegramNotifier::MAX_MESSAGE_LENGTH }).to be true
       end
     end
+
+    context "with a relay competition" do
+      let!(:relay_competition) do
+        Competition.create!(
+          competition_name: "Cupa Ștafetă",
+          date:             Date.new(2026, 5, 2),
+          distance_type:    "Ștafetă clasică",
+          location:         "Chișinău"
+        )
+      end
+      let!(:relay_group) { Group.create!(competition: relay_competition, group_name: "M21S") }
+
+      def make_leg(name:, status:, cat_id: 4)
+        runner = Runner.create!(
+          club: club, runner_name: name, surname: "X",
+          gender: "M", yob: 2000, best_category_id: cat_id
+        )
+        membership = Membership.create!(runner: runner, club: club)
+        Result.create!(
+          group:           relay_group,
+          membership:      membership,
+          category_id:     cat_id,
+          date:            relay_competition.date,
+          time:            1800,
+          place:           1,
+          status:          status,
+          skip_processing: true
+        )
+      end
+
+      it "sends per-leg lines (the individual runners), not a team aggregate" do
+        leg1 = make_leg(name: "Ion",   status: Result::CONFIRMED)
+        leg2 = make_leg(name: "Mihai", status: Result::CONFIRMED)
+        leg3 = make_leg(name: "Andrei", status: Result::CAPPED)
+        RelayResult.create!(
+          group:       relay_group,
+          category_id: 4,
+          team:        "MDA-1",
+          place:       1,
+          time:        5400,
+          date:        relay_competition.date,
+          results_id:  [ leg1.id, leg2.id, leg3.id ]
+        )
+
+        captured = []
+        allow(TelegramNotifier).to receive(:notify) { |msg, **| captured << msg; true }
+
+        described_class.notify(relay_competition)
+
+        body = captured.join("\n")
+        expect(body).to include("Ion X")
+        expect(body).to include("Mihai X")
+        expect(body).to include("Andrei X")
+        expect(body).to include("(confirmat)")
+        expect(body).to include("(limitat)")
+        # Team aggregate should NOT appear — no team name, no team total time.
+        expect(body).not_to include("MDA-1")
+      end
+
+      it "skips legs whose status is not confirmed/capped" do
+        make_leg(name: "Pending", status: Result::PENDING)
+        make_leg(name: "Unconfirmed", status: Result::UNCONFIRMED)
+
+        captured = []
+        allow(TelegramNotifier).to receive(:notify) { |msg, **| captured << msg; true }
+
+        expect(described_class.notify(relay_competition)).to eq(0)
+        expect(captured).to be_empty
+      end
+    end
   end
 end
