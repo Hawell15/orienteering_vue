@@ -28,6 +28,9 @@
                                 <li><a class="dropdown-item" :href="`/competitions/${competitionId}.pdf`">Clasic</a></li>
                                 <li><a class="dropdown-item" :href="`/competitions/${competitionId}.pdf?style=modern`">Modern</a></li>
                                 <li><a class="dropdown-item" :href="`/competitions/${competitionId}.pdf?style=minimal`">Minimal</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" :href="`/competitions/${competitionId}/confirmations`">📜 Confirmări categorii (online)</a></li>
+                                <li><a class="dropdown-item" :href="`/competitions/${competitionId}.pdf?style=confirmations`">📜 Confirmări categorii (PDF)</a></li>
                             </ul>
                         </div>
                         <button v-if="isAdmin" class="btn btn-success" @click="openResultModal">+ Rezultat</button>
@@ -361,7 +364,7 @@ async function reorderRelayLegs(relay, newResultsId) {
 }
 
 async function sendTelegramResults() {
-    if (!confirm('Trimite rezultatele confirmate și limitate pe canalul Telegram?')) return
+    if (!confirm('Trimite rezultatele confirmate și plafonate pe canalul Telegram?')) return
     sendingTelegram.value = true
     try {
         const res = await axios.post(`/competitions/${competitionId.value}/telegram_results.json`)
@@ -370,7 +373,7 @@ async function sendTelegramResults() {
         } else if (res.data.error) {
             alert(`Trimiterea a eșuat: ${res.data.error}`)
         } else {
-            alert('Nu există rezultate confirmate sau limitate pentru această competiție.')
+            alert('Nu există rezultate confirmate sau plafonate pentru această competiție.')
         }
     } catch (e) {
         alert(`Trimiterea a eșuat: ${e.response?.data?.error || e.message}`)

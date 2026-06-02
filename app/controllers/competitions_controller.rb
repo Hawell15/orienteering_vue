@@ -1,5 +1,5 @@
 class CompetitionsController < ApplicationController
-  before_action :set_competition, only: %i[ show edit update destroy group_filters group_ecn_coeficients update_group_clasa new_runners reimport_wre_points telegram_results]
+  before_action :set_competition, only: %i[ show edit update destroy group_filters group_ecn_coeficients update_group_clasa new_runners reimport_wre_points telegram_results confirmations]
   before_action :require_admin!, only: %i[new create edit update destroy group_ecn_coeficients update_group_clasa new_runners reimport_wre_points telegram_results]
   has_scope :search
   has_scope :sorting, using: %i[sort_by direction], type: :hash
@@ -25,10 +25,11 @@ class CompetitionsController < ApplicationController
       format.pdf do
         load_pdf_data
 
-        style    = %w[default modern minimal].include?(params[:style]) ? params[:style] : "default"
+        style    = %w[default modern minimal confirmations].include?(params[:style]) ? params[:style] : "default"
         suffix   = style == "default" ? "" : "_#{style}"
         template = "competitions/pdf#{suffix}"
-        layout   = "pdf#{suffix}"
+        # `confirmations` reuses the modern layout (same typography + table look).
+        layout   = style == "confirmations" ? "pdf_modern" : "pdf#{suffix}"
 
         html = render_to_string(template: template, layout: layout, formats: [ :html ])
         pdf  = Grover.new(html, display_url: request.base_url).to_pdf
@@ -216,10 +217,52 @@ class CompetitionsController < ApplicationController
     render json: { sent: 0, error: e.message }, status: :service_unavailable
   end
 
+  def confirmations
+    @collector = CompetitionConfirmedResults.new(@competition)
+
+    respond_to do |format|
+      format.html # mounts the Vue component
+      format.json do
+        render json: {
+          competition: {
+            id:               @competition.id,
+            competition_name: @competition.competition_name,
+            date:             @competition.date,
+            distance_type:    @competition.distance_type,
+            location:         @competition.location,
+            country:          @competition.country
+          },
+          capped:   @collector.buckets[:capped].map   { |r| serialize_confirmation_row(r) },
+          improved: @collector.buckets[:improved].map { |r| serialize_confirmation_row(r) },
+          extended: @collector.buckets[:extended].map { |r| serialize_confirmation_row(r) }
+        }
+      end
+    end
+  end
+
   private
     # Use callbacks to share compmon setup or constraints between actions.
     def set_competition
       @competition = Competition.find(params.expect(:id))
+    end
+
+    def serialize_confirmation_row(r)
+      {
+        id:                   r.id,
+        runner_id:            r.runner_id,
+        full_name:            r.full_name,
+        yob:                  r.yob,
+        club_id:              r.club_id,
+        club_name:            r.club_name,
+        group_id:             r.group_id,
+        group_name:           r.group_name,
+        place:                r.place,
+        time:                 r.time,
+        status:               r.status,
+        runner_category_name: r.runner_category_name,
+        new_category_name:    r.new_category_name,
+        achievement:          @collector.achievement_by_parent_id[r.id]
+      }
     end
 
     # Only allow a list of trusted parameters through.
@@ -269,5 +312,7 @@ class CompetitionsController < ApplicationController
         @pdf_relay_results_by_group_id = {}
         @pdf_legs_by_id                = {}
       end
+
+      @pdf_confirmations = CompetitionConfirmedResults.new(@competition) if params[:style] == "confirmations"
     end
 end

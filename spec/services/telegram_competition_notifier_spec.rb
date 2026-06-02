@@ -87,7 +87,7 @@ RSpec.describe TelegramCompetitionNotifier do
 
         joined = captured.join("\n")
         expect(joined).to include("(confirmat)")
-        expect(joined).to include("(limitat)")
+        expect(joined).to include("(plafonat)")
       end
 
       it "includes runner name, yob, and club_name from the membership" do
@@ -197,7 +197,7 @@ RSpec.describe TelegramCompetitionNotifier do
         expect(body).to include("Mihai X")
         expect(body).to include("Andrei X")
         expect(body).to include("(confirmat)")
-        expect(body).to include("(limitat)")
+        expect(body).to include("(plafonat)")
         # Team aggregate should NOT appear — no team name, no team total time.
         expect(body).not_to include("MDA-1")
       end
