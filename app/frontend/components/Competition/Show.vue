@@ -40,7 +40,7 @@
                                 <li><button class="dropdown-item" @click="toggleEcn">{{ competition.ecn ? 'Exclude din ECN' : 'Adauga la ECN' }}</button></li>
                                 <li v-if="competition.ecn"><button class="dropdown-item" @click="openEcnModal">Seteaza Coeficientii Grupelor</button></li>
                                 <li><button class="dropdown-item" @click="openClasaModal">Seteaza Clasele Grupelor</button></li>
-                                <li v-if="competition.ecn"><a class="dropdown-item" :href="`/competitions/${competitionId}/new_runners`">Sportivi noi</a></li>
+                                <li><a class="dropdown-item" :href="`/competitions/${competitionId}/new_runners`">Sportivi noi</a></li>
                                 <li><button class="dropdown-item" :disabled="sendingTelegram" @click="sendTelegramResults">{{ sendingTelegram ? '⏳ Se trimite…' : '📨 Trimite rezultate pe Telegram' }}</button></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><button class="dropdown-item" @click="editElement(competition)">Editeaza</button></li>

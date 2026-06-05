@@ -15,12 +15,12 @@ class RelayHtmlParser < HtmlParser
         group_name = Group.normalize_group_name(group["name"].split.first)
         {
           group_name: group_name,
-          results:    extract_relay_results(json, group)
+          results:    extract_relay_results(json, group, extract_gender(group_name.first))
         }
       end
   end
 
-  def extract_relay_results(json, group)
+  def extract_relay_results(json, group, gender)
     persons_in_group = json["persons"].select { |p| p["group_id"] == group["id"] }
     person_by_id     = persons_in_group.index_by { |p| p["id"] }
     group_results    = json["results"].select { |r| person_by_id.key?(r["person_id"]) }
@@ -28,10 +28,10 @@ class RelayHtmlParser < HtmlParser
     group_results
       .reject { |r| r["status"].to_i != 1 || r["place"].to_i <= 0 }
       .group_by { |r| person_by_id[r["person_id"]]["bib"].to_i % 1000 }
-      .filter_map { |team_num, rows| build_team(team_num, rows, person_by_id, json["organizations"]) }
+      .filter_map { |team_num, rows| build_team(team_num, rows, person_by_id, json["organizations"], gender) }
   end
 
-  def build_team(team_num, rows, person_by_id, organizations)
+  def build_team(team_num, rows, person_by_id, organizations, gender)
     rows       = rows.sort_by { |r| r["order"].to_i }
     total_msec = rows.last["result_relay_msec"] || rows.sum { |r| r["result_msec"].to_i }
     clubs      = rows.map { |r| club_name_for(person_by_id[r["person_id"]], organizations) }
@@ -41,7 +41,7 @@ class RelayHtmlParser < HtmlParser
       place: rows.first["place"].to_i,
       time:  total_msec / 1000,
       team:  clubs.join("/").presence || "Team #{team_num}",
-      legs:  rows.map { |r| build_leg(person_by_id[r["person_id"]], r, organizations) }
+      legs:  rows.map { |r| build_leg(person_by_id[r["person_id"]], r, organizations, gender) }
     }
   end
 

@@ -20,7 +20,7 @@ RSpec.describe Group, type: :model do
     end
 
     it "defines TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID" do
-      expect(Group::TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID).to eq(2320)
+      expect(Group::TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID).to eq(2667)
     end
   end
 

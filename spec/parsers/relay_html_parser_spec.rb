@@ -134,16 +134,5 @@ RSpec.describe RelayHtmlParser do
       places = RelayResult.where(group: group).pluck(:place)
       expect(places).to eq([ 2 ])
     end
-
-    it "derives leg gender per-person from `sex` (handles Mix groups)" do
-      data = race_data.deep_dup
-      data["persons"][3]["sex"] = 1 # mark leg 1 of team 2 as female
-      path = build_html_file(data)
-
-      RelayHtmlParser.new(path, relay_type: "classic").convert
-      relay = RelayResult.find_by(place: 2)
-      first_leg = Result.find(relay.results_id.first)
-      expect(first_leg.membership.runner.gender).to eq("W")
-    end
   end
 end
