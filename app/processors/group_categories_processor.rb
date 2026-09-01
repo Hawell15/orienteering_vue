@@ -120,9 +120,9 @@ class GroupCategoriesProcessor
     place = res.place
     clasa = @group.clasa
 
-    category_id = if clasa == "2" && place == 1
+    category_id = if clasa == "2" && place == 1 && @group.rang > 300
                     2
-    elsif [ "2", "3" ].include?(clasa) && (1..3).include?(place)
+    elsif [ "2", "3" ].include?(clasa) && (1..3).include?(place) && @group.rang > 120
                     3
     else
                     time_hash.detect { |_k, v| v >= time }&.first || 10
