@@ -103,6 +103,43 @@ RSpec.describe ExpiredCategoryJob, type: :job do
     end
   end
 
+  describe "#perform with an explicit date" do
+    it "scopes expired runners to the given date instead of today" do
+      runner = build_runner(category: cat5, category_valid: Date.today - 10)
+
+      expect { described_class.new.perform(Date.today - 30) }.not_to change(Result, :count)
+      expect(runner.reload.category_id).to eq(cat5.id)
+    end
+
+    it "demotes as of the given date, dating the reduction from category_valid" do
+      valid_until = Date.today - 100
+      runner = build_runner(category: cat5, category_valid: valid_until)
+
+      expect { described_class.new.perform(valid_until + 5) }.to change(Result, :count).by(1)
+
+      reduction = Result.find_by(group_id: reduction_group.id)
+      expect(reduction.category_id).to eq(cat6.id)
+      expect(reduction.date).to eq(valid_until + 1)
+      expect(reduction.status).to eq(Result::CONFIRMED)
+
+      runner.reload
+      expect(runner.category_id).to eq(cat6.id)
+      expect(runner.category_valid).to eq((valid_until + 1) + cat6.validaty_period.years)
+    end
+
+    it "judges junior status as of the given date, not today" do
+      date = Date.today - 1.year
+      # Junior on `date` (17), adult today (18) — must still get the junior-only demotion.
+      runner = build_runner(category: cat6, category_valid: date - 1, yob: Date.today.year - 18)
+
+      described_class.new.perform(date)
+
+      reduction = Result.find_by(group_id: reduction_group.id)
+      expect(reduction).to be_present
+      expect(reduction.category_id).to eq(cat7.id)
+    end
+  end
+
   describe "#perform end-of-job runner refresh" do
     it "calls update_runner_category on every originally-expired runner" do
       runner = build_runner(category: cat5, category_valid: Date.today - 1)
@@ -151,6 +188,16 @@ RSpec.describe ExpiredCategoryJob, type: :job do
       expect(change).to be_present
       expect(change[:old_category_id]).to eq(cat6.id)
       expect(change[:new_category_id]).to eq(Category::NO_CATEGORY_ID)
+    end
+
+    it "stays silent when notify: false" do
+      runner = build_runner(category: cat5, category_valid: Date.today - 1)
+
+      expect(TelegramExpiredCategoryNotifier).not_to receive(:notify)
+
+      described_class.new.perform(Date.today, notify: false)
+
+      expect(runner.reload.category_id).to eq(cat6.id)
     end
 
     it "swallows Telegram errors so the job still completes" do

@@ -256,8 +256,9 @@ RSpec.describe ResultProcessor do
       let!(:junior_membership) { Membership.create!(runner: junior_runner, club: club) }
 
       before do
-        # Create 3 prior results after the cutoff date
-        3.times do |i|
+        # Two prior NO_CATEGORY results after the cutoff date; the result the
+        # processor adds becomes the third one.
+        2.times do |i|
           Result.create!(
             group: group, membership: junior_membership, category: no_category,
             date: Date.new(2024, 4, 1) + i.months, status: Result::UNCONFIRMED
@@ -265,11 +266,8 @@ RSpec.describe ResultProcessor do
         end
       end
 
-      it "creates a three-results category result for junior with 3+ results" do
-        # Verify membership exists
-        expect(Membership.exists?(junior_membership.id)).to be true
-
-        params = build_params(runner_id: junior_runner.id, category_id: cat5.id, date: Date.new(2025, 6, 1))
+      it "creates a three-results category result for a junior NO_CATEGORY result" do
+        params = build_params(runner_id: junior_runner.id, category_id: no_category.id, date: Date.new(2025, 6, 1))
         processor = ResultProcessor.new(params)
         # Pre-set membership_id on the params to bypass add_membership_id
         processor.params["membership_id"] = junior_membership.id
@@ -284,24 +282,33 @@ RSpec.describe ResultProcessor do
         expect(three_result.parent_result_id).to eq(processor.result.id)
       end
 
+      it "does not create three-results for a categorized result" do
+        params = build_params(runner_id: junior_runner.id, category_id: cat5.id, date: Date.new(2025, 6, 1))
+        ResultProcessor.new(params).add_result
+        expect(Result.where(group_id: three_results_group.id).count).to eq(0)
+      end
+
       it "does not create three-results for non-junior runner" do
-        processor = ResultProcessor.new(build_params(category_id: cat5.id))
-        initial_count = Result.count
-        processor.add_result
+        2.times do |i|
+          Result.create!(
+            group: group, membership: membership, category: no_category,
+            date: Date.new(2024, 4, 1) + i.months, status: Result::UNCONFIRMED
+          )
+        end
+        ResultProcessor.new(build_params(category_id: no_category.id)).add_result
         expect(Result.where(group_id: three_results_group.id).count).to eq(0)
       end
 
       it "does not create three-results before cutoff date" do
-        params = build_params(runner_id: junior_runner.id, category_id: cat5.id, date: Date.new(2024, 3, 20))
-        processor = ResultProcessor.new(params)
-        processor.add_result
+        params = build_params(runner_id: junior_runner.id, category_id: no_category.id, date: Date.new(2024, 3, 20))
+        ResultProcessor.new(params).add_result
         expect(Result.where(group_id: three_results_group.id).count).to eq(0)
       end
 
-      it "does not create three-results for NO_CATEGORY" do
+      it "does not create three-results with fewer than three results since cutoff" do
+        junior_membership.results.destroy_all
         params = build_params(runner_id: junior_runner.id, category_id: no_category.id, date: Date.new(2025, 6, 1))
-        processor = ResultProcessor.new(params)
-        processor.add_result
+        ResultProcessor.new(params).add_result
         expect(Result.where(group_id: three_results_group.id).count).to eq(0)
       end
     end

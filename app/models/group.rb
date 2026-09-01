@@ -1,9 +1,8 @@
 class Group < ApplicationRecord
   THREE_RESULTS_GROUP_ID              = 1346
   REDUCTION_CATEGORY_GROUP_ID         = 2
-  TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID = 2320
-
-
+  TITLE_CATEGORY_ACHIEVEMENT_GROUP_ID = 2667
+  NO_GROUP_ID                         = 1
 
   belongs_to :competition
   has_many :results, dependent: :destroy

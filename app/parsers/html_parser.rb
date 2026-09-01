@@ -33,24 +33,23 @@ class HtmlParser < BaseParser
 
       {
         group_name: group_name,
-        results:    extract_results(json, group)
+        results:    extract_results(json, group, extract_gender(group_name.first))
       }
     end
   end
 
-  def extract_results(json, group)
+  def extract_results(json, group, gender)
     json["persons"]
       .select { |person| person["group_id"] == group["id"] }
       .filter_map do |person|
         result = json["results"].detect { |r| r["person_id"] == person["id"] }
         next unless result && check_result?(result["result"]) && result["place"].to_i.positive?
 
-        build_leg(person, result, json["organizations"])
+        build_leg(person, result, json["organizations"], gender)
       end
   end
 
-  def build_leg(person, result, organizations)
-    gender = person["sex"].to_i.zero? ? "M" : "W"
+  def build_leg(person, result, organizations, gender)
     club   = club_name_for(person, organizations)
 
     {

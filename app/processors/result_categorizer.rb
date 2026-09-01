@@ -87,7 +87,7 @@ class ResultCategorizer
   end
 
   def check_three_results?
-    return false if @result.category_id == Category::NO_CATEGORY_ID
+    return false unless @result.category_id == Category::NO_CATEGORY_ID
     return false if @result.date < "2024-03-25".to_date
     return false unless runner.junior_runner?(@result.date)
 

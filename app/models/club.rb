@@ -47,7 +47,7 @@ class Club < ApplicationRecord
       .gsub("ă", "a")
       .gsub("î", "i")
       .gsub("â", "i")
-      .gsub(/[^a-z]+/, "")
+      .gsub(/[^a-z0-9]+/, "")
   end
 
   # Merge another club into this one.
