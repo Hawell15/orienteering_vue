@@ -64,6 +64,8 @@ USER 1000:1000
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Thruster by default, this can be overwritten at runtime
-EXPOSE 80
-CMD ["./bin/thrust", "./bin/rails", "server"]
+# Run Puma directly on $PORT (Railway injects it and routes its proxy there).
+# Thruster is skipped: it would listen on 80 and pin Puma to its own internal
+# port 3000, hiding the app from Railway's proxy.
+EXPOSE 3000
+CMD ["./bin/rails", "server"]

@@ -28,7 +28,9 @@ threads_count = ENV.fetch("RAILS_MAX_THREADS", 3)
 threads threads_count, threads_count
 
 # Specifies the `port` that Puma will listen on to receive requests; default is 3000.
-port ENV.fetch("PORT", 3000)
+# Bind on all interfaces, IPv4 and IPv6 — Railway's edge proxy reaches the
+# container over IPv6, so an IPv4-only (0.0.0.0) binding gets "connection refused".
+bind "tcp://[::]:#{ENV.fetch('PORT', 3000)}"
 
 # Allow puma to be restarted by `bin/rails restart` command.
 plugin :tmp_restart
