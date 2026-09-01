@@ -1,12 +1,12 @@
 namespace :compare do
   desc "Compare competition results with the old orienteering DB: rails 'compare:results[new_competition_id,old_competition_id]'"
-  task :results, [:new_competition_id, :old_competition_id, :skip_ecn] => :environment do |_t, args|
+  task :results, [ :new_competition_id, :old_competition_id, :skip_ecn ] => :environment do |_t, args|
     new_id = args[:new_competition_id]
     old_id = args[:old_competition_id]
     skip_ecn = args[:skip_ecn].present?
     abort "Usage: rails 'compare:results[new_competition_id,old_competition_id(,skip_ecn)]'" if new_id.blank? || old_id.blank?
 
-    new_rows = ActiveRecord::Base.connection.select_all(<<~SQL, "new_results", [new_id.to_i]).to_a
+    new_rows = ActiveRecord::Base.connection.select_all(<<~SQL, "new_results", [ new_id.to_i ]).to_a
       SELECT m.runner_id, c.category_name, r.ecn_points, g.group_name, ru.runner_name, ru.surname
       FROM results r
       JOIN groups g       ON g.id = r.group_id AND g.competition_id = $1
@@ -22,7 +22,7 @@ namespace :compare do
       host: old_config[:host], dbname: old_config[:database],
       user: old_config[:username], password: old_config[:password]
     )
-    old_rows = old_db.exec_params(<<~SQL, [old_id.to_i]).to_a
+    old_rows = old_db.exec_params(<<~SQL, [ old_id.to_i ]).to_a
       SELECT r.runner_id, c.category_name, r.ecn_points, g.group_name, ru.runner_name, ru.surname
       FROM results r
       JOIN groups g     ON g.id = r.group_id AND g.competition_id = $1
@@ -37,7 +37,7 @@ namespace :compare do
       rows.each_with_object({}) do |row, index|
         row = row.symbolize_keys
         name = "#{row[:runner_name]} #{row[:surname]}"
-        key = [name.downcase, Group.normalize_group_name(row[:group_name])]
+        key = [ name.downcase, Group.normalize_group_name(row[:group_name]) ]
         (index[key] ||= []) << {
           runner_id:   row[:runner_id].to_i,
           category:    row[:category_name],
@@ -76,8 +76,8 @@ namespace :compare do
         next
       end
 
-      new_list.sort_by { |r| [r[:category], r[:ecn_points]] }
-              .zip(old_list.sort_by { |r| [r[:category], r[:ecn_points]] })
+      new_list.sort_by { |r| [ r[:category], r[:ecn_points] ] }
+              .zip(old_list.sort_by { |r| [ r[:category], r[:ecn_points] ] })
               .each do |new_row, old_row|
         ecn_match = skip_ecn || (new_row[:ecn_points] - old_row[:ecn_points]).abs < 1e-9
         next if new_row[:category] == old_row[:category] && ecn_match
