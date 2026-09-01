@@ -35,6 +35,15 @@
 /app/assets/builds/*
 !/app/assets/builds/.keep
 /public/assets
+/public/vite*
+
+# Ignore locally installed gems.
+/vendor/bundle/
+
+# Ignore local database dumps and scratch files.
+/db_backups/
+*.dump
+*.m4a
 
 # Ignore CI service files.
 /.github
