@@ -45,8 +45,8 @@ RSpec.describe Club, type: :model do
       expect(Club.format_name(nil)).to be_nil
     end
 
-    it "downcases and strips non-alpha characters" do
-      expect(Club.format_name("Test Club 123")).to eq("testclub")
+    it "downcases and strips non-alphanumeric characters" do
+      expect(Club.format_name("Test Club 123!")).to eq("testclub123")
     end
 
     it "replaces k with c" do
