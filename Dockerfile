@@ -17,7 +17,7 @@ WORKDIR /rails
 # Install base packages. Node and Chromium are needed at runtime too:
 # Grover renders PDFs by running Puppeteer via node.
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 chromium && \
+    apt-get install --no-install-recommends -y curl libjemalloc2 libvips sqlite3 chromium tini && \
     curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install --no-install-recommends -y nodejs && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
@@ -77,8 +77,10 @@ RUN groupadd --system --gid 1000 rails && \
     chown -R rails:rails db log storage tmp
 USER 1000:1000
 
-# Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
+# Entrypoint prepares the database. tini runs as PID 1 to reap the zombie
+# Chromium processes Grover renders leave behind — without it they accumulate
+# until the container's PID limit is hit and Chromium can no longer spawn.
+ENTRYPOINT ["/usr/bin/tini", "--", "/rails/bin/docker-entrypoint"]
 
 # Run Puma directly on $PORT (Railway injects it and routes its proxy there).
 # Thruster is skipped: it would listen on 80 and pin Puma to its own internal
